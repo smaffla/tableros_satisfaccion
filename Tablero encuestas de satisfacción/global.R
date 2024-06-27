@@ -17,12 +17,11 @@ library(ggrepel)
 library(flextable)
 library(lubridate)
 
-colores_plot <- c(#"#2171b5",
+colores_plot <- c("#2171b5",
   "#4292c6","#74a9cf",
   "#41b6c4","#7fcdbb",#"#238b45","#41ab5d",
   "#78c679","#c7e9b4","#edf8b1","#fee391","#fec44f",
   "#fe9929","#ec7014")
-
 
 transporte <- read.xlsx("Encuesta de satisfacción del servicio de transporte.xlsx")
 
