@@ -17,7 +17,7 @@ library(ggrepel)
 library(flextable)
 library(lubridate)
 
-colores_plot <- c("#2171b5",
+colores_plot <- c(#"#2171b5",
   "#4292c6","#74a9cf",
   "#41b6c4","#7fcdbb",#"#238b45","#41ab5d",
   "#78c679","#c7e9b4","#edf8b1","#fee391","#fec44f",
@@ -419,6 +419,17 @@ aseo_cafe <- aseo_cafeteria %>%
          valor10 = atencion_y_actitud_de_los_funcionarios
   ) 
 
+aseo_cafeteria <- aseo_cafeteria %>% 
+  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
+  mutate(mesdili = month(hora_de_finalizacion)) %>% 
+  mutate(anodili = year(hora_de_finalizacion))
+
+transporte <- transporte %>% 
+  distinct()
+
+transporte <- transporte %>% 
+  clean_names()
+
 transporte <- transporte %>% 
   mutate(tipo_de_vinculacion = case_when(str_detect(tipo_de_vinculacion, "Supernumerario")~"Supernumerario",
                                          TRUE~tipo_de_vinculacion))
@@ -450,3 +461,7 @@ datos <- data.frame(
     select(estado_mecanico_de_los_vehiculo, limpieza_y_presentacion_general_de_los_vehiculos, amabilidad_y_cortesia, nivel_de_atencion_mientras_conduce, capacidad_de_comunicacion) %>% 
     colMeans())
 
+transporte <- transporte %>% 
+  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
+  mutate(mesdili = month(hora_de_finalizacion)) %>% 
+  mutate(anodili = year(hora_de_finalizacion))
