@@ -456,7 +456,8 @@ aseo_cafe <- aseo_cafeteria %>%
 
 aseo_cafeteria <- aseo_cafeteria %>% 
   mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
-  mutate(mesdili = month(hora_de_finalizacion)) %>% 
+  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+         mesdili = str_to_title(mesdili)) %>% 
   mutate(anodili = year(hora_de_finalizacion))
 
 ```

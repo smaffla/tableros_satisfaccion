@@ -27,7 +27,8 @@ server <- function(input, output, session) {
               title = "Transporte",
               value = nrow(transporte %>% 
                              filter(anodili %in% input$select_anio, 
-                                    mesdili %in% input$select_mes) %>% 
+                                    mesdili %in% input$select_mes,
+                                    autoriza_datos == "Si") %>% 
                              distinct()),
               style = "info",
               width = 12
@@ -37,7 +38,8 @@ server <- function(input, output, session) {
               title = "Aseo y cafeteria",
               value = nrow(aseo_cafeteria %>% 
                              filter(anodili %in% input$select_anio, 
-                                    mesdili %in% input$select_mes) %>% 
+                                    mesdili %in% input$select_mes,
+                                    autoriza_datos == "Si") %>%  
                              distinct()),
               style = "success",
               width = 12
@@ -51,37 +53,47 @@ server <- function(input, output, session) {
     ### Encuestas ----------------------------------------------
     
     # #### - 📊️ Gráfico de barra por tipo de vinculacion ---------------------------------
-    # output$plot_facus <- renderPlot({
-    # 
-    #   if (input$select_encuesta == "Servicio de transporte"){
-    #     
-    #     transporte %>%
-    #       plot_barras(tipo_de_vinculacion, "", "", titulo = "Tipo de vinculación de los encuestados")
-    #     
-    #   } else {
-    #     
-    #     aseo_cafeteria %>%
-    #       plot_barras(cual_es_el_tipo_de_vinculacion_o_relacion_que_tiene_con_la_upn_universidad_pedagogica_nacional,
-    #                   "", "", titulo = "Tipo de vinculación de los encuestados")
-    #     }
-    #   
-    # })
-    # 
-    # 
-    # #### - 📝  ---------------------------------------------
-    # output$dt_facus <- renderFlextable({
-    #   
-    #   if (input$select_encuesta == "Servicio de transporte"){
-    #     
-    #     transporte %>% 
-    #       categorica_1var(tipo_de_vinculacion, "Tipo de vinculacion")
-    #     
-    #   } else {
-    #     
-    #     aseo_cafeteria %>% 
-    #       categorica_1var(cual_es_el_tipo_de_vinculacion_o_relacion_que_tiene_con_la_upn_universidad_pedagogica_nacional, "Tipo de vinculacion")
-    #   }
-    #   
-    # })
+    output$plot_servicio <- renderPlot({
+
+      if (input$select_encuesta == "Servicio de transporte"){
+
+        transporte %>%
+          plot_barras(tipo_de_vinculacion, "", "", titulo = "Tipo de vinculación de los encuestados")
+
+      } else {
+
+        aseo_cafeteria %>%
+          plot_barras(cual_es_el_tipo_de_vinculacion_o_relacion_que_tiene_con_la_upn_universidad_pedagogica_nacional,
+                      "", "", titulo = "Tipo de vinculación de los encuestados")
+        }
+
+    })
+
+    #### - 📝  ---------------------------------------------
+    output$dt_servicio <- renderDataTable({
+      
+      if (input$select_encuesta == "Servicio de transporte") { 
+        
+  transporte %>%
+    categorica_1var(tipo_de_vinculacion, "Tipo de vinculación")
+        
+        } else {        
+          
+  aseo_cafe %>% 
+    categorica_1var(cual_es_el_tipo_de_vinculacion_o_relacion_que_tiene_con_la_upn_universidad_pedagogica_nacional,
+                "Tipo de vinculación")
+          
+          
+          }
+        
+       })
+      
+    }
+      
+      
+      
     
-     }
+  
+
+
+     

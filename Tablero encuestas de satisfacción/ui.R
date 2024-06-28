@@ -1,6 +1,6 @@
 dashboardPage(
   dashboardHeader(
-    title = "Encuestas de satisfacción"
+    title = "Encuestas"
   ),
 
   ## ⏹️ 🍔 Sidebar -----------------------------------------------------------------
@@ -11,8 +11,8 @@ dashboardPage(
     sidebarMenu(
       style = "position: fixed;",
       menuItem("General", tabName = "dashboardGeneral", icon = icon("square-poll-vertical")),
-      menuItem("Servicio de transporte", tabName = "dashboardEducacion", icon = icon("car")),
-      menuItem("Servicio de aseo y cafetería", tabName = "dashboardHumanidades", icon = icon("mug-saucer"))
+      menuItem("Servicio de transporte", tabName = "dashboardTransporte", icon = icon("car")),
+      menuItem("Servicio de aseo y cafetería", tabName = "dashboardAseoCafe", icon = icon("mug-saucer"))
       
     )
   ), #  Cierra sidebarmenu
@@ -41,18 +41,19 @@ dashboardPage(
                 background = "light-blue",
                 align = "center",
                 column(
-                  width = 6,
+                  width = 4,
                   sliderInput(
                     inputId = "select_anio",
                     label = "Seleccione un año",
                     min = 2024,
                     max = 2025,
                     value = 2024,
+                    step = 1,
                     sep = ""
                   )
                 ),
                 column(
-                  width = 6,
+                  width = 4,
                   pickerInput(
                     inputId = "select_mes",
                     options = list(`actions-box` = TRUE,
@@ -62,8 +63,22 @@ dashboardPage(
                                    size = 7),
                     multiple = T,
                     label = "Seleccione un mes",
-                    choices = c(1:12),
+                    choices = c("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
+                                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"),
                     selected = transporte$mesdili
+                  )
+                ),
+                column(
+                  width = 4,
+                  pickerInput(
+                    inputId = "select_encuesta",
+                    options = list(`actions-box` = TRUE,
+                                   `deselect-all-text` = "Deseleccionar todo",
+                                   size = 7),
+                    multiple = F,
+                    label = "Seleccione una encuesta",
+                    choices = c("Servicio de transporte", "Servicio de aseo y cafetería")
+                    #selected = transporte$mesdili
                   )
                 )
               )
@@ -120,11 +135,11 @@ dashboardPage(
           br(),
           br(),
         
-        #### 📊📋 Gráfico y tabla por facultad ----------------------------------------------------
+        #### 📊📋 Gráfico y tabla por encuesta ----------------------------------------------------
           
           fluidRow(
             align = "center",
-            HTML("<h2 style = 'color: #00609d'>Información por <strong>facultad</strong></h2>"),
+            HTML("<h2 style = 'color: #00609d'>Tipo de <strong>vinculación</strong></h2>"),
           ),
         
           br(),
@@ -132,17 +147,18 @@ dashboardPage(
           fluidRow(
             column(
               width = 6,
-              plotOutput("plot_facus") %>% withSpinner(type = 8, size = 0.5)
+              plotOutput("plot_servicio") %>% withSpinner(type = 8, size = 0.5)
             ),
             column(
               width = 6,
-              dataTableOutput("dt_facus") %>% withSpinner(type = 8, size = 0.5)
+              DTOutput("dt_servicio") %>% withSpinner(type = 8, size = 0.5)
             )
           ),
         
           br(),
           br()
-    ) # Cierra tabItems
-  ) # Cierra dashboard body
+        ) 
+      )# Cierra dashboardGeneral
+    )# Cierra tabItems
+  )# Cierra dashboard body
 )# Cierra dashboard page
-))

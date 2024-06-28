@@ -14,7 +14,6 @@ library(ggthemes)
 library(DT)
 library(tidyverse)
 library(ggrepel)
-library(flextable)
 library(lubridate)
 
 colores_plot <- c(#"#2171b5",
@@ -27,33 +26,6 @@ transporte <- read.xlsx("Encuesta de satisfacción del servicio de transporte.xl
 
 aseo_cafeteria <- read.xlsx("Encuesta de satisfacción del servicio de aseo y cafetería..xlsx")
 
-## Función para crear flextable
-ftable <- function(x, encabezado = NULL, title = NULL) {
-  
-  table <- x %>% 
-    flextable() %>% 
-    set_caption(caption = title) %>%
-    align(part = "header", align = "center") %>% 
-    align(j = 2:ncol_keys(.), align = "center") %>% 
-    bg(part = "header", bg = "#2c7fb8") %>% 
-    color(part = "header", color = "white") %>% 
-    bg(j = 1, bg = "#D9D9D9") %>% 
-    bg(i = nrow_part(.), bg = "#2c7fb8") %>%
-    bold(part = "header") %>% 
-    bold(i = nrow_part(.)) %>%
-    color(i = nrow_part(.), color = "white") %>%
-    border(part = "all", border = fp_border_default(color="black", width = 1)) %>% 
-    autofit() %>%
-    fit_to_width(max_width = 8.5)
-  
-  if (!is.null(encabezado)) {
-    table <- table %>% 
-      add_header_row(colwidths = ncol_keys(.), values = encabezado)
-  }
-  
-  return(table)
-  
-}
 
 plot_donas <- function(x, col, group, titulo = "") {
   
@@ -61,6 +33,8 @@ plot_donas <- function(x, col, group, titulo = "") {
   col <- enquo(col)
   
   data <- x %>%
+    filter(!is.na(!!col)) %>% 
+    filter(!is.na(!!group)) %>% 
     count(!!group, !!col) %>% 
     mutate(porcentaje = n / sum(n),
            ymax = cumsum(porcentaje),
@@ -88,6 +62,7 @@ plot_barras <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
   col <- enquo(col)
   
   data <- x %>%
+    filter(!is.na(!!col)) %>% 
     count(!!col )%>% 
     mutate(perc = percent(n/sum(n), 0.1))
   
@@ -124,6 +99,7 @@ plot_cols <- function(x, col, xlab, ylab, titulo = "") {
   col <- enquo(col)
   
   data <- x %>%
+    filter(!is.na(!!col)) %>% 
     count(!!col) %>% 
     mutate(perc = percent(n/sum(n), 0.1))
   
@@ -153,6 +129,8 @@ plot_barras_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo
   group <- enquo(group)
   
   data <- x %>%
+    filter(!is.na(!!col)) %>% 
+    filter(!is.na(!!group)) %>% 
     count(!!group, !!col) %>% 
     mutate(perc = percent(n/sum(n), 0.1))
   
@@ -189,6 +167,8 @@ plot_cols_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo =
   group <- enquo(group)
   
   data <- x %>%
+    filter(!is.na(!!col)) %>% 
+    filter(!is.na(!!group)) %>% 
     count(!!group, !!col) %>% 
     mutate(perc = percent(n/sum(n), 0.1))
   
@@ -216,136 +196,6 @@ plot_cols_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo =
   
 }
 
-
-# Separar respuestas preguntas MRQ
-MRQ <- function(x, col) {
-  col <- enquo(col)
-  
-  x %>% 
-    separate_rows(!!col,sep = " , ", convert = FALSE) %>%
-    mutate(!!col := gsub("(^[[:space:]]+|[[:space:]]+$)", 
-                         "",
-                         !!col)) %>% 
-    count(!!col)
-}
-
-categorica_1var <- function(x, cat1, rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
-  cat1 <- enquo(cat1)
-  
-  if (is.null(wrap_width)) {
-    wrap_width <- 100
-  }
-  
-  table <- x %>% 
-    count(!!cat1) %>% 
-    adorn_totals(where = "row", name = "Total General") %>%
-    rename('{rename}' := !!cat1, "Cantidad" = n) %>% 
-    mutate('{rename}' := str_wrap(!!sym(rename), width = wrap_width)) %>%
-    ftable(encabezado, title)
-  
-  return(table)
-  
-}
-
-categorica_2var <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
-  cat1 <- enquo(cat1)
-  cat2 <- enquo(cat2)
-  
-  table <- x %>% 
-    count(!!cat1, !!cat2) %>% 
-    rbind(
-      x %>% 
-        count(!!cat2) %>% 
-        mutate(!!cat1 := "Total General")
-    ) %>% 
-    group_by(!!cat1) %>% 
-    #mutate(p = n/sum(n)) %>% 
-    #filter (p >= 0.0005) %>% 
-    #select(-n) %>% 
-    pivot_wider(names_from = !!cat2, values_from = n, values_fill = 0) %>% 
-    adorn_totals(where = "col", name = "Total General") %>%
-    #mutate(across(where(is.numeric), ~ percent(.x, 0.01, decimal.mark = ","))) %>% 
-    rename("{rename}" := !!cat1)
-  
-  if (is.null(label_width)) {
-    label_width <- 10
-    
-  }
-  
-  # Personalizar el tamaño de las etiquetas de columna
-  colnames(table) <- str_wrap(colnames(table), width = label_width)
-  
-  table <- table %>%  ftable(encabezado, title)
-  
-  return(table)
-}
-
-categorica_2varp <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
-  cat1 <- enquo(cat1)
-  cat2 <- enquo(cat2)
-  
-  table <- x %>% 
-    count(!!cat1, !!cat2) %>% 
-    rbind(
-      x %>% 
-        count(!!cat2) %>% 
-        mutate(!!cat1 := "Total General")
-    ) %>% 
-    group_by(!!cat1) %>% 
-    mutate(p = n/sum(n)) %>% 
-    #filter (p >= 0.0005) %>% 
-    select(-n) %>% 
-    pivot_wider(names_from = !!cat2, values_from = p, values_fill = 0) %>% 
-    adorn_totals(where = "col", name = "Total General") %>%
-    mutate(across(where(is.numeric), ~ percent(.x, 0.1, decimal.mark = ","))) %>% 
-    rename("{rename}" := !!cat1)
-  
-  if (is.null(label_width)) {
-    label_width <- 10
-    
-  }
-  
-  # Personalizar el tamaño de las etiquetas de columna
-  colnames(table) <- str_wrap(colnames(table), width = label_width)
-  
-  table <- table %>%  ftable(encabezado, title)
-  
-  return(table)
-}
-
-wrap_text <- function(x, width) {
-  sapply(x, function(y) {
-    paste(strwrap(y, width = width), collapse = "\n")
-  })
-}
-
-tabla_prom <- function(x, col, rename, encabezado = NULL, titulo = NULL, wrap_width = NULL) {
-  
-  col <- enquo(col)
-  
-  if (is.null(wrap_width)) {
-    wrap_width <- 100
-  }
-  
-  table <- x %>% 
-    group_by(!!col) %>%
-    summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
-    ungroup() %>% 
-    arrange(desc(promedio_general)) %>% 
-    rename("{rename}" := !!col,
-           "Promedio" = promedio_general) %>% 
-    as.data.frame()  
-  
-  formatted_table <- ftable(table, encabezado, titulo) %>% 
-    bg(i = nrow_part(.), bg = "white") %>%
-    bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
-    color(i = nrow_part(.), color = "black") %>%
-    bold(i = nrow_part(.), bold = FALSE)
-  
-  return(formatted_table)
-  
-}
-
 plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
   
   col <- enquo(col)
@@ -355,6 +205,7 @@ plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
   }
   
   data <- x %>%  
+    filter(!is.na(!!col)) %>% 
     group_by(!!col) %>%
     summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
     ungroup()
@@ -382,6 +233,159 @@ plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
   
 }
 
+# Separar respuestas preguntas MRQ
+MRQ <- function(x, col) {
+  col <- enquo(col)
+  
+  x %>% 
+    separate_rows(!!col,sep = " , ", convert = FALSE) %>%
+    mutate(!!col := gsub("(^[[:space:]]+|[[:space:]]+$)", 
+                         "",
+                         !!col)) %>% 
+    count(!!col)
+}
+
+categorica_1var <- function(x, col, rename, title = NULL, wrap_width = NULL) {
+  col <- enquo(col)
+  
+  if (is.null(wrap_width)) {
+    wrap_width <- 100
+  }
+  
+  table <- x %>% 
+    filter(!is.na(!!col)) %>% 
+    count(!!col) %>% 
+    rename('{rename}' := !!col, "Cantidad" = n) %>% 
+    #mutate('{rename}' := str_wrap(!!sym(rename), width = wrap_width)) %>%
+    styled_dt(title)
+  
+  return(table)
+  
+}
+
+categorica_2var <- function(x, cat1, cat2, rename, title = NULL, label_width = NULL) {
+  cat1 <- enquo(cat1)
+  cat2 <- enquo(cat2)
+  
+  table <- x %>% 
+    filter(!is.na(!!cat1)) %>% 
+    filter(!is.na(!!cat2)) %>% 
+    count(!!cat1, !!cat2) %>% 
+    rbind(
+      x %>% 
+        filter(!is.na(!!cat2)) %>% 
+        count(!!cat2) %>% 
+        mutate(!!cat1 := "Total General")
+    ) %>% 
+    group_by(!!cat1) %>% 
+    pivot_wider(names_from = !!cat2, values_from = n, values_fill = 0) %>% 
+    adorn_totals(where = "col", name = "Total General") %>%
+    #mutate(across(where(is.numeric), ~ percent(.x, 0.01, decimal.mark = ","))) %>% 
+    rename("{rename}" := !!cat1)
+  
+  if (is.null(label_width)) {
+    label_width <- 10
+    
+  }
+  
+  # Personalizar el tamaño de las etiquetas de columna
+  colnames(table) <- str_wrap(colnames(table), width = label_width)
+  
+  table <- table %>%  styled_dt(title)
+  
+  return(table)
+}
+
+categorica_2varp <- function(x, cat1, cat2, rename,  title = NULL, label_width = NULL) {
+  cat1 <- enquo(cat1)
+  cat2 <- enquo(cat2)
+  
+  table <- x %>% 
+    filter(!is.na(!!cat1)) %>% 
+    filter(!is.na(!!cat2)) %>% 
+    count(!!cat1, !!cat2) %>% 
+    rbind(
+      x %>% 
+        filter(!is.na(!!cat2)) %>% 
+        count(!!cat2) %>% 
+        mutate(!!cat1 := "Total General")
+    ) %>% 
+    group_by(!!cat1) %>% 
+    mutate(p = n/sum(n)) %>% 
+    select(-n) %>% 
+    pivot_wider(names_from = !!cat2, values_from = p, values_fill = 0) %>% 
+    adorn_totals(where = "col", name = "Total General") %>%
+    mutate(across(where(is.numeric), ~ percent(.x, 0.1, decimal.mark = ","))) %>% 
+    rename("{rename}" := !!cat1)
+  
+  if (is.null(label_width)) {
+    label_width <- 10
+    
+  }
+  
+  # Personalizar el tamaño de las etiquetas de columna
+  colnames(table) <- str_wrap(colnames(table), width = label_width)
+  
+  table <- table %>%  styled_dt(title)
+  
+  return(table)
+}
+
+
+tabla_prom <- function(x, col, rename, encabezado = NULL, titulo = NULL, wrap_width = NULL) {
+  
+  col <- enquo(col)
+  
+  num_rows <- nrow(x)
+  
+  if (is.null(wrap_width)) {
+    wrap_width <- 100
+  }
+  
+  table <- x %>% 
+    filter(!is.na(!!col)) %>% 
+    group_by(!!col) %>%
+    summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
+    ungroup() %>% 
+    arrange(desc(promedio_general)) %>% 
+    rename("{rename}" := !!col,
+           "Promedio" = promedio_general) %>% 
+    as.data.frame()  
+  
+  formatted_table <- styled_dt(table, titulo)
+  
+  return(formatted_table)
+  
+}
+
+
+
+styled_dt <- function(x, title = NULL) {
+  table <- x %>%
+    datatable(
+      options = list(
+        pageLength = 7,
+        lengthMenu = list(c(7, 10, 15, -1), c(7, 10, 15, "Todos")),
+        initComplete = JS(
+          "function(settings, json) {",
+          "$(this.api().table().header()).css({'background-color': '#2c7fb8', 'color': 'white', 'font-weight': 'bold'});",
+          "}"
+        )
+      ),
+      caption = htmltools::tags$caption(
+        style = 'caption-side: top; text-align: center; color:black; font-size:150%',
+        title
+      )
+    ) %>%
+    formatStyle(
+      columns = names(x),
+      backgroundColor = styleEqual(names(x), rep('#D9D9D9', length(names(x)))),
+      color = styleEqual(names(x), rep('black', length(names(x)))),
+      fontWeight = styleEqual(names(x), rep('bold', length(names(x))))
+    )
+  return(table)
+}
+
 # Depuracion de datos 
 
 aseo_cafeteria <- aseo_cafeteria %>% 
@@ -390,6 +394,8 @@ aseo_cafeteria <- aseo_cafeteria %>%
 aseo_cafeteria <- aseo_cafeteria %>% 
   clean_names()
 
+aseo_cafeteria <- aseo_cafeteria %>% 
+  rename(autoriza_datos = autoriza_el_tratamiento_de_sus_datos_personales_consignados_en_este_formulario_de_asistencia_de_la_universidad_pedagogica_nacional_con_el_objetivo_de_demostrar_su_participacion_en_el_evento_o_reu)
 
 aseo_cafeteria <- aseo_cafeteria %>% 
   mutate(calidad_de_tinto_y_aromatica_ofrecida = as.numeric(calidad_de_tinto_y_aromatica_ofrecida)) %>% 
@@ -421,7 +427,8 @@ aseo_cafe <- aseo_cafeteria %>%
 
 aseo_cafeteria <- aseo_cafeteria %>% 
   mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
-  mutate(mesdili = month(hora_de_finalizacion)) %>% 
+  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+         mesdili = str_to_title(mesdili)) %>% 
   mutate(anodili = year(hora_de_finalizacion))
 
 transporte <- transporte %>% 
@@ -429,6 +436,9 @@ transporte <- transporte %>%
 
 transporte <- transporte %>% 
   clean_names()
+
+transporte <- transporte %>% 
+  rename(autoriza_datos = autoriza_el_tratamiento_de_sus_datos_personales_consignados_en_este_formulario_de_asistencia_de_la_universidad_pedagogica_nacional_con_el_objetivo_de_demostrar_su_participacion_en_el_evento_o_reu)
 
 transporte <- transporte %>% 
   mutate(tipo_de_vinculacion = case_when(str_detect(tipo_de_vinculacion, "Supernumerario")~"Supernumerario",
@@ -463,5 +473,6 @@ datos <- data.frame(
 
 transporte <- transporte %>% 
   mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
-  mutate(mesdili = month(hora_de_finalizacion)) %>% 
+  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+         mesdili = str_to_title(mesdili)) %>% 
   mutate(anodili = year(hora_de_finalizacion))
