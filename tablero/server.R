@@ -50,9 +50,9 @@ server <- function(input, output, session) {
     })
   
 
-    ### Encuestas ----------------------------------------------
+    #### Encuestas ----------------------------------------------
     
-    # #### - 📊️ Gráfico de barra por tipo de vinculacion ---------------------------------
+    ### - 📊️ Gráfico de barra por tipo de vinculacion ---------------------------------
     output$plot_servicio <- renderPlot({
 
       if (input$select_encuesta == "Servicio de transporte"){
@@ -69,7 +69,7 @@ server <- function(input, output, session) {
 
     })
 
-    #### - 📝  ---------------------------------------------
+    ### - 📝  ---------------------------------------------
     output$dt_servicio <- renderDataTable({
       
       if (input$select_encuesta == "Servicio de transporte") { 
@@ -87,9 +87,25 @@ server <- function(input, output, session) {
           }
         
        })
+    
+    ##  Meses en los que se utilizo el servicio de transporte
+    ### Se analiza el uso del servicio de transporte durante los diferentes meses.
+    output$dt_meses_transporte <- renderDataTable({
+      
+    transporte %>%
+        categorica_1var(mes, "Mes")
+    })
+    
+    output$plot_meses_transporte <- renderPlot({
+      
+      transporte %>% 
+        plot_barras(mes, "", "", titulo = "Meses en los que se utilizo el servicio de transporte")
+    
+      })
       
     }
-      
+    
+  
       
       
     
