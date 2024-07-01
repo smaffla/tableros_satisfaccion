@@ -40,7 +40,7 @@ library(flextable)
 library(scales)
 library(lubridate)
 
-aseo_cafeteria <- read.xlsx("Encuesta de satisfacción del servicio de aseo y cafetería..xlsx")
+aseo_cafeteria <- read.xlsx("../vistas/Encuesta de satisfacción del servicio de aseo y cafetería..xlsx")
 
 colores_plot <- c(#"#2171b5",
                                               "#4292c6","#74a9cf",
