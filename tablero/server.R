@@ -92,17 +92,254 @@ server <- function(input, output, session) {
     ### Se analiza el uso del servicio de transporte durante los diferentes meses.
     output$dt_meses_transporte <- renderDataTable({
       
-    transporte %>%
+      transporte %>%
+        filter(!is.na(mes)) %>% 
         categorica_1var(mes, "Mes")
     })
     
     output$plot_meses_transporte <- renderPlot({
       
-      transporte %>% 
+      transporte %>%
+        filter(!is.na(mes)) %>% 
         plot_barras(mes, "", "", titulo = "Meses en los que se utilizo el servicio de transporte")
     
       })
+    
+    ## Tipo de servicio utilizado cada mes
+    
+    ###Se examinan los tipos de servicios de transporte utilizados por los encuestados en cada mes.
+    
+    output$dt_tipo_servicio <- renderDataTable({
+      transporte %>%
+        filter(!is.na(tipo_de_servicio_prestado)) %>% 
+        filter(!is.na(mes)) %>% 
+        categorica_2var(mes, tipo_de_servicio_prestado, "Tipo de servicio", label_width = 20)
+    })
+    
+    output$plot_tipo_servicio <- renderPlot({
+      transporte %>% 
+        filter(!is.na(tipo_de_servicio_prestado)) %>% 
+        filter(!is.na(mes)) %>% 
+        plot_barras_agrupado(mes, tipo_de_servicio_prestado, "", "", leyenda = "", 
+                             titulo = "Tipo de servicio utilizado cada mes")
+    })
+    
+    #Calificacion general
+    
+    ###Se recopila y analiza la calificación general del servicio de transporte proporcionada por los encuestados por conductor.
+    
+    output$dt_calificacion_general <- renderUI({
       
+    tabla <- transporte %>%
+        filter(!is.na(nombre_del_conductor_que_presto_el_servicio)) %>%
+        rename(
+          valor1 = estado_mecanico_de_los_vehiculo, 
+          valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
+          valor3 = amabilidad_y_cortesia,
+          valor4 = nivel_de_atencion_mientras_conduce,
+          valor5 = capacidad_de_comunicacion
+        ) %>%
+        group_by(nombre_del_conductor_que_presto_el_servicio) %>%
+        summarise(
+          "Estado mecánico de los vehículo" = round(mean(valor1, na.rm = TRUE), 1),
+          "Limpieza y presentación general de los vehículos" = round(mean(valor2, na.rm = TRUE), 1),
+          "Amabilidad y cortesía" = round(mean(valor3, na.rm = TRUE), 1),
+          "Nivel de atención mientras conduce" = round(mean(valor4, na.rm = TRUE), 1),
+          "Capacidad de comunicación" = round(mean(valor5, na.rm = TRUE), 1),
+          promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)
+        ) %>%
+        ungroup() 
+      
+      colnames(tabla) <- str_wrap(colnames(tabla), width = 18)
+      
+      htmltools_value(tabla %>%
+        rename(
+          "Promedio" = promedio_general, 
+          "Nombre del conductor" = nombre_del_conductor_que_presto_el_servicio) %>% 
+        ftable() %>%
+        bg(i = nrow_part(.), bg = "white") %>%
+        bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+        color(i = nrow_part(.), color = "black") %>%
+        bold(i = nrow_part(.), bold = FALSE))
+      
+    })
+    
+    output$plot_calificacion_general <- renderPlot({
+      tabla %>%
+        filter(!is.na(nombre_del_conductor_que_presto_el_servicio)) %>%
+        ggplot(aes(x = nombre_del_conductor_que_presto_el_servicio, 
+                   y= promedio_general, 
+                   fill = nombre_del_conductor_que_presto_el_servicio, 
+                   label = promedio_general)) + 
+        geom_col()+
+        geom_text(vjust = 0.5, hjust = -0.5, size = 3,position = position_dodge(width = 1))+
+        labs(x = "", y = "", title = str_wrap("Calificación promedio de los conductores", width = 40)) +
+        theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+        theme(legend.position="none")+
+        theme(axis.text.y = element_text(size = 8))+
+        theme(axis.text.x = element_text(size = 10))+
+        scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
+        scale_fill_manual(values = colores_plot)+
+        coord_flip()
+    })
+    
+    #Calificación por tipo de vinculación
+    
+    
+    output$ft_calificacion_vinculacion <- renderUI({
+      htmltools_value(transporte %>% 
+                      filter(!is.na(tipo_de_vinculacion)) %>% 
+                      rename(valor1 = estado_mecanico_de_los_vehiculo, 
+                             valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
+                             valor3 = amabilidad_y_cortesia,
+                             valor4 = nivel_de_atencion_mientras_conduce,
+                             valor5 = capacidad_de_comunicacion) %>%
+                        group_by(tipo_de_vinculacion) %>%
+                        summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
+                        ungroup() %>% 
+                        arrange(desc(promedio_general)) %>% 
+                        rename("Tipo de vinculación" = tipo_de_vinculacion,
+                               "Promedio" = promedio_general) %>% 
+                        ftable() %>%
+                        bg(i = nrow_part(.), bg = "white") %>%
+                        bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+                        color(i = nrow_part(.), color = "black") %>%
+                        bold(i = nrow_part(.), bold = FALSE))
+      })
+    
+    output$plot_calificacion_vinculacion <- renderPlot({
+      transporte %>% 
+        filter(!is.na(tipo_de_vinculacion)) %>% 
+        rename(valor1 = estado_mecanico_de_los_vehiculo, 
+               valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
+               valor3 = amabilidad_y_cortesia,
+               valor4 = nivel_de_atencion_mientras_conduce,
+               valor5 = capacidad_de_comunicacion) %>%
+        group_by(tipo_de_vinculacion) %>%
+        summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
+        ungroup() %>% 
+        arrange(desc(promedio_general)) %>% 
+        ggplot(aes(x = tipo_de_vinculacion, 
+                   y= promedio_general, 
+                   fill = tipo_de_vinculacion, 
+                   label = promedio_general)) + 
+        geom_col()+
+        geom_text(vjust = 0.5, hjust = -0.5, size = 3,position = position_dodge(width = 1))+
+        labs(x = "", y = "", title = str_wrap("Calificación promedio por tipo de vinculación", width = 40)) +
+        theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+        theme(legend.position="none")+
+        theme(axis.text.y = element_text(size = 8))+
+        theme(axis.text.x = element_text(size = 10))+
+        scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
+        scale_fill_manual(values = colores_plot)+
+        coord_flip()
+    })
+    
+    #Calificación promedio por identidad de género
+    
+    output$ft_calificacion_genero <- renderUI({
+      htmltools_value(
+        transporte %>%
+          filter(!is.na(cual_es_su_identidad_de_genero)) %>% 
+          rename(valor1 = estado_mecanico_de_los_vehiculo, 
+                 valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
+                 valor3 = amabilidad_y_cortesia,
+                 valor4 = nivel_de_atencion_mientras_conduce,
+                 valor5 = capacidad_de_comunicacion) %>%
+          group_by(cual_es_su_identidad_de_genero) %>%
+          summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
+          ungroup() %>% 
+          arrange(desc(promedio_general)) %>% 
+          rename("Identidad de género" = cual_es_su_identidad_de_genero,
+                 "Promedio" = promedio_general) %>% 
+          ftable() %>%
+          bg(i = nrow_part(.), bg = "white") %>%
+          bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+          color(i = nrow_part(.), color = "black") %>%
+          bold(i = nrow_part(.), bold = FALSE)
+      )})
+    
+    output$plot_calificacion_genero <- renderPlot({
+      transporte %>%
+        filter(!is.na(cual_es_su_identidad_de_genero)) %>% 
+        rename(valor1 = estado_mecanico_de_los_vehiculo, 
+               valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
+               valor3 = amabilidad_y_cortesia,
+               valor4 = nivel_de_atencion_mientras_conduce,
+               valor5 = capacidad_de_comunicacion) %>%
+        group_by(cual_es_su_identidad_de_genero) %>%
+        summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
+        ungroup() %>% 
+        arrange(desc(promedio_general)) %>% 
+        ggplot(aes(x = cual_es_su_identidad_de_genero, 
+                   y= promedio_general, 
+                   fill = cual_es_su_identidad_de_genero, 
+                   label = promedio_general)) + 
+        geom_col()+
+        geom_text(vjust = -0.8, size = 3,position = position_dodge(width = 1))+
+        labs(x = "", y = "", title = str_wrap("Calificación promedio por identidad de género", width = 40)) +
+        theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+        theme(legend.position="none")+
+        theme(axis.text.y = element_text(size = 8))+
+        theme(axis.text.x = element_text(size = 10))+
+        scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
+        scale_fill_manual(values = colores_plot)
+    })
+    
+    #Calificación por rango de edad
+    
+    output$ft_calificacion_edad <- renderUI({
+      htmltools_value(
+        transporte %>%
+          filter(!is.na(cual_es_su_rango_de_edad)) %>% 
+          rename(valor1 = estado_mecanico_de_los_vehiculo, 
+                 valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
+                 valor3 = amabilidad_y_cortesia,
+                 valor4 = nivel_de_atencion_mientras_conduce,
+                 valor5 = capacidad_de_comunicacion) %>%
+          group_by(cual_es_su_rango_de_edad) %>%
+          summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
+          ungroup() %>% 
+          arrange(desc(promedio_general)) %>% 
+          rename("Rango de edad" = cual_es_su_rango_de_edad,
+                 "Promedio" = promedio_general) %>% 
+          ftable() %>%
+          bg(i = nrow_part(.), bg = "white") %>%
+          bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+          color(i = nrow_part(.), color = "black") %>%
+          bold(i = nrow_part(.), bold = FALSE)
+        
+      )
+    })
+    
+    output$plot_calificacion_edad <- renderPlot({
+      transporte %>%
+        filter(!is.na(cual_es_su_rango_de_edad)) %>% 
+        rename(valor1 = estado_mecanico_de_los_vehiculo, 
+               valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
+               valor3 = amabilidad_y_cortesia,
+               valor4 = nivel_de_atencion_mientras_conduce,
+               valor5 = capacidad_de_comunicacion) %>%
+        group_by(cual_es_su_rango_de_edad) %>%
+        summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
+        ungroup() %>% 
+        arrange(desc(promedio_general)) %>% 
+        ggplot(aes(x = cual_es_su_rango_de_edad, 
+                   y= promedio_general, 
+                   fill = cual_es_su_rango_de_edad, 
+                   label = promedio_general)) + 
+        geom_col()+
+        geom_text(vjust = 0.5, hjust = -0.5, size = 3,position = position_dodge(width = 1))+
+        labs(x = "", y = "", title = str_wrap("Calificación promedio por rango de edad", width = 40)) +
+        theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+        theme(legend.position="none")+
+        theme(axis.text.y = element_text(size = 8))+
+        theme(axis.text.x = element_text(size = 10))+
+        scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
+        scale_fill_manual(values = colores_plot)+
+        coord_flip()
+    })
+    
     }
     
   

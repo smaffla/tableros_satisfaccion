@@ -178,13 +178,16 @@ dashboardPage(
           )
         ),
         
+        
+        #Tabla y gráfica para meses en los que se utilizó el servicio de transporte
         fluidRow(
           align = "center",
-          HTML("<h2 style = 'color: #00609d'><strong>Meses en los que se utilizó el servicio de transporte</strong></h2>"),
+          HTML("<h2 style = 'color: #00609d'><strong>Meses en los que se calificó el servicio de transporte</strong></h2>"),
         ),
         
         br(),
         
+
         fluidRow(
           column(
             width = 6,
@@ -199,7 +202,125 @@ dashboardPage(
         ),
         
         br(),
-        br()
+        br(),
+        
+        #Tabla y gráfica para tipo de servicio utilizado cada mes
+        fluidRow(
+          align = "center",
+          HTML("<h2 style = 'color: #00609d'><strong>Conteo de calificaciones por tipo de servicio en cada mes</strong></h2>"),
+        ),
+        
+        br(),
+        
+        fluidRow(
+          column(
+            width = 6,
+            dataTableOutput("dt_tipo_servicio") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          
+          column(
+            width = 6,
+            plotOutput("plot_tipo_servicio") %>% withSpinner(type = 8, size = 0.5)
+          )
+          
+        ),
+        
+        br(),
+        br(),
+        
+        #Tabla y gráfica para calificacion general por conductor
+        fluidRow(
+          align = "center",
+          HTML("<h2 style = 'color: #00609d'><strong>Calificación general para cada conductor</strong></h2>"),
+        ),
+        
+        br(),
+        
+        fluidRow(
+          column(
+            width = 6,
+            uiOutput("dt_calificacion_general") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          
+          column(
+            width = 6,
+            plotOutput("plot_calificacion_general") %>% withSpinner(type = 8, size = 0.5)
+          )
+          
+        ),
+        
+        br(),
+        br(),
+        
+        #Tabla y gráfica para calificación por tipo de vinculación
+        fluidRow(
+          align = "center",
+          HTML("<h2 style = 'color: #00609d'><strong>Calificación por tipo de vinculación</strong></h2>"),
+        ),
+        
+        br(),
+        
+        fluidRow(
+          column(
+            width = 6,
+            uiOutput("ft_calificacion_vinculacion") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          
+          column(
+            width = 6,
+            plotOutput("plot_calificacion_vinculacion") %>% withSpinner(type = 8, size = 0.5)
+          )
+          
+        ),
+        
+        
+        br(),
+        br(),
+        
+        #Tabla y gráfica para calificación por identidad de genero
+        fluidRow(
+          align = "center",
+          HTML("<h2 style = 'color: #00609d'><strong>Calificación por identidad de género</strong></h2>"),
+        ),
+        
+        br(),
+        
+        fluidRow(
+          column(
+            width = 6,
+            uiOutput("ft_calificacion_genero") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          
+          column(
+            width = 6,
+            plotOutput("plot_calificacion_genero") %>% withSpinner(type = 8, size = 0.5)
+          )
+          
+        ),
+        
+        br(),
+        br(),
+        
+        #Tabla y gráfica para calificación por rango de edad
+        fluidRow(
+          align = "center",
+          HTML("<h2 style = 'color: #00609d'><strong>Calificación por rango de edad</strong></h2>"),
+        ),
+        
+        br(),
+        
+        fluidRow(
+          column(
+            width = 6,
+            uiOutput("ft_calificacion_edad") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          
+          column(
+            width = 6,
+            plotOutput("plot_calificacion_edad") %>% withSpinner(type = 8, size = 0.5)
+          )
+          
+        ),
       )
         
       ) # Cierra dashboarTransporte
