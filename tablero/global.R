@@ -26,11 +26,98 @@ transporte <- read.xlsx("../vistas/Encuesta de satisfacción del servicio de tra
 
 aseo_cafeteria <- read.xlsx("../vistas/Encuesta de satisfacción del servicio de aseo y cafetería..xlsx")
 
-transporte <- transporte %>% 
-  rename(autoriza_datos = autoriza_el_tratamiento_de_sus_datos_personales_consignados_en_este_formulario_de_asistencia_de_la_universidad_pedagogica_nacional_con_el_objetivo_de_demostrar_su_participacion_en_el_evento_o_reu)
+# Depuracion de datos 
+
+aseo_cafeteria <- aseo_cafeteria %>% 
+  distinct()
+
+aseo_cafeteria <- aseo_cafeteria %>% 
+  clean_names()
 
 aseo_cafeteria <- aseo_cafeteria %>% 
   rename(autoriza_datos = autoriza_el_tratamiento_de_sus_datos_personales_consignados_en_este_formulario_de_asistencia_de_la_universidad_pedagogica_nacional_con_el_objetivo_de_demostrar_su_participacion_en_el_evento_o_reu)
+
+aseo_cafeteria <- aseo_cafeteria %>% 
+  mutate(calidad_de_tinto_y_aromatica_ofrecida = as.numeric(calidad_de_tinto_y_aromatica_ofrecida)) %>% 
+  mutate(oportunidad_en_el_servicio_de_preparacion = as.numeric(
+    oportunidad_en_el_servicio_de_preparacion)) %>% 
+  mutate(amabilidad_y_actitud_del_personal = as.numeric(amabilidad_y_actitud_del_personal)) %>% 
+  mutate(limpieza_general = as.numeric(limpieza_general)) %>% 
+  mutate(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios =
+           as.numeric(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios)) %>% 
+  mutate(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante =
+           as.numeric(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante)) %>% 
+  mutate(limpieza_de_banos = as.numeric(limpieza_de_banos)) %>% 
+  mutate(labores_de_jardineria = as.numeric(labores_de_jardineria)) %>% 
+  mutate(frecuencia_y_labores_de_descanecado = as.numeric(frecuencia_y_labores_de_descanecado)) %>% 
+  mutate(atencion_y_actitud_de_los_funcionarios = as.numeric(atencion_y_actitud_de_los_funcionarios)) 
+
+aseo_cafe <- aseo_cafeteria %>% 
+  rename(valor1 = calidad_de_tinto_y_aromatica_ofrecida, 
+         valor2 = oportunidad_en_el_servicio_de_preparacion,
+         valor3 = amabilidad_y_actitud_del_personal,
+         valor4 = limpieza_general,
+         valor5 = limpieza_de_las_oficinas_salones_auditorios_y_laboratorios,
+         valor6 = limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante,
+         valor7 = limpieza_de_banos,
+         valor8 = labores_de_jardineria,
+         valor9 = frecuencia_y_labores_de_descanecado,
+         valor10 = atencion_y_actitud_de_los_funcionarios
+  ) 
+
+aseo_cafeteria <- aseo_cafeteria %>% 
+  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
+  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+         mesdili = str_to_title(mesdili)) %>% 
+  mutate(anodili = year(hora_de_finalizacion))
+
+transporte <- transporte %>% 
+  distinct()
+
+transporte <- transporte %>% 
+  clean_names()
+
+transporte <- transporte %>% 
+  rename(autoriza_datos = autoriza_el_tratamiento_de_sus_datos_personales_consignados_en_este_formulario_de_asistencia_de_la_universidad_pedagogica_nacional_con_el_objetivo_de_demostrar_su_participacion_en_el_evento_o_reu)
+
+transporte <- transporte %>% 
+  mutate(tipo_de_vinculacion = case_when(str_detect(tipo_de_vinculacion, "Supernumerario")~"Supernumerario",
+                                         TRUE~tipo_de_vinculacion))
+
+transporte <- transporte %>% 
+  mutate(a_que_grupo_de_pertenencia_etnica_pertenece =
+           if_else(a_que_grupo_de_pertenencia_etnica_pertenece == "Sin pertenencia étnica",
+                   "Ninguna", a_que_grupo_de_pertenencia_etnica_pertenece))
+
+transporte <- transporte %>% 
+  mutate(fecha_en_que_se_efectuo_el_servicio_de_transporte =
+           as.Date(fecha_en_que_se_efectuo_el_servicio_de_transporte)) %>% 
+  mutate(mes = month(fecha_en_que_se_efectuo_el_servicio_de_transporte, label = TRUE, abbr = FALSE),
+         mes = str_to_title(mes))
+
+transporte <- transporte %>% 
+  mutate(estado_mecanico_de_los_vehiculo = as.numeric(estado_mecanico_de_los_vehiculo)) %>% 
+  mutate(limpieza_y_presentacion_general_de_los_vehiculos = as.numeric(
+    limpieza_y_presentacion_general_de_los_vehiculos)) %>% 
+  mutate(amabilidad_y_cortesia = as.numeric(amabilidad_y_cortesia)) %>% 
+  mutate(nivel_de_atencion_mientras_conduce = as.numeric(nivel_de_atencion_mientras_conduce)) %>% 
+  mutate(capacidad_de_comunicacion = as.numeric(capacidad_de_comunicacion))
+
+datos <- data.frame(
+  categorias = c("Estado mecánico de los vehículo", "Limpieza y presentación general de los vehículos",
+                 "Amabilidad y cortesía", "Nivel de atención mientras conduce", 
+                 "Capacidad de comunicación"),
+  promedios = transporte %>% 
+    select(estado_mecanico_de_los_vehiculo, limpieza_y_presentacion_general_de_los_vehiculos, amabilidad_y_cortesia, nivel_de_atencion_mientras_conduce, capacidad_de_comunicacion) %>% 
+    colMeans())
+
+transporte <- transporte %>% 
+  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
+  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+         mesdili = str_to_title(mesdili)) %>% 
+  mutate(anodili = year(hora_de_finalizacion))
+
+## Funciones
 
 plot_donas <- function(x, col, group, titulo = "") {
   
@@ -385,88 +472,3 @@ styled_dt <- function(x, title = NULL) {
     )
   return(table)
 }
-
-# Depuracion de datos 
-
-aseo_cafeteria <- aseo_cafeteria %>% 
-  distinct()
-
-aseo_cafeteria <- aseo_cafeteria %>% 
-  clean_names()
-
-aseo_cafeteria <- aseo_cafeteria %>% 
-  mutate(calidad_de_tinto_y_aromatica_ofrecida = as.numeric(calidad_de_tinto_y_aromatica_ofrecida)) %>% 
-  mutate(oportunidad_en_el_servicio_de_preparacion = as.numeric(
-    oportunidad_en_el_servicio_de_preparacion)) %>% 
-  mutate(amabilidad_y_actitud_del_personal = as.numeric(amabilidad_y_actitud_del_personal)) %>% 
-  mutate(limpieza_general = as.numeric(limpieza_general)) %>% 
-  mutate(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios =
-           as.numeric(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios)) %>% 
-  mutate(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante =
-           as.numeric(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante)) %>% 
-  mutate(limpieza_de_banos = as.numeric(limpieza_de_banos)) %>% 
-  mutate(labores_de_jardineria = as.numeric(labores_de_jardineria)) %>% 
-  mutate(frecuencia_y_labores_de_descanecado = as.numeric(frecuencia_y_labores_de_descanecado)) %>% 
-  mutate(atencion_y_actitud_de_los_funcionarios = as.numeric(atencion_y_actitud_de_los_funcionarios)) 
-
-aseo_cafe <- aseo_cafeteria %>% 
-  rename(valor1 = calidad_de_tinto_y_aromatica_ofrecida, 
-         valor2 = oportunidad_en_el_servicio_de_preparacion,
-         valor3 = amabilidad_y_actitud_del_personal,
-         valor4 = limpieza_general,
-         valor5 = limpieza_de_las_oficinas_salones_auditorios_y_laboratorios,
-         valor6 = limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante,
-         valor7 = limpieza_de_banos,
-         valor8 = labores_de_jardineria,
-         valor9 = frecuencia_y_labores_de_descanecado,
-         valor10 = atencion_y_actitud_de_los_funcionarios
-  ) 
-
-aseo_cafeteria <- aseo_cafeteria %>% 
-  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
-  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
-         mesdili = str_to_title(mesdili)) %>% 
-  mutate(anodili = year(hora_de_finalizacion))
-
-transporte <- transporte %>% 
-  distinct()
-
-transporte <- transporte %>% 
-  clean_names()
-
-transporte <- transporte %>% 
-  mutate(tipo_de_vinculacion = case_when(str_detect(tipo_de_vinculacion, "Supernumerario")~"Supernumerario",
-                                         TRUE~tipo_de_vinculacion))
-
-transporte <- transporte %>% 
-  mutate(a_que_grupo_de_pertenencia_etnica_pertenece =
-           if_else(a_que_grupo_de_pertenencia_etnica_pertenece == "Sin pertenencia étnica",
-                   "Ninguna", a_que_grupo_de_pertenencia_etnica_pertenece))
-
-transporte <- transporte %>% 
-  mutate(fecha_en_que_se_efectuo_el_servicio_de_transporte =
-           as.Date(fecha_en_que_se_efectuo_el_servicio_de_transporte)) %>% 
-  mutate(mes = month(fecha_en_que_se_efectuo_el_servicio_de_transporte, label = TRUE, abbr = FALSE),
-         mes = str_to_title(mes))
-
-transporte <- transporte %>% 
-  mutate(estado_mecanico_de_los_vehiculo = as.numeric(estado_mecanico_de_los_vehiculo)) %>% 
-  mutate(limpieza_y_presentacion_general_de_los_vehiculos = as.numeric(
-    limpieza_y_presentacion_general_de_los_vehiculos)) %>% 
-  mutate(amabilidad_y_cortesia = as.numeric(amabilidad_y_cortesia)) %>% 
-  mutate(nivel_de_atencion_mientras_conduce = as.numeric(nivel_de_atencion_mientras_conduce)) %>% 
-  mutate(capacidad_de_comunicacion = as.numeric(capacidad_de_comunicacion))
-
-datos <- data.frame(
-  categorias = c("Estado mecánico de los vehículo", "Limpieza y presentación general de los vehículos",
-                 "Amabilidad y cortesía", "Nivel de atención mientras conduce", 
-                 "Capacidad de comunicación"),
-  promedios = transporte %>% 
-    select(estado_mecanico_de_los_vehiculo, limpieza_y_presentacion_general_de_los_vehiculos, amabilidad_y_cortesia, nivel_de_atencion_mientras_conduce, capacidad_de_comunicacion) %>% 
-    colMeans())
-
-transporte <- transporte %>% 
-  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
-  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
-         mesdili = str_to_title(mesdili)) %>% 
-  mutate(anodili = year(hora_de_finalizacion))
