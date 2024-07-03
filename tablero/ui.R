@@ -165,12 +165,61 @@ dashboardPage(
     
     tabItem(
       tabName = "dashboardTransporte",
+      
+      #Filtros
+      div(
+        class = "filtros",
+        fluidRow(
+          column(
+            width = 10,
+            box(
+              width = 12,
+              style = "margin-top: 2%",
+              background = "light-blue",
+              align = "center",
+              column(
+                width = 6,
+                sliderInput(
+                  inputId = "select_anio_trans",
+                  label = "Seleccione un año",
+                  min = 2024,
+                  max = 2025,
+                  value = 2024,
+                  step = 1,
+                  sep = ""
+                )
+              ),
+              column(
+                width = 6,
+                pickerInput(
+                  inputId = "select_mes_trans",
+                  options = list(`actions-box` = TRUE,
+                                 `deselect-all-text` = "Deseleccionar todo",
+                                 `select-all-text` = "Seleccionar todo",
+                                 `none-selected-text` = "Nada seleccionado",
+                                 size = 7),
+                  multiple = T,
+                  label = "Seleccione un mes",
+                  choices = c("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
+                              "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"),
+                  selected = transporte$mesdili
+                )
+              )
+            )
+          )
+        )
+      ),
+      
+      br(),
+      br(),
+      
+      
       div(
         class = "contenido",
         fluidRow(
           align = "center",
           div(style="display: inline-block; margin-right: 30px;", img(src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg/1200px-Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg.png", height=104, width=120)),
-          div(style="display: inline-block; vertical-align: middle;", h1("Encuestas ", span("de satisfacción", style = "font-weight: 300"),
+          div(style="display: inline-block; vertical-align: middle;", h1(span("Encuesta de servicio de ", style = "font-weight: 300"), "transporte",
                                                                          style = "font-family: 'Source Sans Pro';
                                                                                     color: #fff; text-align: center;
                                                                                     background-image: url('https://raw.githubusercontent.com/rstudio/shiny-examples/main/081-widgets-gallery/www/texturebg.png');
@@ -203,11 +252,60 @@ dashboardPage(
         
         br(),
         br(),
+
+        fluidRow(
+          align = "center",
+          HTML("<h2 style = 'color: #00609d'><strong>Tipo de servicio calificado por mes</strong></h2>"),
+        ),
         
+        br(),
+        
+
+        fluidRow(
+          column(
+            width = 6,
+            dataTableOutput("dt_tipo_servicio_trans") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          
+          column(
+            width = 6,
+            plotOutput("plot_tipo_servicio_trans") %>% withSpinner(type = 8, size = 0.5)
+          )
+
+        ),
+        
+        div(
+          fluidRow(
+            column(
+              width = 10,
+              box(
+                width = 12,
+                style = "margin-top: 2%",
+                background = "light-blue",
+                align = "center",
+                column(
+                  width = 12,
+                  pickerInput(
+                    inputId = "select_categoria_trans",
+                    options = list(`actions-box` = TRUE,
+                                   `deselect-all-text` = "Deseleccionar todo",
+                                   `select-all-text` = "Seleccionar todo",
+                                   `none-selected-text` = "Nada seleccionado",
+                                   size = 7),
+                    multiple = T,
+                    label = "Seleccione una categoria",
+                    choices = c("Conductor", "Tipo de vinculación", "Edad", "Identidad de género", "Unidad o dependencia de la UPN"),
+                    selected = "Conductor"
+                  )
+                )
+              )
+            )
+          )
+        ),
         #Tabla y gráfica para tipo de servicio utilizado cada mes
         fluidRow(
           align = "center",
-          HTML("<h2 style = 'color: #00609d'><strong>Conteo de calificaciones por tipo de servicio en cada mes</strong></h2>"),
+          HTML("<h2 style = 'color: #00609d'><strong>Calificación por categoría</strong></h2>"),
         ),
         
         br(),
@@ -215,12 +313,12 @@ dashboardPage(
         fluidRow(
           column(
             width = 6,
-            dataTableOutput("dt_tipo_servicio") %>% withSpinner(type = 8, size = 0.5)
+            dataTableOutput("dt_calificacion_categoria_trans") %>% withSpinner(type = 8, size = 0.5)
           ),
           
           column(
             width = 6,
-            plotOutput("plot_tipo_servicio") %>% withSpinner(type = 8, size = 0.5)
+            plotOutput("plot_calificacion_categoria_trans") %>% withSpinner(type = 8, size = 0.5)
           )
           
         ),
@@ -239,12 +337,12 @@ dashboardPage(
         fluidRow(
           column(
             width = 6,
-            uiOutput("dt_calificacion_general") %>% withSpinner(type = 8, size = 0.5)
+            dataTableOutput("dt_calificacion_general_trans") %>% withSpinner(type = 8, size = 0.5)
           ),
           
           column(
             width = 6,
-            plotOutput("plot_calificacion_general") %>% withSpinner(type = 8, size = 0.5)
+            plotOutput("plot_calificacion_general_trans") %>% withSpinner(type = 8, size = 0.5)
           )
           
         ),
@@ -263,12 +361,12 @@ dashboardPage(
         fluidRow(
           column(
             width = 6,
-            uiOutput("ft_calificacion_vinculacion") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("ft_calificacion_vinculacion_trans") %>% withSpinner(type = 8, size = 0.5)
           ),
           
           column(
             width = 6,
-            plotOutput("plot_calificacion_vinculacion") %>% withSpinner(type = 8, size = 0.5)
+            plotOutput("plot_calificacion_vinculacion_trans") %>% withSpinner(type = 8, size = 0.5)
           )
           
         ),
@@ -288,12 +386,12 @@ dashboardPage(
         fluidRow(
           column(
             width = 6,
-            uiOutput("ft_calificacion_genero") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("ft_calificacion_genero_trans") %>% withSpinner(type = 8, size = 0.5)
           ),
           
           column(
             width = 6,
-            plotOutput("plot_calificacion_genero") %>% withSpinner(type = 8, size = 0.5)
+            plotOutput("plot_calificacion_genero_trans") %>% withSpinner(type = 8, size = 0.5)
           )
           
         ),
@@ -312,94 +410,20 @@ dashboardPage(
         fluidRow(
           column(
             width = 6,
-            uiOutput("ft_calificacion_edad") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("ft_calificacion_edad_trans") %>% withSpinner(type = 8, size = 0.5)
           ),
           
           column(
             width = 6,
-            plotOutput("plot_calificacion_edad") %>% withSpinner(type = 8, size = 0.5)
+            plotOutput("plot_calificacion_edad_trans") %>% withSpinner(type = 8, size = 0.5)
           )
           
         ),
       )
         
-      ),# Cierra dashboarTransporte
+      )# Cierra dashboarTransporte
     
     ### Dashboard aseo y cafetería -------------------------------------------------------
-    
-    tabItem(
-      tabName = "dashboardAseoCafe",
-      
-      #### 🟦 Encabezado ----------------------------------------------------------
-      div(
-        class = "contenido",
-        fluidRow(
-          align = "center",
-          div(style="display: inline-block; margin-right: 30px;", img(src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg/1200px-Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg.png", height=104, width=120)),
-          div(style="display: inline-block; vertical-align: middle;", h1(span("Servicio ", style = "font-weight: 300"), "de aseo y cafetería",
-                                                                         style = "font-family: 'Source Sans Pro';
-                                                                                    color: #fff; text-align: center;
-                                                                                    background-image: url('https://raw.githubusercontent.com/rstudio/shiny-examples/main/081-widgets-gallery/www/texturebg.png');
-                                                                                    padding: 20px")
-          )
-        ),
-        
-        #### 🔡 Texto introducción -------------------------------------------------------------
-        
-        fluidRow(
-          column(
-            width = 12,
-            box(
-              width = 12,
-              style = "margin-top: 2%",
-              background = "light-blue",
-              align = "center",
-              fluidRow(
-                column(
-                  width = 4,
-                  fluidRow(align="center",
-                           column(width = 10,offset = 1, align = "center",
-                                  textOutput("texto_introduccion_general") %>% withSpinner(type = 8, size = 0.5)
-                           )
-                  )
-                ),
-                #### 🟩 🟨 ValueBoxes ------------------------------------------------------------- 
-                column(
-                  width = 8,
-                  uiOutput("value_box_general") %>% withSpinner(type = 8, size = 0.5)
-                )
-              )
-            )
-          )
-        ),
-        
-        br(),
-        br(),
-        
-        #### 📊📋 Gráfico y tabla por encuesta ----------------------------------------------------
-        
-        fluidRow(
-          align = "center",
-          HTML("<h2 style = 'color: #00609d'>Tipo de <strong>vinculación</strong></h2>"),
-        ),
-        
-        br(),
-        
-        fluidRow(
-          column(
-            width = 6,
-            plotOutput("plot_servicio") %>% withSpinner(type = 8, size = 0.5)
-          ),
-          column(
-            width = 6,
-            DTOutput("dt_servicio") %>% withSpinner(type = 8, size = 0.5)
-          )
-        ),
-        
-        br(),
-        br()
-      )
-    )#Cierra dashboard Aseo y cafeteria
     
     )# Cierra tabItems
   )# Cierra dashboard body
