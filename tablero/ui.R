@@ -147,11 +147,11 @@ dashboardPage(
           fluidRow(
             column(
               width = 6,
-              plotOutput("plot_servicio") %>% withSpinner(type = 8, size = 0.5)
+              plotOutput("plot_servicio_general_vinculacion") %>% withSpinner(type = 8, size = 0.5)
             ),
             column(
               width = 6,
-              DTOutput("dt_servicio") %>% withSpinner(type = 8, size = 0.5)
+              DTOutput("dt_servicio_general_vinculacion") %>% withSpinner(type = 8, size = 0.5)
             )
           ),
         
@@ -330,13 +330,60 @@ dashboardPage(
     tabItem(
       tabName = "dashboardAseoCafe",
       
+      div(
+        class = "filtros",
+        fluidRow(
+          column(
+            width = 10,
+            box(
+              width = 12,
+              style = "margin-top: 2%",
+              background = "light-blue",
+              align = "center",
+              column(
+                width = 6,
+                sliderInput(
+                  inputId = "select_anio",
+                  label = "Seleccione un año",
+                  min = 2024,
+                  max = 2025,
+                  value = 2024,
+                  step = 1,
+                  sep = ""
+                )
+              ),
+              column(
+                width = 6,
+                pickerInput(
+                  inputId = "select_mes",
+                  options = list(`actions-box` = TRUE,
+                                 `deselect-all-text` = "Deseleccionar todo",
+                                 `select-all-text` = "Seleccionar todo",
+                                 `none-selected-text` = "Nada seleccionado",
+                                 size = 7),
+                  multiple = T,
+                  label = "Seleccione un mes",
+                  choices = c("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
+                              "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"),
+                  selected = aseo_cafeteria$mesdili
+                )
+              )
+            )
+          )
+        )
+      ),
+      
+      
+      br(),
+      br(),
+      
       #### 🟦 Encabezado ----------------------------------------------------------
       div(
         class = "contenido",
         fluidRow(
           align = "center",
           div(style="display: inline-block; margin-right: 30px;", img(src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg/1200px-Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg.png", height=104, width=120)),
-          div(style="display: inline-block; vertical-align: middle;", h1(span("Servicio ", style = "font-weight: 300"), "de aseo y cafetería",
+          div(style="display: inline-block; vertical-align: middle;", h1(span("Servicio de", style = "font-weight: 300"), "aseo y cafetería",
                                                                          style = "font-family: 'Source Sans Pro';
                                                                                     color: #fff; text-align: center;
                                                                                     background-image: url('https://raw.githubusercontent.com/rstudio/shiny-examples/main/081-widgets-gallery/www/texturebg.png');
@@ -346,32 +393,32 @@ dashboardPage(
         
         #### 🔡 Texto introducción -------------------------------------------------------------
         
-        fluidRow(
-          column(
-            width = 12,
-            box(
-              width = 12,
-              style = "margin-top: 2%",
-              background = "light-blue",
-              align = "center",
-              fluidRow(
-                column(
-                  width = 4,
-                  fluidRow(align="center",
-                           column(width = 10,offset = 1, align = "center",
-                                  textOutput("texto_introduccion_general") %>% withSpinner(type = 8, size = 0.5)
-                           )
-                  )
-                ),
-                #### 🟩 🟨 ValueBoxes ------------------------------------------------------------- 
-                column(
-                  width = 8,
-                  uiOutput("value_box_general") %>% withSpinner(type = 8, size = 0.5)
-                )
-              )
-            )
-          )
-        ),
+        # fluidRow(
+        #   column(
+        #     width = 12,
+        #     box(
+        #       width = 12,
+        #       style = "margin-top: 2%",
+        #       background = "light-blue",
+        #       align = "center",
+        #       fluidRow(
+        #         column(
+        #           width = 4,
+        #           fluidRow(align="center",
+        #                    column(width = 10,offset = 1, align = "center",
+        #                           textOutput("texto_introduccion_general") %>% withSpinner(type = 8, size = 0.5)
+        #                    )
+        #           )
+        #         ),
+        #         #### 🟩 🟨 ValueBoxes ------------------------------------------------------------- 
+        #         column(
+        #           width = 8,
+        #           uiOutput("value_box_general") %>% withSpinner(type = 8, size = 0.5)
+        #         )
+        #       )
+        #     )
+        #   )
+        # ),
         
         br(),
         br(),
@@ -380,7 +427,118 @@ dashboardPage(
         
         fluidRow(
           align = "center",
-          HTML("<h2 style = 'color: #00609d'>Tipo de <strong>vinculación</strong></h2>"),
+          HTML("<h2 style = 'color: #00609d'><strong>Calificación general</strong></h2>"),
+        ),
+        
+        br(),
+        
+        fluidRow(
+          column(
+            width = 10,
+            offset = 1,
+            DTOutput("dt_califi_gene_aseocafe") %>% withSpinner(type = 8, size = 0.5)
+          )
+        ),
+        
+        br(),
+        
+        fluidRow(
+          column(
+            width = 10,
+            offset = 1,
+            plotOutput("plot_califi_gene_aseocafe") %>% withSpinner(type = 8, size = 0.5)
+          )
+        ),
+        # fluidRow(
+        #   column(
+        #     width = 6,
+        #     plotOutput("plot_servicio") %>% withSpinner(type = 8, size = 0.5)
+        #   ),
+        #   column(
+        #     width = 6,
+        #     DTOutput("dt_servicio") %>% withSpinner(type = 8, size = 0.5)
+        #   )
+        # ),
+        # 
+        br(),
+        br(),
+        
+        fluidRow(
+          align = "center",
+          HTML("<h2 style = 'color: #00609d'><strong>Calificación por categoría</strong></h2>"),
+        ),
+
+        br(),
+        
+        fluidRow(
+          column(
+            width = 10,
+            offset = 1,
+            box(
+              width = 12,
+              style = "margin-top: 2%",
+              background = "light-blue",
+              align = "center",
+              column(
+                width = 6,
+                uiOutput("value_box_promedio_general") %>% withSpinner(type = 8, size = 0.5)
+              ),
+              column(
+                width = 6,
+                pickerInput(
+                  inputId = "select_categoria",
+                  options = list(`actions-box` = TRUE,
+                                 `deselect-all-text` = "Deseleccionar todo",
+                                 # `select-all-text` = "Seleccionar todo",
+                                 `none-selected-text` = "Nada seleccionado",
+                                 size = 7),
+                  multiple = F,
+                  label = "Seleccione una categoría",
+                  choices = c("Calidad de tinto y aromática ofrecida", "Oportunidad en el servicio de preparación",
+                              "Amabilidad y actitud del personal", "Limpieza de las oficinas, salones, auditorios y laboratorios",
+                              "Limpieza general de las áreas comunes", "Limpieza general",
+                              "Limpieza de baños", "Labores de jardinería", "Frecuencia y labores de descanecado",
+                              "Atención y actitud de los funcionarios"),
+                  selected = "Calidad de tinto y aromática ofrecida"
+                )
+              )
+            )
+          )
+        ),
+        
+        br(),
+        
+        fluidRow(
+          align = "center",
+          uiOutput("html_output"),
+        ),
+
+        br(),
+        
+        fluidRow(
+            column(
+              width = 6,
+              DTOutput("dt_califi_categoria") %>% withSpinner(type = 8, size = 0.5)
+            ),
+            column(
+              width = 6,
+              plotOutput("plot_califi_categoria") %>% withSpinner(type = 8, size = 0.5)
+            )
+          ),
+        
+        br(),
+        br(),
+        
+        fluidRow(
+          align = "center",
+          HTML("<h2 style = 'color: #00609d'><strong>Calificación promedio</strong></h2>"),
+        ),
+        
+        br(),
+        
+        fluidRow(
+          align = "center",
+          HTML("<h2 style = 'color: #00609d'>Por identidad de género</h2>"),
         ),
         
         br(),
@@ -388,17 +546,75 @@ dashboardPage(
         fluidRow(
           column(
             width = 6,
-            plotOutput("plot_servicio") %>% withSpinner(type = 8, size = 0.5)
+            DTOutput("dt_califi_genero_ac") %>% withSpinner(type = 8, size = 0.5)
           ),
           column(
             width = 6,
-            DTOutput("dt_servicio") %>% withSpinner(type = 8, size = 0.5)
+            plotOutput("plot_califi_genero_ac") %>% withSpinner(type = 8, size = 0.5)
           )
         ),
         
         br(),
-        br()
-      )
+        
+        fluidRow(
+          align = "center",
+          HTML("<h2 style = 'color: #00609d'>Por rango de edad</h2>"),
+        ),
+        
+        br(),
+        
+        fluidRow(
+          column(
+            width = 6,
+            plotOutput("plot_califi_edad_ac") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          column(
+            width = 6,
+            DTOutput("dt_califi_edad_ac") %>% withSpinner(type = 8, size = 0.5)
+          )
+        ),
+        
+        br(),
+        
+        fluidRow(
+          align = "center",
+          HTML("<h2 style = 'color: #00609d'>Por unidad o dependencia</h2>"),
+        ),
+        
+        br(),
+        
+        fluidRow(
+          column(
+            width = 6,
+            DTOutput("dt_califi_dependencia_ac") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          column(
+            width = 6,
+            plotOutput("plot_califi_dependencia_ac") %>% withSpinner(type = 8, size = 0.5)
+          )
+        ),
+        
+        br(),
+        
+        fluidRow(
+          align = "center",
+          HTML("<h2 style = 'color: #00609d'>Por tipo de vinculación</h2>"),
+        ),
+        
+        br(),
+        
+        fluidRow(
+          column(
+            width = 6,
+            plotOutput("plot_califi_vinculacion_ac") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          column(
+            width = 6,
+            DTOutput("dt_califi_vinculacion_ac") %>% withSpinner(type = 8, size = 0.5)
+          )
+        ),
+        
+      )#Cierra div
     )#Cierra dashboard Aseo y cafeteria
     
     )# Cierra tabItems

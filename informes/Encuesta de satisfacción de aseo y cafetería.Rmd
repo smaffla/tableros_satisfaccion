@@ -701,11 +701,11 @@ aseocafe %>%
   # relocate(Deficiente, .after = 4) %>% 
   # relocate("Muy deficiente", .after = 5)
   left_join(promedios, by = "Categoria") %>% 
-  ftable(encabezado = "Calificación por categoría") %>% 
+  ftable(encabezado = "Calificación por categoría") %>%
   bg(i = nrow_part(.), bg = "white") %>%
   bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
   color(i = nrow_part(.), color = "black") %>%
-  bold(i = nrow_part(.), bold = FALSE) 
+  bold(i = nrow_part(.), bold = FALSE)
 
 
 ```
