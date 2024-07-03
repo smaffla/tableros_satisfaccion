@@ -47,7 +47,7 @@ colores_plot <- c(#"#2171b5",
                                               "#fe9929","#ec7014")
 
 
-transporte <- read.xlsx("Encuesta de satisfacción del servicio de transporte.xlsx")
+transporte <- read.xlsx("../vistas/Encuesta de satisfacción del servicio de transporte.xlsx")
 
 ```
 
@@ -395,7 +395,8 @@ promedios = transporte %>%
 
 transporte <- transporte %>% 
   mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
-  mutate(mesdili = month(hora_de_finalizacion)) %>% 
+  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+         mesdili = str_to_title(mesdili)) %>% 
   mutate(anodili = year(hora_de_finalizacion))
 
 ```
@@ -547,7 +548,7 @@ Se detalla la distribución de los encuestados según la unidad o dependencia de
 
 ```{r}
 
-transporte %>% 
+transporte %>%
   categorica_1var(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces,
                   "Unidad o dependencia de la UPN")
 
@@ -564,15 +565,16 @@ transporte %>%
 
 ```
 
-# Meses en los que se utilizo el servicio de transporte
+# Meses en los que se calificó el servicio de transporte
 
-Se analiza el uso del servicio de transporte durante los diferentes meses.
+Se analiza la calificación del servicio de transporte por mes.
 
 ## Tabla
 
 ```{r}
 
-transporte %>% 
+transporte %>%
+  filter(!is.na(mes)) %>% 
   categorica_1var(mes, "Mes")
 
 ```
@@ -581,7 +583,8 @@ transporte %>%
 
 ```{r}
 
-transporte %>% 
+transporte %>%
+  filter(!is.na(mes)) %>% 
   plot_barras(mes, "", "", titulo = "Meses en los que se utilizo el servicio de transporte")
 
 ```
@@ -595,7 +598,9 @@ Se examinan los tipos de servicios de transporte utilizados por los encuestados 
 
 ```{r}
 
-transporte %>% 
+transporte %>%
+  filter(!is.na(tipo_de_servicio_prestado)) %>% 
+  filter(!is.na(mes)) %>% 
   categorica_2var(mes, tipo_de_servicio_prestado, "Tipo de servicio", label_width = 20)
 
 ```
@@ -604,7 +609,9 @@ transporte %>%
 
 ```{r}
 
-transporte %>% 
+transporte %>%
+  filter(!is.na(tipo_de_servicio_prestado)) %>% 
+  filter(!is.na(mes)) %>% 
   plot_barras_agrupado(mes, tipo_de_servicio_prestado, "", "", leyenda = "", 
                        titulo = "Tipo de servicio utilizado cada mes")
 
@@ -623,6 +630,7 @@ Se examinan las calificaciones generales otorgadas a cada conductor. Teniendo en
 ```{r}
 
 tabla <- transporte %>%
+  filter(!is.na(nombre_del_conductor_que_presto_el_servicio)) %>% 
   rename(
     valor1 = estado_mecanico_de_los_vehiculo, 
     valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
@@ -659,7 +667,8 @@ tabla %>%
 
 ```{r}
 
-  tabla %>% 
+  tabla %>%
+  filter(!is.na(nombre_del_conductor_que_presto_el_servicio)) %>%
     ggplot(aes(x = nombre_del_conductor_que_presto_el_servicio, 
                y= promedio_general, 
                fill = nombre_del_conductor_que_presto_el_servicio, 
@@ -687,6 +696,7 @@ Se analiza la calificación del servicio según el tipo de vinculación de los e
 ```{r}
 
 transporte %>% 
+  filter(!is.na(tipo_de_vinculacion)) %>% 
   rename(valor1 = estado_mecanico_de_los_vehiculo, 
     valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
     valor3 = amabilidad_y_cortesia,
@@ -712,6 +722,7 @@ transporte %>%
 ```{r}
 
 transporte %>% 
+  filter(!is.na(tipo_de_vinculacion)) %>% 
   rename(valor1 = estado_mecanico_de_los_vehiculo, 
     valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
     valor3 = amabilidad_y_cortesia,
@@ -746,7 +757,8 @@ Se examina la calificación del servicio según la identidad de género de los e
 
 ```{r}
 
-transporte %>% 
+transporte %>%
+  filter(!is.na(cual_es_su_identidad_de_genero)) %>% 
   rename(valor1 = estado_mecanico_de_los_vehiculo, 
     valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
     valor3 = amabilidad_y_cortesia,
@@ -771,7 +783,8 @@ transporte %>%
 
 ```{r}
 
-transporte %>% 
+transporte %>%
+  filter(!is.na(cual_es_su_identidad_de_genero)) %>% 
   rename(valor1 = estado_mecanico_de_los_vehiculo, 
     valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
     valor3 = amabilidad_y_cortesia,
@@ -805,7 +818,8 @@ Se analiza la calificación del servicio según los diferentes rangos de edad de
 
 ```{r}
 
-transporte %>% 
+transporte %>%
+  filter(!is.na(cual_es_su_rango_de_edad)) %>% 
   rename(valor1 = estado_mecanico_de_los_vehiculo, 
     valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
     valor3 = amabilidad_y_cortesia,
@@ -830,7 +844,8 @@ transporte %>%
 
 ```{r}
 
-transporte %>% 
+transporte %>%
+  filter(!is.na(cual_es_su_rango_de_edad)) %>% 
   rename(valor1 = estado_mecanico_de_los_vehiculo, 
     valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
     valor3 = amabilidad_y_cortesia,
