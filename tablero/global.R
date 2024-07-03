@@ -26,6 +26,11 @@ transporte <- read.xlsx("../vistas/Encuesta de satisfacción del servicio de tra
 
 aseo_cafeteria <- read.xlsx("../vistas/Encuesta de satisfacción del servicio de aseo y cafetería..xlsx")
 
+transporte <- transporte %>% 
+  rename(autoriza_datos = autoriza_el_tratamiento_de_sus_datos_personales_consignados_en_este_formulario_de_asistencia_de_la_universidad_pedagogica_nacional_con_el_objetivo_de_demostrar_su_participacion_en_el_evento_o_reu)
+
+aseo_cafeteria <- aseo_cafeteria %>% 
+  rename(autoriza_datos = autoriza_el_tratamiento_de_sus_datos_personales_consignados_en_este_formulario_de_asistencia_de_la_universidad_pedagogica_nacional_con_el_objetivo_de_demostrar_su_participacion_en_el_evento_o_reu)
 
 plot_donas <- function(x, col, group, titulo = "") {
   
@@ -33,8 +38,7 @@ plot_donas <- function(x, col, group, titulo = "") {
   col <- enquo(col)
   
   data <- x %>%
-    filter(!is.na(!!col)) %>% 
-    filter(!is.na(!!group)) %>% 
+    filter(autoriza_datos == "Si") %>% 
     count(!!group, !!col) %>% 
     mutate(porcentaje = n / sum(n),
            ymax = cumsum(porcentaje),
@@ -62,7 +66,7 @@ plot_barras <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
   col <- enquo(col)
   
   data <- x %>%
-    filter(!is.na(!!col)) %>% 
+    filter(autoriza_datos == "Si") %>% 
     count(!!col )%>% 
     mutate(perc = percent(n/sum(n), 0.1))
   
@@ -99,7 +103,7 @@ plot_cols <- function(x, col, xlab, ylab, titulo = "") {
   col <- enquo(col)
   
   data <- x %>%
-    filter(!is.na(!!col)) %>% 
+    filter(autoriza_datos == "Si") %>% 
     count(!!col) %>% 
     mutate(perc = percent(n/sum(n), 0.1))
   
@@ -129,8 +133,7 @@ plot_barras_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo
   group <- enquo(group)
   
   data <- x %>%
-    filter(!is.na(!!col)) %>% 
-    filter(!is.na(!!group)) %>% 
+    filter(autoriza_datos == "Si") %>% 
     count(!!group, !!col) %>% 
     mutate(perc = percent(n/sum(n), 0.1))
   
@@ -167,8 +170,7 @@ plot_cols_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo =
   group <- enquo(group)
   
   data <- x %>%
-    filter(!is.na(!!col)) %>% 
-    filter(!is.na(!!group)) %>% 
+    filter(autoriza_datos == "Si") %>% 
     count(!!group, !!col) %>% 
     mutate(perc = percent(n/sum(n), 0.1))
   
@@ -205,7 +207,7 @@ plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
   }
   
   data <- x %>%  
-    filter(!is.na(!!col)) %>% 
+    filter(autoriza_datos == "Si") %>% 
     group_by(!!col) %>%
     summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
     ungroup()
@@ -253,7 +255,7 @@ categorica_1var <- function(x, col, rename, title = NULL, wrap_width = NULL) {
   }
   
   table <- x %>% 
-    filter(!is.na(!!col)) %>% 
+    filter(autoriza_datos == "Si") %>% 
     count(!!col) %>% 
     rename('{rename}' := !!col, "Cantidad" = n) %>% 
     #mutate('{rename}' := str_wrap(!!sym(rename), width = wrap_width)) %>%
@@ -268,8 +270,7 @@ categorica_2var <- function(x, cat1, cat2, rename, title = NULL, label_width = N
   cat2 <- enquo(cat2)
   
   table <- x %>% 
-    filter(!is.na(!!cat1)) %>% 
-    filter(!is.na(!!cat2)) %>% 
+    filter(autoriza_datos == "Si") %>% 
     count(!!cat1, !!cat2) %>% 
     rbind(
       x %>% 
@@ -301,8 +302,7 @@ categorica_2varp <- function(x, cat1, cat2, rename,  title = NULL, label_width =
   cat2 <- enquo(cat2)
   
   table <- x %>% 
-    filter(!is.na(!!cat1)) %>% 
-    filter(!is.na(!!cat2)) %>% 
+    filter(autoriza_datos == "Si") %>% 
     count(!!cat1, !!cat2) %>% 
     rbind(
       x %>% 
@@ -343,7 +343,7 @@ tabla_prom <- function(x, col, rename, encabezado = NULL, titulo = NULL, wrap_wi
   }
   
   table <- x %>% 
-    filter(!is.na(!!col)) %>% 
+    filter(autoriza_datos == "Si") %>% 
     group_by(!!col) %>%
     summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
     ungroup() %>% 
@@ -395,9 +395,6 @@ aseo_cafeteria <- aseo_cafeteria %>%
   clean_names()
 
 aseo_cafeteria <- aseo_cafeteria %>% 
-  rename(autoriza_datos = autoriza_el_tratamiento_de_sus_datos_personales_consignados_en_este_formulario_de_asistencia_de_la_universidad_pedagogica_nacional_con_el_objetivo_de_demostrar_su_participacion_en_el_evento_o_reu)
-
-aseo_cafeteria <- aseo_cafeteria %>% 
   mutate(calidad_de_tinto_y_aromatica_ofrecida = as.numeric(calidad_de_tinto_y_aromatica_ofrecida)) %>% 
   mutate(oportunidad_en_el_servicio_de_preparacion = as.numeric(
     oportunidad_en_el_servicio_de_preparacion)) %>% 
@@ -436,9 +433,6 @@ transporte <- transporte %>%
 
 transporte <- transporte %>% 
   clean_names()
-
-transporte <- transporte %>% 
-  rename(autoriza_datos = autoriza_el_tratamiento_de_sus_datos_personales_consignados_en_este_formulario_de_asistencia_de_la_universidad_pedagogica_nacional_con_el_objetivo_de_demostrar_su_participacion_en_el_evento_o_reu)
 
 transporte <- transporte %>% 
   mutate(tipo_de_vinculacion = case_when(str_detect(tipo_de_vinculacion, "Supernumerario")~"Supernumerario",
