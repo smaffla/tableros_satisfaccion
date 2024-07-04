@@ -132,6 +132,26 @@ server <- function(input, output, session) {
     
     ###Se recopila y analiza la calificación general del servicio de transporte proporcionada por los encuestados por conductor.
     
+    
+    categoria_encuestado <- reactive({
+      if (input$select_categoria_trans == "Conductor"){
+        "Por conductor"
+      } else if (input$select_categoria_trans == "Tipo de vinculación"){
+        "Por tipo de vinculación"
+      } else if (input$select_categoria_trans == "Edad"){
+        "Por rango de edad"
+      } else if (input$select_categoria_trans == "Identidad de género") {
+        "Por identidad de género"
+        
+      } else if (input$select_categoria_trans == "Unidad o dependencia de la UPN"){
+        "Por unidad o dependencia de la UPN"
+      }
+    })
+    
+    output$html_output_encuestado_trans <- renderUI({
+      generate_html(categoria_encuestado)
+    })
+    
     output$dt_calificacion_categoria_trans <- renderDataTable({
       
       if (input$select_categoria_trans == "Conductor"){
@@ -146,7 +166,7 @@ server <- function(input, output, session) {
             valor3 = amabilidad_y_cortesia,
             valor4 = nivel_de_atencion_mientras_conduce,
             valor5 = capacidad_de_comunicacion) %>%
-          tabla_prom(nombre_del_conductor_que_presto_el_servicio, "Nombre del conductor", encabezado = "Calificación general por conductor")
+          tabla_prom(nombre_del_conductor_que_presto_el_servicio, "Nombre del conductor", titulo = "Calificación general por conductor")
         
         
       } else if (input$select_categoria_trans == "Tipo de vinculación"){
@@ -159,17 +179,43 @@ server <- function(input, output, session) {
                  valor3 = amabilidad_y_cortesia,
                  valor4 = nivel_de_atencion_mientras_conduce,
                  valor5 = capacidad_de_comunicacion) %>%
-          tabla_prom(tipo_de_vinculacion, "Tipo de vinculacion", encabezado = "Prueba")
+          tabla_prom(tipo_de_vinculacion, "Tipo de vinculacion", titulo = "Calificación promedio por tipo de vinculación")
         
       } else if (input$select_categoria_trans == "Edad"){
+        transporte %>%
+          filter(anodili %in% input$select_anio_trans, 
+                 mesdili %in% input$select_mes_trans) %>% 
+          filter(!is.na(cual_es_su_rango_de_edad)) %>% 
+          rename(valor1 = estado_mecanico_de_los_vehiculo, 
+                 valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
+                 valor3 = amabilidad_y_cortesia,
+                 valor4 = nivel_de_atencion_mientras_conduce,
+                 valor5 = capacidad_de_comunicacion) %>%
+          tabla_prom(cual_es_su_rango_de_edad, "Rango de edad", titulo = "Calificación promedio por rango de edad" )
+        
         
       } else if (input$select_categoria_trans == "Identidad de género") {
+        transporte %>%
+          filter(anodili %in% input$select_anio_trans, 
+                 mesdili %in% input$select_mes_trans) %>% 
+          filter(!is.na(cual_es_su_identidad_de_genero)) %>% 
+          rename(valor1 = estado_mecanico_de_los_vehiculo, 
+                 valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
+                 valor3 = amabilidad_y_cortesia,
+                 valor4 = nivel_de_atencion_mientras_conduce,
+                 valor5 = capacidad_de_comunicacion) %>%
+          tabla_prom(cual_es_su_identidad_de_genero, "Género", titulo = "Calificación promedio por identidad de género")
         
-      } else if (input$select_categoria_trans == "Unidad o dependencai de la UPN"){
-        
+      } else if (input$select_categoria_trans == "Unidad o dependencia de la UPN"){
+        transporte %>% 
+          rename(valor1 = estado_mecanico_de_los_vehiculo, 
+                 valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
+                 valor3 = amabilidad_y_cortesia,
+                 valor4 = nivel_de_atencion_mientras_conduce,
+                 valor5 = capacidad_de_comunicacion) %>%
+          tabla_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, "Encabezado", titulo = "titulo")     
       }
-      
-    })
+        })
     
     output$plot_calificacion_categoria_trans <- renderPlot({
       
@@ -177,7 +223,7 @@ server <- function(input, output, session) {
         
         transporte %>%
           filter(anodili %in% input$select_anio_trans, 
-                 mesdili %in% input$select_mes_trans) %>% 
+                 mesdili %in% input$select_mes_trans) %>%
           rename(
             valor1 = estado_mecanico_de_los_vehiculo, 
             valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
@@ -188,174 +234,293 @@ server <- function(input, output, session) {
           plot_barras_prom(nombre_del_conductor_que_presto_el_servicio, "", "", titulo = "Calificación general por conductor")
         
       } else if (input$select_categoria_trans == "Tipo de vinculación"){
+        transporte %>%
+          filter(anodili %in% input$select_anio_trans, 
+                 mesdili %in% input$select_mes_trans) %>% 
+          rename(
+            valor1 = estado_mecanico_de_los_vehiculo, 
+            valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
+            valor3 = amabilidad_y_cortesia,
+            valor4 = nivel_de_atencion_mientras_conduce,
+            valor5 = capacidad_de_comunicacion
+          ) %>%
+          plot_barras_prom(nombre_del_conductor_que_presto_el_servicio, "", "", titulo = "Calificación promedio po tipo de vinculación")
     
       } else if (input$select_categoria_trans == "Edad"){
-        
-      } else if (input$select_categoria_trans == "Identidad de género") {
-        
-      } else if (input$select_categoria_trans == "Unidad o dependencia de la UPN"){
-        
-      }
-      
-    })
-    
-    
-    #Calificación por tipo de vinculación
-    
-    
-    output$ft_calificacion_vinculacion_trans <- renderUI({
-      htmltools_value(transporte %>% 
-                      filter(!is.na(tipo_de_vinculacion)) %>% 
-                      rename(valor1 = estado_mecanico_de_los_vehiculo, 
-                             valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
-                             valor3 = amabilidad_y_cortesia,
-                             valor4 = nivel_de_atencion_mientras_conduce,
-                             valor5 = capacidad_de_comunicacion) %>%
-                        group_by(tipo_de_vinculacion) %>%
-                        summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
-                        ungroup() %>% 
-                        arrange(desc(promedio_general)) %>% 
-                        rename("Tipo de vinculación" = tipo_de_vinculacion,
-                               "Promedio" = promedio_general) %>% 
-                        ftable() %>%
-                        bg(i = nrow_part(.), bg = "white") %>%
-                        bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
-                        color(i = nrow_part(.), color = "black") %>%
-                        bold(i = nrow_part(.), bold = FALSE))
-      })
-    
-    output$plot_calificacion_vinculacion_trans <- renderPlot({
-      transporte %>% 
-        filter(!is.na(tipo_de_vinculacion)) %>% 
-        rename(valor1 = estado_mecanico_de_los_vehiculo, 
-               valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
-               valor3 = amabilidad_y_cortesia,
-               valor4 = nivel_de_atencion_mientras_conduce,
-               valor5 = capacidad_de_comunicacion) %>%
-        group_by(tipo_de_vinculacion) %>%
-        summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
-        ungroup() %>% 
-        arrange(desc(promedio_general)) %>% 
-        ggplot(aes(x = tipo_de_vinculacion, 
-                   y= promedio_general, 
-                   fill = tipo_de_vinculacion, 
-                   label = promedio_general)) + 
-        geom_col()+
-        geom_text(vjust = 0.5, hjust = -0.5, size = 3,position = position_dodge(width = 1))+
-        labs(x = "", y = "", title = str_wrap("Calificación promedio por tipo de vinculación", width = 40)) +
-        theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
-        theme(legend.position="none")+
-        theme(axis.text.y = element_text(size = 8))+
-        theme(axis.text.x = element_text(size = 10))+
-        scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
-        scale_fill_manual(values = colores_plot)+
-        coord_flip()
-    })
-    
-    #Calificación promedio por identidad de género
-    
-    output$ft_calificacion_genero_trans <- renderUI({
-      htmltools_value(
         transporte %>%
-          filter(!is.na(cual_es_su_identidad_de_genero)) %>% 
-          rename(valor1 = estado_mecanico_de_los_vehiculo, 
-                 valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
-                 valor3 = amabilidad_y_cortesia,
-                 valor4 = nivel_de_atencion_mientras_conduce,
-                 valor5 = capacidad_de_comunicacion) %>%
-          group_by(cual_es_su_identidad_de_genero) %>%
-          summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
-          ungroup() %>% 
-          arrange(desc(promedio_general)) %>% 
-          rename("Identidad de género" = cual_es_su_identidad_de_genero,
-                 "Promedio" = promedio_general) %>% 
-          ftable() %>%
-          bg(i = nrow_part(.), bg = "white") %>%
-          bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
-          color(i = nrow_part(.), color = "black") %>%
-          bold(i = nrow_part(.), bold = FALSE)
-      )})
-    
-    output$plot_calificacion_genero_trans <- renderPlot({
-      transporte %>%
-        filter(!is.na(cual_es_su_identidad_de_genero)) %>% 
-        rename(valor1 = estado_mecanico_de_los_vehiculo, 
-               valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
-               valor3 = amabilidad_y_cortesia,
-               valor4 = nivel_de_atencion_mientras_conduce,
-               valor5 = capacidad_de_comunicacion) %>%
-        group_by(cual_es_su_identidad_de_genero) %>%
-        summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
-        ungroup() %>% 
-        arrange(desc(promedio_general)) %>% 
-        ggplot(aes(x = cual_es_su_identidad_de_genero, 
-                   y= promedio_general, 
-                   fill = cual_es_su_identidad_de_genero, 
-                   label = promedio_general)) + 
-        geom_col()+
-        geom_text(vjust = -0.8, size = 3,position = position_dodge(width = 1))+
-        labs(x = "", y = "", title = str_wrap("Calificación promedio por identidad de género", width = 40)) +
-        theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
-        theme(legend.position="none")+
-        theme(axis.text.y = element_text(size = 8))+
-        theme(axis.text.x = element_text(size = 10))+
-        scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
-        scale_fill_manual(values = colores_plot)
-    })
-    
-    #Calificación por rango de edad
-    
-    output$ft_calificacion_edad_trans <- renderUI({
-      htmltools_value(
-        transporte %>%
+          filter(anodili %in% input$select_anio_trans, 
+                 mesdili %in% input$select_mes_trans) %>% 
           filter(!is.na(cual_es_su_rango_de_edad)) %>% 
           rename(valor1 = estado_mecanico_de_los_vehiculo, 
                  valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
                  valor3 = amabilidad_y_cortesia,
                  valor4 = nivel_de_atencion_mientras_conduce,
                  valor5 = capacidad_de_comunicacion) %>%
-          group_by(cual_es_su_rango_de_edad) %>%
-          summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
-          ungroup() %>% 
-          arrange(desc(promedio_general)) %>% 
-          rename("Rango de edad" = cual_es_su_rango_de_edad,
-                 "Promedio" = promedio_general) %>% 
-          ftable() %>%
-          bg(i = nrow_part(.), bg = "white") %>%
-          bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
-          color(i = nrow_part(.), color = "black") %>%
-          bold(i = nrow_part(.), bold = FALSE)
+          plot_barras_prom(cual_es_su_rango_de_edad, "", "", titulo = "Calificación promedio po categoría de edad")
+
+      } else if (input$select_categoria_trans == "Identidad de género") {
         
-      )
+        transporte %>%
+          filter(anodili %in% input$select_anio_trans, 
+                 mesdili %in% input$select_mes_trans) %>% 
+          filter(!is.na(cual_es_su_identidad_de_genero)) %>% 
+          rename(valor1 = estado_mecanico_de_los_vehiculo, 
+                 valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
+                 valor3 = amabilidad_y_cortesia,
+                 valor4 = nivel_de_atencion_mientras_conduce,
+                 valor5 = capacidad_de_comunicacion) %>%
+          plot_barras_prom(cual_es_su_identidad_de_genero, "", "", titulo = "Calificación promedio por identidad de género")
+        
+      } else if (input$select_categoria_trans == "Unidad o dependencia de la UPN"){
+        transporte %>%
+          filter(anodili %in% input$select_anio_trans, 
+                 mesdili %in% input$select_mes_trans) %>%
+          filter(!is.na(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces)) %>% 
+          rename(valor1 = estado_mecanico_de_los_vehiculo, 
+                 valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
+                 valor3 = amabilidad_y_cortesia,
+                 valor4 = nivel_de_atencion_mientras_conduce,
+                 valor5 = capacidad_de_comunicacion) %>%
+          plot_barras_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, "", "", titulo = "Calificación promedio por dependencia de la UPN", top = 10)
+      }
+      
     })
     
-    output$plot_calificacion_edad_trans <- renderPlot({
-      transporte %>%
-        filter(!is.na(cual_es_su_rango_de_edad)) %>% 
-        rename(valor1 = estado_mecanico_de_los_vehiculo, 
-               valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
-               valor3 = amabilidad_y_cortesia,
-               valor4 = nivel_de_atencion_mientras_conduce,
-               valor5 = capacidad_de_comunicacion) %>%
-        group_by(cual_es_su_rango_de_edad) %>%
-        summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
-        ungroup() %>% 
-        arrange(desc(promedio_general)) %>% 
-        ggplot(aes(x = cual_es_su_rango_de_edad, 
-                   y= promedio_general, 
-                   fill = cual_es_su_rango_de_edad, 
-                   label = promedio_general)) + 
-        geom_col()+
-        geom_text(vjust = 0.5, hjust = -0.5, size = 3,position = position_dodge(width = 1))+
-        labs(x = "", y = "", title = str_wrap("Calificación promedio por rango de edad", width = 40)) +
-        theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
-        theme(legend.position="none")+
-        theme(axis.text.y = element_text(size = 8))+
-        theme(axis.text.x = element_text(size = 10))+
-        scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
-        scale_fill_manual(values = colores_plot)+
-        coord_flip()
+    categoria_encuestado <- reactive({
+      if (input$select_categoria_trans == "Conductor"){
+        "Por conductor"
+      } else if (input$select_categoria_trans == "Tipo de vinculación"){
+        "Por tipo de vinculación"
+      } else if (input$select_categoria_trans == "Edad"){
+        "Por rango de edad"
+      } else if (input$select_categoria_trans == "Identidad de género") {
+        "Por identidad de género"
+        
+      } else if (input$select_categoria_trans == "Unidad o dependencia de la UPN"){
+        "Por unidad o dependencia de la UPN"
+      }
     })
+    
+    output$html_output_encuestado_trans <- renderUI({
+      generate_html(categoria_encuestado)
+    })
+    
+    ##Calificación general
+    output$dt_calificacion_categoria_ind_trans <- renderDataTable({
+      
+      if (input$select_categoria_ind_trans == "Estado mecánico del vehículo"){
+        transporte %>% 
+          group_by(nombre_del_conductor_que_presto_el_servicio) %>%
+          summarise(prom = round(mean(estado_mecanico_de_los_vehiculo),1)) %>%
+          arrange(desc(prom)) %>% 
+          rename(
+            "Promedio" = prom, 
+            "Nombre del conductor" = nombre_del_conductor_que_presto_el_servicio) %>%
+          styled_dt()
+        
+      } else if (input$select_categoria_ind_trans == "Limpieza y presentación del vehículo"){
+        transporte %>% 
+          group_by(nombre_del_conductor_que_presto_el_servicio) %>%
+          summarise(prom = round(mean(limpieza_y_presentacion_general_de_los_vehiculos),1)) %>%
+          arrange(desc(prom)) %>% 
+          rename(
+            "Promedio" = prom, 
+            "Nombre del conductor" = nombre_del_conductor_que_presto_el_servicio) %>%
+          styled_dt()
+      } else if (input$select_categoria_ind_trans == "Amabilidad y cortesía"){
+        transporte %>% 
+          group_by(nombre_del_conductor_que_presto_el_servicio) %>%
+          summarise(prom = round(mean(amabilidad_y_cortesia),1)) %>%
+          arrange(desc(prom)) %>% 
+          rename(
+            "Promedio" = prom, 
+            "Nombre del conductor" = nombre_del_conductor_que_presto_el_servicio) %>%
+          styled_dt()
+        
+      } else if (input$select_categoria_ind_trans == "Nivel de concentración mientras conduce") {
+        transporte %>% 
+          group_by(nombre_del_conductor_que_presto_el_servicio) %>%
+          summarise(prom = round(mean(nivel_de_atencion_mientras_conduce),1)) %>%
+          arrange(desc(prom)) %>% 
+          rename(
+            "Promedio" = prom, 
+            "Nombre del conductor" = nombre_del_conductor_que_presto_el_servicio) %>% 
+          styled_dt()
+        
+      } else if (input$select_categoria_ind_trans == "Capacidad de comuncación"){
+        transporte %>% 
+          group_by(nombre_del_conductor_que_presto_el_servicio) %>%
+          summarise(prom = round(mean(capacidad_de_comunicacion),1)) %>%
+          arrange(desc(prom)) %>% 
+          rename(
+            "Promedio" = prom, 
+            "Nombre del conductor" = nombre_del_conductor_que_presto_el_servicio) %>% 
+          styled_dt()
+      }
+    })
+    
+    output$plot_calificacion_categoria_ind_trans <- renderPlot({
+      
+      if (input$select_categoria_ind_trans == "Estado mecánico del vehículo"){
+        transporte %>%
+          filter(!is.na(estado_mecanico_de_los_vehiculo)) %>% 
+          transformar_calificacion(estado_mecanico_de_los_vehiculo) %>%
+          plot_barras(estado_mecanico_de_los_vehiculo, "", "", 
+                      titulo = "")
+        
+      } else if (input$select_categoria_ind_trans == "Limpieza y presentación del vehículo"){
+        transporte %>% 
+          transformar_calificacion(limpieza_y_presentacion_general_de_los_vehiculos) %>% 
+          plot_barras(limpieza_y_presentacion_general_de_los_vehiculos, "", "", 
+                      titulo = "")
+      } else if (input$select_categoria_ind_trans == "Amabilidad y cortesía"){
+        transporte %>%
+          transformar_calificacion(amabilidad_y_cortesia)%>% 
+          plot_barras(amabilidad_y_cortesia, "", "", 
+                      titulo = "")
+        
+      } else if (input$select_categoria_ind_trans == "Nivel de concentración mientras conduce") {
+        transporte %>%
+          transformar_calificacion(nivel_de_atencion_mientras_conduce)%>% 
+          plot_barras(nivel_de_atencion_mientras_conduce, "", "", 
+                      titulo = "")
+      } else if (input$select_categoria_ind_trans == "Capacidad de comuncación"){}
+        transporte %>%
+          transformar_calificacion(capacidad_de_comunicacion)%>% 
+          plot_barras(capacidad_de_comunicacion, "", "", 
+                      titulo = "")
+    })
+  
+    categoria_servicio <- reactive({
+      if (input$select_categoria_ind_trans == "Estado mecánico del vehículo"){
+        "Estado mecánico del vehículo"
+      } else if (input$select_categoria_ind_trans == "Limpieza y presentación del vehículo"){
+        "Limpieza y presentación del vehículo"
+      } else if (input$select_categoria_ind_trans == "Amabilidad y cortesía"){
+        "Amabilidad y cortesía"
+      } else if (input$select_categoria_ind_trans == "Nivel de concentración mientras conduce") {
+        "Nivel de concentración mientras conduce"
+        
+      } else if (input$select_categoria_ind_trans == "Capacidad de comuncación"){
+        "Capacidad de comunicación"
+      }
+    })
+    
+    output$html_output_servicio_trans <- renderUI({
+      generate_html(categoria_servicio)
+    })
+    
+
+    
+    
+    aspecto <- reactive({
+      if (input$select_aspecto == "Cumplimiento de itinerarios solicitados") {
+        
+        "¿Se dio cumplimiento de los itinerarios solicitados?"
+        
+      } else if (input$select_aspecto == "Cumplimiento de horarios solicitados") {
+        
+        "¿Se dio cumplimiento de los horarios solicitados?"
+        
+      } else if (input$select_aspecto == "Cumplimiento de normas de tránsito") {
+        
+        "¿Durante el recorrido se acataron las normas de transito?"
+        
+      } else if (input$select_aspecto == "Se presento algun incidente o accidente"){
+        
+        "¿Durante el recorrido se presento algún inicidente o accidente?"
+        
+      } else { 
+        
+        "¿Recomendaría los servicios del área de transporte a más miembros de la comunidad Universitaria?"
+        
+      }
+    })
+    
+    output$html_output_aspecto_trans <- renderUI({
+      generate_html_negrilla(aspecto)
+    })
+    
+    output$dt_aspecto_trans_cantidad <- renderDT({
+      
+      if (input$select_aspecto == "Cumplimiento de itinerarios solicitados") {
+        
+        transporte %>% 
+          categorica_2var(nombre_del_conductor_que_presto_el_servicio,
+                          se_dio_cumplimiento_de_los_itinerarios_solicitados, "Nombre del conductor")
+        
+      } else if (input$select_aspecto == "Cumplimiento de horarios solicitados") {
+        
+        transporte %>% 
+          categorica_2var(nombre_del_conductor_que_presto_el_servicio,
+                          se_dio_cumplimiento_de_los_horarios_solicitados, "Nombre del conductor")
+        
+      } else if (input$select_aspecto == "Cumplimiento de normas de tránsito") {
+        
+        transporte %>% 
+          categorica_2var(nombre_del_conductor_que_presto_el_servicio,
+                          durante_el_recorrido_se_acataron_las_normas_de_transito, "Nombre del conductor")
+        
+      } else if (input$select_aspecto == "Se presento algun incidente o accidente"){
+        
+        transporte %>% 
+          categorica_2var(nombre_del_conductor_que_presto_el_servicio,
+                          durante_el_recorrido_se_presento_algun_incidente_o_accidente, "Nombre del conductor")
+        
+      } else { 
+        
+        transporte %>% 
+          categorica_2var(nombre_del_conductor_que_presto_el_servicio,
+                          recomendaria_los_servicios_del_area_de_transportes_a_mas_miembros_de_la_comunidad_de_universitaria,
+                          "Nombre del conductor")
+        
+      }
+      
+      
+    })
+    
+    output$plot_aspecto_transporte <- renderPlot({
+      
+      if (input$select_aspecto == "Cumplimiento de itinerarios solicitados") {
+        
+        transporte %>% 
+          plot_donas(se_dio_cumplimiento_de_los_itinerarios_solicitados,
+                     se_dio_cumplimiento_de_los_itinerarios_solicitados)
+        
+      } else if (input$select_aspecto == "Cumplimiento de horarios solicitados") {
+        
+        transporte %>% 
+          plot_donas(se_dio_cumplimiento_de_los_horarios_solicitados,
+                     se_dio_cumplimiento_de_los_horarios_solicitados)
+        
+      } else if (input$select_aspecto == "Cumplimiento de normas de tránsito") {
+        
+        transporte %>% 
+          plot_donas(durante_el_recorrido_se_acataron_las_normas_de_transito,
+                     durante_el_recorrido_se_acataron_las_normas_de_transito)
+        
+      } else if (input$select_aspecto == "Se presento algun incidente o accidente"){
+        
+        transporte %>% 
+          plot_donas(durante_el_recorrido_se_presento_algun_incidente_o_accidente,
+                     durante_el_recorrido_se_presento_algun_incidente_o_accidente)
+        
+      } else { 
+        
+        transporte %>% 
+          plot_donas(recomendaria_los_servicios_del_area_de_transportes_a_mas_miembros_de_la_comunidad_de_universitaria, 
+                     recomendaria_los_servicios_del_area_de_transportes_a_mas_miembros_de_la_comunidad_de_universitaria)
+        
+      }
+      
+      
+    })
+    
+    
+    
+    
+    
+    
     
     
     ### Servicio de aseo y cafeteria ----------------------------------------------------
