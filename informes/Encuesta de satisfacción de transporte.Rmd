@@ -348,6 +348,70 @@ wrap_text <- function(x, width) {
 }
 
 
+tabla_prom <- function(x, col, rename, encabezado = NULL, titulo = NULL, wrap_width = NULL) {
+  
+  col <- enquo(col)
+  
+  if (is.null(wrap_width)) {
+    wrap_width <- 100
+  }
+  
+  table <- x %>% 
+  group_by(!!col) %>%
+  summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
+  ungroup() %>% 
+  arrange(desc(promedio_general)) %>% 
+  rename("{rename}" := !!col,
+         "Promedio" = promedio_general) %>% 
+  as.data.frame()  
+  
+  formatted_table <- ftable(table, encabezado, titulo) %>% 
+  bg(i = nrow_part(.), bg = "white") %>%
+  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+  color(i = nrow_part(.), color = "black") %>%
+  bold(i = nrow_part(.), bold = FALSE)
+  
+  return(formatted_table)
+  
+}
+
+plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
+  
+  col <- enquo(col)
+  
+  if (is.null(top)) {
+    top <- 30
+  }
+  
+  data <- x %>%  
+    filter(autoriza_datos == "Si") %>% 
+    group_by(!!col) %>%
+    summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
+    ungroup()
+  
+  data %>% 
+    arrange(desc(promedio_general)) %>% 
+    slice(1:top) %>% 
+    ggplot(aes(x = !!col, 
+               y= promedio_general, 
+               fill = !!col, 
+               label = promedio_general)) + 
+    geom_col()+
+    geom_text(vjust = 0.5, hjust = -0.5, size = 3,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$promedio_general)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
+    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+    theme(legend.position="none")+
+    theme(axis.text.y = element_text(size = 8))+
+    theme(axis.text.x = element_text(size = 10))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
+    scale_fill_manual(values = colores_plot)+
+    coord_flip()
+  
+}
+
 ```
 
 # Depuracion de datos 
@@ -358,6 +422,11 @@ transporte <- transporte %>%
 
 transporte <- transporte %>% 
   clean_names()
+
+transporte <- transporte %>% 
+  rename(autoriza_datos = autoriza_el_tratamiento_de_sus_datos_personales_consignados_en_este_formulario_de_asistencia_de_la_universidad_pedagogica_nacional_con_el_objetivo_de_demostrar_su_participacion_en_el_evento_o_reu)
+
+
 ```
 
 
@@ -628,9 +697,27 @@ Se examinan las calificaciones generales otorgadas a cada conductor. Teniendo en
 ### Tabla
 
 ```{r}
+```
 
+
+```{r}
 tabla <- transporte %>%
-  filter(!is.na(nombre_del_conductor_que_presto_el_servicio)) %>% 
+  filter(!is.na(nombre_del_conductor_que_presto_el_servicio)) %>%
+    rename(
+    valor1 = estado_mecanico_de_los_vehiculo, 
+    valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
+    valor3 = amabilidad_y_cortesia,
+    valor4 = nivel_de_atencion_mientras_conduce,
+    valor5 = capacidad_de_comunicacion
+  ) %>%
+  tabla_prom(nombre_del_conductor_que_presto_el_servicio, "Nombre del conductor", encabezado = "Calificación general por conductor")
+```
+
+
+### Gráfico
+
+```{r}
+  transporte %>%
   rename(
     valor1 = estado_mecanico_de_los_vehiculo, 
     valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
@@ -638,52 +725,7 @@ tabla <- transporte %>%
     valor4 = nivel_de_atencion_mientras_conduce,
     valor5 = capacidad_de_comunicacion
   ) %>%
-  group_by(nombre_del_conductor_que_presto_el_servicio) %>%
-  summarise(
-    "Estado mecánico de los vehículo" = round(mean(valor1, na.rm = TRUE), 1),
-    "Limpieza y presentación general de los vehículos" = round(mean(valor2, na.rm = TRUE), 1),
-    "Amabilidad y cortesía" = round(mean(valor3, na.rm = TRUE), 1),
-    "Nivel de atención mientras conduce" = round(mean(valor4, na.rm = TRUE), 1),
-    "Capacidad de comunicación" = round(mean(valor5, na.rm = TRUE), 1),
-    promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)
-  ) %>%
-  ungroup() 
-
-colnames(tabla) <- str_wrap(colnames(tabla), width = 18)
-
-tabla %>%
-  rename(
-    "Promedio" = promedio_general, 
-    "Nombre del conductor" = nombre_del_conductor_que_presto_el_servicio) %>% 
-  ftable() %>%
-  bg(i = nrow_part(.), bg = "white") %>%
-  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
-  color(i = nrow_part(.), color = "black") %>%
-  bold(i = nrow_part(.), bold = FALSE)
-
-```
-
-### Gráfico
-
-```{r}
-
-  tabla %>%
-  filter(!is.na(nombre_del_conductor_que_presto_el_servicio)) %>%
-    ggplot(aes(x = nombre_del_conductor_que_presto_el_servicio, 
-               y= promedio_general, 
-               fill = nombre_del_conductor_que_presto_el_servicio, 
-               label = promedio_general)) + 
-    geom_col()+
-    geom_text(vjust = 0.5, hjust = -0.5, size = 3,position = position_dodge(width = 1))+
-    labs(x = "", y = "", title = str_wrap("Calificación promedio de los conductores", width = 40)) +
-    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
-    theme(legend.position="none")+
-    theme(axis.text.y = element_text(size = 8))+
-    theme(axis.text.x = element_text(size = 10))+
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
-    scale_fill_manual(values = colores_plot)+
-    coord_flip()
-
+  plot_barras_prom(nombre_del_conductor_que_presto_el_servicio, "", "", titulo = "Prueba")
 
 ```
 
@@ -702,17 +744,7 @@ transporte %>%
     valor3 = amabilidad_y_cortesia,
     valor4 = nivel_de_atencion_mientras_conduce,
     valor5 = capacidad_de_comunicacion) %>%
-  group_by(tipo_de_vinculacion) %>%
-  summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
-  ungroup() %>% 
-  arrange(desc(promedio_general)) %>% 
-  rename("Tipo de vinculación" = tipo_de_vinculacion,
-         "Promedio" = promedio_general) %>% 
-  ftable() %>%
-  bg(i = nrow_part(.), bg = "white") %>%
-  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
-  color(i = nrow_part(.), color = "black") %>%
-  bold(i = nrow_part(.), bold = FALSE)
+  tabla_prom(tipo_de_vinculacion, "Tipo de vinculacion", "")
 
 ```
 
