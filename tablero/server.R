@@ -5,7 +5,14 @@ server <- function(input, output, session) {
 
   ## 👥👥 General -----------------------------------------------------------------
   
-
+  observe({
+    # Verificar si no hay ningún mes seleccionado
+    if (is.null(input$select_mes) || length(input$select_mes) == 0) {
+      # Establecer un valor predeterminado si no hay ningún mes seleccionado
+      updatePickerInput(session, "select_mes", selected = "Mayo")
+    }
+  })
+  
     ### Texto introduccion ------------------------------------------------------
   
     output$texto_introduccion_general <- renderText({
@@ -53,43 +60,440 @@ server <- function(input, output, session) {
     #### Encuestas ----------------------------------------------
     
     ### - 📊️ Gráfico de barra por tipo de vinculacion ---------------------------------
-    output$plot_servicio_general_vinculacion <- renderPlot({
+    output$plot_general_vinculacion <- renderPlot({
 
-      if (input$select_encuesta == "Servicio de transporte"){
+      if (input$select_encuesta == "General"){
 
-        transporte %>%
+        general %>% 
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
           plot_barras(tipo_de_vinculacion, "", "", titulo = "Tipo de vinculación de los encuestados")
 
-      } else {
+      } else if (input$select_encuesta == "Servicio de aseo y cafetería") {
 
         aseo_cafeteria %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
           plot_barras(cual_es_el_tipo_de_vinculacion_o_relacion_que_tiene_con_la_upn_universidad_pedagogica_nacional,
                       "", "", titulo = "Tipo de vinculación de los encuestados")
+      } else {
+          
+        transporte %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          plot_barras(tipo_de_vinculacion, "", "", titulo = "Tipo de vinculación de los encuestados")
+        
         }
 
     })
 
     ### - 📝  ---------------------------------------------
-    output$dt_servicio_general_vinculacion <- renderDataTable({
+    output$dt_general_vinculacion <- renderDataTable({
       
-      if (input$select_encuesta == "Servicio de transporte") { 
+      if (input$select_encuesta == "General"){
         
-  transporte %>%
-    categorica_1var(tipo_de_vinculacion, "Tipo de vinculación")
+        general %>% 
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          categorica_1var(tipo_de_vinculacion, "Tipo de vinculación")
         
-        } else {        
-          
-  aseo_cafe %>% 
-    categorica_1var(cual_es_el_tipo_de_vinculacion_o_relacion_que_tiene_con_la_upn_universidad_pedagogica_nacional,
-                "Tipo de vinculación")
-          
-          
-          }
+      } else if (input$select_encuesta == "Servicio de aseo y cafetería") {
+        
+        aseo_cafeteria %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          categorica_1var(cual_es_el_tipo_de_vinculacion_o_relacion_que_tiene_con_la_upn_universidad_pedagogica_nacional,
+                      "Tipo de vinculación")
+      } else {
+        
+        transporte %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          categorica_1var(tipo_de_vinculacion, "Tipo de vinculación")
+        
+      }
+      
         
        })
     
+    ### - 📊️ Gráfico de barra por lugar de trabajo  ---------------------------------
+    output$plot_general_instalaciones <- renderPlot({
+      
+      if (input$select_encuesta == "General"){
+        
+        general %>% 
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          plot_barras(en_que_instalaciones_de_la_upn_universidad_pedagogica_nacional_desarrolla_sus_actividades_y_o_labores
+                      , "", "", titulo = "Instalaciones en las que trabajan los encuestados")
+        
+      } else if (input$select_encuesta == "Servicio de aseo y cafetería") {
+        
+        aseo_cafeteria %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          plot_barras(en_que_instalaciones_de_la_upn_universidad_pedagogica_nacional_desarrolla_sus_actividades_y_o_labores
+                      , "", "", titulo = "Instalaciones en las que trabajan los encuestados")
+      } else {
+        
+        transporte %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          plot_barras(en_que_instalaciones_de_la_upn_universidad_pedagogica_nacional_desarrolla_sus_actividades_y_o_labores
+                      , "", "", titulo = "Instalaciones en las que trabajan los encuestados")
+        
+      }
+      
+    })
+    
+    ### - 📝  ---------------------------------------------
+    output$dt_general_intalaciones <- renderDataTable({
+      
+      if (input$select_encuesta == "General"){
+        
+        general %>% 
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          categorica_1var(en_que_instalaciones_de_la_upn_universidad_pedagogica_nacional_desarrolla_sus_actividades_y_o_labores
+                          , "Tipo de vinculación")
+        
+      } else if (input$select_encuesta == "Servicio de aseo y cafetería") {
+        
+        aseo_cafeteria %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          categorica_1var(en_que_instalaciones_de_la_upn_universidad_pedagogica_nacional_desarrolla_sus_actividades_y_o_labores
+                          , "Tipo de vinculación")
+      } else {
+        
+        transporte %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          categorica_1var(en_que_instalaciones_de_la_upn_universidad_pedagogica_nacional_desarrolla_sus_actividades_y_o_labores
+                          , "Tipo de vinculación")
+        
+      }
+      
+      
+    })
+    
+    ### - 📊️ Gráfico de barra por identidad de género ---------------------------------
+    output$plot_general_genero <- renderPlot({
+      
+      if (input$select_encuesta == "General"){
+        
+        general %>% 
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          plot_donas(cual_es_su_identidad_de_genero, cual_es_su_identidad_de_genero, 
+                      titulo = "Identidad de género de los encuestados")
+        
+      } else if (input$select_encuesta == "Servicio de aseo y cafetería") {
+        
+        aseo_cafeteria %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          plot_donas(cual_es_su_identidad_de_genero, cual_es_su_identidad_de_genero, 
+                     titulo = "Identidad de género de los encuestados")
+        
+        } else {
+        
+        transporte %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+            plot_donas(cual_es_su_identidad_de_genero, cual_es_su_identidad_de_genero, 
+                       titulo = "Identidad de género de los encuestados")
+      }
+      
+    })
+    
+    ### - 📝  ---------------------------------------------
+    output$dt_general_genero <- renderDataTable({
+      
+      if (input$select_encuesta == "General"){
+        
+        general %>% 
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          categorica_1var(cual_es_su_identidad_de_genero, "Identidad de género")
+        
+      } else if (input$select_encuesta == "Servicio de aseo y cafetería") {
+        
+        aseo_cafeteria %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          categorica_1var(cual_es_su_identidad_de_genero, "Identidad de género")
+      } else {
+        
+        transporte %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          categorica_1var(cual_es_su_identidad_de_genero, "Identidad de género")
+        
+      }
+      
+      
+    })
+    
+    ### - 📊️ Gráfico de barra por rango de edad ---------------------------------
+    output$plot_general_edad <- renderPlot({
+      
+      if (input$select_encuesta == "General"){
+        
+        general %>% 
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          plot_barras(cual_es_su_rango_de_edad, "", "", titulo = "Rango de edad de los encuestados")
+        
+      } else if (input$select_encuesta == "Servicio de aseo y cafetería") {
+        
+        aseo_cafeteria %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          plot_barras(cual_es_su_rango_de_edad, "", "", titulo = "Rango de edad de los encuestados")
+      } else {
+        
+        transporte %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          plot_barras(cual_es_su_rango_de_edad, "", "", titulo = "Rango de edad de los encuestados")
+        
+      }
+      
+    })
+    
+    ### - 📝  ---------------------------------------------
+    output$dt_general_edad <- renderDataTable({
+      
+      if (input$select_encuesta == "General"){
+        
+        general %>% 
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          categorica_1var(cual_es_su_rango_de_edad, "Rango de edad")
+        
+      } else if (input$select_encuesta == "Servicio de aseo y cafetería") {
+        
+        aseo_cafeteria %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          categorica_1var(cual_es_su_rango_de_edad, "Rango de edad")
+        
+      } else {
+        
+        transporte %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          categorica_1var(cual_es_su_rango_de_edad, "Rango de edad")
+        
+      }
+      
+      
+    })
+    
+    ### - 📊️ Gráfico de barra porgrupo poblacional ---------------------------------
+    output$plot_general_grupo_problacional <- renderPlot({
+      
+      if (input$select_encuesta == "General"){
+        
+        general %>% 
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          mutate(a_que_grupo_poblacional_o_sector_social_perteneces = trimws(
+            a_que_grupo_poblacional_o_sector_social_perteneces)) %>% 
+          plot_barras(a_que_grupo_poblacional_o_sector_social_perteneces, "", "",
+                      titulo = "Grupo poblacional de los encuestados")
+        
+      } else if (input$select_encuesta == "Servicio de aseo y cafetería") {
+        
+        aseo_cafeteria %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          mutate(a_que_grupo_poblacional_o_sector_social_perteneces = trimws(
+            a_que_grupo_poblacional_o_sector_social_perteneces)) %>% 
+          plot_barras(a_que_grupo_poblacional_o_sector_social_perteneces, "", "",
+                      titulo = "Grupo poblacional de los encuestados")
+      } else {
+        
+        transporte %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          mutate(a_que_grupo_poblacional_o_sector_social_perteneces = trimws(
+            a_que_grupo_poblacional_o_sector_social_perteneces)) %>% 
+          plot_barras(a_que_grupo_poblacional_o_sector_social_perteneces, "", "",
+                      titulo = "Grupo poblacional de los encuestados")
+        
+      }
+      
+    })
+    
+    ### - 📝  ---------------------------------------------
+    output$dt_general_grupo_poblacional <- renderDataTable({
+      
+      if (input$select_encuesta == "General"){
+        
+        general %>% 
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          mutate(a_que_grupo_poblacional_o_sector_social_perteneces = trimws(
+            a_que_grupo_poblacional_o_sector_social_perteneces)) %>% 
+          categorica_1var(a_que_grupo_poblacional_o_sector_social_perteneces, "Grupo poblacional")
+        
+      } else if (input$select_encuesta == "Servicio de aseo y cafetería") {
+        
+        aseo_cafeteria %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          mutate(a_que_grupo_poblacional_o_sector_social_perteneces = trimws(
+            a_que_grupo_poblacional_o_sector_social_perteneces)) %>% 
+          categorica_1var(a_que_grupo_poblacional_o_sector_social_perteneces, "Grupo poblacional")
+        
+      } else {
+        
+        transporte %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          mutate(a_que_grupo_poblacional_o_sector_social_perteneces = trimws(
+            a_que_grupo_poblacional_o_sector_social_perteneces)) %>% 
+          categorica_1var(a_que_grupo_poblacional_o_sector_social_perteneces, "Grupo poblacional")
+        
+      }
+      
+      
+    })
+    
+    ### - 📊️ Gráfico de barra por étnia ---------------------------------
+    output$plot_general_etnias <- renderPlot({
+      
+      if (input$select_encuesta == "General"){
+        
+        general %>% 
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          plot_barras(a_que_grupo_de_pertenencia_etnica_pertenece, "", "",
+                      titulo = "Étnias de los encuestados")
+        
+      } else if (input$select_encuesta == "Servicio de aseo y cafetería") {
+        
+        aseo_cafeteria %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          plot_barras(a_que_grupo_de_pertenencia_etnica_pertenece, "", "",
+                      titulo = "Étnias de los encuestados")
+      } else {
+        
+        transporte %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          plot_barras(a_que_grupo_de_pertenencia_etnica_pertenece, "", "",
+                      titulo = "Étnias de los encuestados")
+        
+      }
+      
+    })
+    
+    ### - 📝  ---------------------------------------------
+    output$dt_general_etnias <- renderDataTable({
+      
+      if (input$select_encuesta == "General"){
+        
+        general %>% 
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          categorica_1var(a_que_grupo_de_pertenencia_etnica_pertenece, "Étnias")
+        
+      } else if (input$select_encuesta == "Servicio de aseo y cafetería") {
+        
+        aseo_cafeteria %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          categorica_1var(a_que_grupo_de_pertenencia_etnica_pertenece, "Étnias")
+        
+      } else {
+        
+        transporte %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          categorica_1var(a_que_grupo_de_pertenencia_etnica_pertenece, "Étnias")
+        
+      }
+      
+      
+    })
+    
+    ### - 📊️ Gráfico de barra por unidad o dependencia ---------------------------------
+    output$plot_general_unidad_dependencia <- renderPlot({
+      
+      if (input$select_encuesta == "General"){
+        
+        general %>% 
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          plot_barras(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces,
+                      "", "", titulo = "Unidad o dependencia de los encuestados", top = 10)
+        
+      } else if (input$select_encuesta == "Servicio de aseo y cafetería") {
+        
+        aseo_cafeteria %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          plot_barras(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces,
+                      "", "", titulo = "Unidad o dependencia de los encuestados", top = 10)
+      } else {
+        
+        transporte %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          plot_barras(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces,
+                      "", "", titulo = "Unidad o dependencia de los encuestados", top = 10)
+        
+      }
+      
+    })
+    
+    ### - 📝  ---------------------------------------------
+    output$dt_general_unidad_dependencia <- renderDataTable({
+      
+      if (input$select_encuesta == "General"){
+        
+        general %>% 
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          categorica_1var(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces
+                          , "Unidad o dependencia")
+        
+      } else if (input$select_encuesta == "Servicio de aseo y cafetería") {
+        
+        aseo_cafeteria %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          ccategorica_1var(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces
+                           , "Unidad o dependencia")
+        
+      } else {
+        
+        transporte %>%
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          categorica_1var(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces
+                          , "Unidad o dependencia")
+        
+      }
+      
+      
+    })
+    
+    
     ### Servicio de transporte ---------------------------------------------------------------
     
+  observe({
+    # Verificar si no hay ningún mes seleccionado
+    if (is.null(input$select_mes_trans) || length(input$select_mes_trans) == 0) {
+      # Establecer un valor predeterminado si no hay ningún mes seleccionado
+      updatePickerInput(session, "select_mes_trans", selected = "Mayo")
+    }
+  })
+  
     ##  Meses en los que se utilizo el servicio de transporte
     ### Se analiza el uso del servicio de transporte durante los diferentes meses.
     output$dt_meses_transporte <- renderDataTable({
@@ -359,6 +763,14 @@ server <- function(input, output, session) {
     
     
     ### Servicio de aseo y cafeteria ----------------------------------------------------
+    
+    observe({
+      # Verificar si no hay ningún mes seleccionado
+      if (is.null(input$select_mes_ac) || length(input$select_mes_ac) == 0) {
+        # Establecer un valor predeterminado si no hay ningún mes seleccionado
+        updatePickerInput(session, "select_mes_ac", selected = "Mayo")
+      }
+    })
     
     output$dt_califi_gene_aseocafe <- renderDataTable({
       promedios <- aseo_cafeteria %>% 

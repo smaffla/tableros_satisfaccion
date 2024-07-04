@@ -77,8 +77,8 @@ dashboardPage(
                                    size = 7),
                     multiple = F,
                     label = "Seleccione una encuesta",
-                    choices = c("Servicio de transporte", "Servicio de aseo y cafetería")
-                    #selected = transporte$mesdili
+                    choices = c("General", "Servicio de transporte", "Servicio de aseo y cafetería"),
+                    selected = "General"
                   )
                 )
               )
@@ -95,7 +95,7 @@ dashboardPage(
           fluidRow(
             align = "center",
             div(style="display: inline-block; margin-right: 30px;", img(src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg/1200px-Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg.png", height=104, width=120)),
-            div(style="display: inline-block; vertical-align: middle;", h1("Encuestas ", span("de satisfacción", style = "font-weight: 300"),
+            div(style="display: inline-block; vertical-align: middle;", h1("Encuestas de satisfacción", #span("de satisfacción", style = "font-weight: 300"),
                                                                            style = "font-family: 'Source Sans Pro';
                                                                                     color: #fff; text-align: center;
                                                                                     background-image: url('https://raw.githubusercontent.com/rstudio/shiny-examples/main/081-widgets-gallery/www/texturebg.png');
@@ -135,11 +135,11 @@ dashboardPage(
           br(),
           br(),
         
-        #### 📊📋 Gráfico y tabla por encuesta ----------------------------------------------------
+        #### 📊📋 Gráfico y tabla por tipo de vinculacion ----------------------------------------------------
           
           fluidRow(
             align = "center",
-            HTML("<h2 style = 'color: #00609d'>Tipo de <strong>vinculación</strong></h2>"),
+            HTML("<h2 style = 'color: #00609d'><strong>Tipo de vinculación</strong></h2>"),
           ),
         
           br(),
@@ -147,16 +147,155 @@ dashboardPage(
           fluidRow(
             column(
               width = 6,
-              plotOutput("plot_servicio_general_vinculacion") %>% withSpinner(type = 8, size = 0.5)
+              plotOutput("plot_general_vinculacion") %>% withSpinner(type = 8, size = 0.5)
             ),
             column(
               width = 6,
-              DTOutput("dt_servicio_general_vinculacion") %>% withSpinner(type = 8, size = 0.5)
+              DTOutput("dt_general_vinculacion") %>% withSpinner(type = 8, size = 0.5)
             )
           ),
         
           br(),
-          br()
+          br(),
+        
+        #### 📊📋 Gráfico y tabla por lugar de trabajo ----------------------------------------------------
+        
+        fluidRow(
+          align = "center",
+          HTML("<h2 style = 'color: #00609d'><strong>Lugar de trabajo</strong></h2>"),
+        ),
+        
+        br(),
+        
+        fluidRow(
+          column(
+            width = 6,
+            DTOutput("dt_general_intalaciones") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          column(
+            width = 6,
+            plotOutput("plot_general_instalaciones") %>% withSpinner(type = 8, size = 0.5)
+          )
+        ),
+        
+        br(),
+        br(),
+        
+        #### 📊📋 Gráfico y tabla por identidad de género ----------------------------------------------------
+        
+        fluidRow(
+          align = "center",
+          HTML("<h2 style = 'color: #00609d'><strong>Identidad de género</strong></h2>"),
+        ),
+        
+        br(),
+        
+        fluidRow(
+          column(
+            width = 6,
+            plotOutput("plot_general_genero") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          column(
+            width = 6,
+            DTOutput("dt_general_genero") %>% withSpinner(type = 8, size = 0.5)
+          )
+        ),
+        
+        br(),
+        br(),
+        
+        #### 📊📋 Gráfico y tabla por rango de edad ----------------------------------------------------
+        
+        fluidRow(
+          align = "center",
+          HTML("<h2 style = 'color: #00609d'><strong>Rango de edad</strong></h2>"),
+        ),
+        
+        br(),
+        
+        fluidRow(
+          column(
+            width = 6,
+            DTOutput("dt_general_edad") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          column(
+            width = 6,
+            plotOutput("plot_general_edad") %>% withSpinner(type = 8, size = 0.5)
+          )
+        ),
+        
+        br(),
+        br(),
+        
+        #### 📊📋 Gráfico y tabla por grupo poblacional ----------------------------------------------------
+        
+        fluidRow(
+          align = "center",
+          HTML("<h2 style = 'color: #00609d'><strong>Grupo poblacional o sector social</strong></h2>"),
+        ),
+        
+        br(),
+        
+        fluidRow(
+          column(
+            width = 6,
+            plotOutput("plot_general_grupo_problacional") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          column(
+            width = 6,
+            DTOutput("dt_general_grupo_poblacional") %>% withSpinner(type = 8, size = 0.5)
+          )
+        ),
+        
+        br(),
+        br(),
+        
+        #### 📊📋 Gráfico y tabla por étnia ----------------------------------------------------
+        
+        fluidRow(
+          align = "center",
+          HTML("<h2 style = 'color: #00609d'><strong>Étnias</strong></h2>"),
+        ),
+        
+        br(),
+        
+        fluidRow(
+          column(
+            width = 6,
+            DTOutput("dt_general_etnias") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          column(
+            width = 6,
+            plotOutput("plot_general_etnias") %>% withSpinner(type = 8, size = 0.5)
+          )
+        ),
+        
+        br(),
+        br(),
+        
+        #### 📊📋 Gráfico y tabla por unidad o dependencia ----------------------------------------------------
+        
+        fluidRow(
+          align = "center",
+          HTML("<h2 style = 'color: #00609d'><strong>Unidad o dependencia</strong></h2>"),
+        ),
+        
+        br(),
+        
+        fluidRow(
+          column(
+            width = 6,
+            plotOutput("plot_general_unidad_dependencia") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          column(
+            width = 6,
+            DTOutput("dt_general_unidad_dependencia") %>% withSpinner(type = 8, size = 0.5)
+          )
+        ),
+        
+        br(),
+        br()
+        
         )
       ), # Cierra dashboardGeneral
     

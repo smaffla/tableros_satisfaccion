@@ -963,6 +963,7 @@ transporte %>%
     scale_fill_manual(values = colores_plot)+
     coord_flip()
 
+
 ```
 
 # Calificacion por categoría
