@@ -15,6 +15,7 @@ library(DT)
 library(tidyverse)
 library(ggrepel)
 library(lubridate)
+library(glue)
 
 colores_plot <- c(#"#2171b5",
   "#4292c6","#74a9cf",
@@ -71,6 +72,12 @@ aseo_cafeteria <- aseo_cafeteria %>%
          mesdili = str_to_title(mesdili)) %>% 
   mutate(anodili = year(hora_de_finalizacion))
 
+aseo_cafe <- aseo_cafe %>% 
+  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
+  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+         mesdili = str_to_title(mesdili)) %>% 
+  mutate(anodili = year(hora_de_finalizacion))
+
 transporte <- transporte %>% 
   distinct()
 
@@ -118,6 +125,26 @@ transporte <- transporte %>%
   mutate(anodili = year(hora_de_finalizacion))
 
 ## Funciones
+
+generate_html <- function(variable) {
+  HTML(glue("<h2 style = 'color: #00609d'>{variable()}</h2>"))
+  
+}
+
+transformar_calificacion <- function(x, col) {
+ 
+  col <- enquo(col)
+  
+   x %>% 
+    mutate(!!col := as.character(!!col)) %>% 
+    mutate(!!col := case_when(
+             !!col == "1" ~ "Muy deficiente",
+             !!col == "2" ~ "Deficiente",
+             !!col == "3" ~ "Aceptable",
+             !!col == "4" ~ "Bueno",
+             !!col == "5" ~ "Excelente",
+             TRUE ~ !!col))
+}
 
 plot_donas <- function(x, col, group, titulo = "") {
   
@@ -419,7 +446,7 @@ categorica_2varp <- function(x, cat1, cat2, rename,  title = NULL, label_width =
 }
 
 
-tabla_prom <- function(x, col, rename, encabezado = NULL, titulo = NULL, wrap_width = NULL) {
+tabla_prom <- function(x, col, rename, titulo = NULL, wrap_width = NULL) {
   
   col <- enquo(col)
   
@@ -472,3 +499,7 @@ styled_dt <- function(x, title = NULL) {
     )
   return(table)
 }
+
+
+
+
