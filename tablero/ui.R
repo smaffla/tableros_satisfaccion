@@ -413,6 +413,13 @@ dashboardPage(
 
         ),
         
+        fluidRow(
+          align = "center",
+          HTML("<h2 style = 'color: #00609d'><strong>Calificación por categoría (del encuestado)</strong></h2>"),
+        ),
+        
+        br(),
+        
         div(
           fluidRow(
             column(
@@ -431,7 +438,7 @@ dashboardPage(
                                    `select-all-text` = "Seleccionar todo",
                                    `none-selected-text` = "Nada seleccionado",
                                    size = 7),
-                    multiple = T,
+                    multiple = F,
                     label = "Seleccione una categoria",
                     choices = c("Conductor", "Tipo de vinculación", "Edad", "Identidad de género", "Unidad o dependencia de la UPN"),
                     selected = "Conductor"
@@ -441,10 +448,12 @@ dashboardPage(
             )
           )
         ),
-        #Tabla y gráfica para tipo de servicio utilizado cada mes
+        
+        br(),
+        
         fluidRow(
           align = "center",
-          HTML("<h2 style = 'color: #00609d'><strong>Calificación por categoría</strong></h2>"),
+          uiOutput("html_output_encuestado_trans"),
         ),
         
         br(),
@@ -465,10 +474,48 @@ dashboardPage(
         br(),
         br(),
         
-        #Tabla y gráfica para calificacion general por conductor
+        
         fluidRow(
           align = "center",
-          HTML("<h2 style = 'color: #00609d'><strong>Calificación general para cada conductor</strong></h2>"),
+          HTML("<h2 style = 'color: #00609d'><strong>Calificación por categoría (del servicio)</strong></h2>"),
+        ),
+        
+        br(),
+        
+        div(
+          fluidRow(
+            column(
+              width = 10,
+              box(
+                width = 12,
+                style = "margin-top: 2%",
+                background = "light-blue",
+                align = "center",
+                column(
+                  width = 12,
+                  pickerInput(
+                    inputId = "select_categoria_ind_trans",
+                    options = list(`actions-box` = TRUE,
+                                   `deselect-all-text` = "Deseleccionar todo",
+                                   `select-all-text` = "Seleccionar todo",
+                                   `none-selected-text` = "Nada seleccionado",
+                                   size = 7),
+                    multiple = F,
+                    label = "Seleccione una categoria",
+                    choices = c("Estado mecánico del vehículo", "Limpieza y presentación del vehículo", "Amabilidad y cortesía", "Nivel de concentración mientras conduce", "Capacidad de comuncación"),
+                    selected = "Estado mecánico del vehículo"
+                  )
+                )
+              )
+            )
+          )
+        ),
+        
+        br(),
+        
+        fluidRow(
+          align = "center",
+          uiOutput("html_output_servicio_trans"),
         ),
         
         br(),
@@ -476,12 +523,12 @@ dashboardPage(
         fluidRow(
           column(
             width = 6,
-            dataTableOutput("dt_calificacion_general_trans") %>% withSpinner(type = 8, size = 0.5)
+            dataTableOutput("dt_calificacion_categoria_ind_trans") %>% withSpinner(type = 8, size = 0.5)
           ),
           
           column(
             width = 6,
-            plotOutput("plot_calificacion_general_trans") %>% withSpinner(type = 8, size = 0.5)
+            plotOutput("plot_calificacion_categoria_ind_trans") %>% withSpinner(type = 8, size = 0.5)
           )
           
         ),
@@ -489,52 +536,87 @@ dashboardPage(
         br(),
         br(),
         
-        #Tabla y gráfica para calificación por tipo de vinculación
+        
+        
         fluidRow(
           align = "center",
-          HTML("<h2 style = 'color: #00609d'><strong>Calificación por tipo de vinculación</strong></h2>"),
+          HTML("<h2 style = 'color: #00609d'><strong>Cumplimiento de aspectos durante la prestación del servicio</strong></h2>"),
+        ),
+        
+        fluidRow(
+          column(
+            width = 8,
+            offset = 2,
+            box(
+              width = 12,
+              style = "margin-top: 2%",
+              background = "light-blue",
+              align = "center",
+              column(
+                width = 12,
+                pickerInput(
+                  inputId = "select_aspecto",
+                  options = list(`actions-box` = TRUE,
+                                 `deselect-all-text` = "Deseleccionar todo",
+                                 # select-all-text = "Seleccionar todo",
+                                 `none-selected-text` = "Nada seleccionado",
+                                 size = 7),
+                  multiple = F,
+                  label = "Seleccione un aspecto",
+                  choices = c("Cumplimiento de itinerarios solicitados", 
+                              "Cumplimiento de horarios solicitados", 
+                              "Cumplimiento de normas de tránsito",
+                              "Se presento algun incidente o accidente", "Recomendaría el servicio"),
+                  selected = "Cumplimiento de itinerarios solicitados"
+                )
+              )
+            )
+          )
+        ),
+        
+        br(),
+        
+        fluidRow(
+          align = "center",
+          uiOutput("html_output_aspecto_trans"),
+        ),
+        
+        fluidRow(
+          align = "center",
+          HTML("<h3 style = 'color: #00609d'>Gráfica general</h3>"),
         ),
         
         br(),
         
         fluidRow(
           column(
-            width = 6,
-            uiOutput("ft_calificacion_vinculacion_trans") %>% withSpinner(type = 8, size = 0.5)
-          ),
-          
-          column(
-            width = 6,
-            plotOutput("plot_calificacion_vinculacion_trans") %>% withSpinner(type = 8, size = 0.5)
+            width = 8,
+            offset = 2,
+            plotOutput("plot_aspecto_transporte") %>% withSpinner(type = 8, size = 0.5)
           )
           
         ),
         
-        
-        br(),
         br(),
         
-        #Tabla y gráfica para calificación por identidad de genero
         fluidRow(
           align = "center",
-          HTML("<h2 style = 'color: #00609d'><strong>Calificación por identidad de género</strong></h2>"),
+          HTML("<h3 style = 'color: #00609d'>Tabla por conductor</h3>"),
         ),
         
         br(),
         
         fluidRow(
           column(
-            width = 6,
-            uiOutput("ft_calificacion_genero_trans") %>% withSpinner(type = 8, size = 0.5)
+            width = 8,
+            offset = 2,
+            DTOutput("dt_aspecto_trans_cantidad") %>% withSpinner(type = 8, size = 0.5)
           ),
           
-          column(
-            width = 6,
-            plotOutput("plot_calificacion_genero_trans") %>% withSpinner(type = 8, size = 0.5)
-          )
-          
         ),
-
+        
+        
+        
       )
         
       ),# Cierra dashboarTransporte

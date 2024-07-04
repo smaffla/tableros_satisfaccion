@@ -156,6 +156,11 @@ transformar_calificacion <- function(x, col) {
              TRUE ~ !!col))
 }
 
+generate_html_negrilla <- function(variable) {
+  HTML(glue("<h3 style = 'color: #00609d'><strong>{variable()}</strong></h3>"))
+  
+}
+
 plot_donas <- function(x, col, group, titulo = "") {
   
   group <- enquo(group)

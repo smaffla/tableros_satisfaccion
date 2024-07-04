@@ -412,6 +412,46 @@ plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
   
 }
 
+transformar_calificacion <- function(x, col) {
+ 
+  col <- enquo(col)
+  
+   x %>% 
+    mutate(!!col := as.character(!!col)) %>% 
+    mutate(!!col := case_when(
+             !!col == "1" ~ "Muy deficiente",
+             !!col == "2" ~ "Deficiente",
+             !!col == "3" ~ "Aceptable",
+             !!col == "4" ~ "Bueno",
+             !!col == "5" ~ "Excelente",
+             TRUE ~ !!col))
+}
+
+styled_dt <- function(x, title = NULL) {
+  table <- x %>%
+    datatable(
+      options = list(
+        pageLength = 7,
+        lengthMenu = list(c(7, 10, 15, -1), c(7, 10, 15, "Todos")),
+        initComplete = JS(
+          "function(settings, json) {",
+          "$(this.api().table().header()).css({'background-color': '#2c7fb8', 'color': 'white', 'font-weight': 'bold'});",
+          "}"
+        )
+      ),
+      caption = htmltools::tags$caption(
+        style = 'caption-side: top; text-align: center; color:black; font-size:150%',
+        title
+      )
+    ) %>%
+    formatStyle(
+      columns = names(x),
+      backgroundColor = styleEqual(names(x), rep('#D9D9D9', length(names(x)))),
+      color = styleEqual(names(x), rep('black', length(names(x)))),
+      fontWeight = styleEqual(names(x), rep('bold', length(names(x))))
+    )
+  return(table)
+}
 ```
 
 # Depuracion de datos 
@@ -701,7 +741,7 @@ Se examinan las calificaciones generales otorgadas a cada conductor. Teniendo en
 
 
 ```{r}
-tabla <- transporte %>%
+transporte %>%
   filter(!is.na(nombre_del_conductor_que_presto_el_servicio)) %>%
     rename(
     valor1 = estado_mecanico_de_los_vehiculo, 
@@ -911,24 +951,13 @@ Se examina la calificación del servicio según la unidad o dependencia de la UP
 ### Tabla
 
 ```{r}
-
 transporte %>% 
   rename(valor1 = estado_mecanico_de_los_vehiculo, 
     valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
     valor3 = amabilidad_y_cortesia,
     valor4 = nivel_de_atencion_mientras_conduce,
     valor5 = capacidad_de_comunicacion) %>%
-  group_by(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces) %>%
-  summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
-  ungroup() %>% 
-  arrange(desc(promedio_general)) %>% 
-  rename("Unidad o dependencia" = a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces,
-         "Promedio" = promedio_general) %>% 
-  ftable() %>%
-  bg(i = nrow_part(.), bg = "white") %>%
-  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
-  color(i = nrow_part(.), color = "black") %>%
-  bold(i = nrow_part(.), bold = FALSE)
+  tabla_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, "Encabezado", titulo = "titulo")
 
 ```
 
@@ -943,34 +972,15 @@ transporte %>%
     valor3 = amabilidad_y_cortesia,
     valor4 = nivel_de_atencion_mientras_conduce,
     valor5 = capacidad_de_comunicacion) %>%
-  group_by(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces) %>%
-  summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
-  ungroup() %>% 
-  arrange(desc(promedio_general)) %>% 
-  slice(1:8) %>% 
-  ggplot(aes(x = a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, 
-               y= promedio_general, 
-               fill = a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, 
-               label = promedio_general)) + 
-    geom_col()+
-    geom_text(vjust = 0.5, hjust = -0.5, size = 3,position = position_dodge(width = 1))+
-    labs(x = "", y = "", title = str_wrap("Calificación promedio por tipo de vinculación", width = 40)) +
-    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
-    theme(legend.position="none")+
-    theme(axis.text.y = element_text(size = 8))+
-    theme(axis.text.x = element_text(size = 10))+
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
-    scale_fill_manual(values = colores_plot)+
-    coord_flip()
 
+  plot_barras_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, "", "", titulo = "Prueba", top = 10)
 
-```
 
 # Calificacion por categoría
 
 Se ofrece una visión global de la calificación del servicio de transporte por categoría evaluada
 
-## Estado mecánico de los vehículo
+## Estado mecánico de los vehículos
 
 Se analiza el estado mecánico de los vehículos utilizados en el servicio de transporte.
 
@@ -978,15 +988,9 @@ Se analiza el estado mecánico de los vehículos utilizados en el servicio de tr
 
 ```{r}
 
-transporte %>% 
-  mutate(estado_mecanico_de_los_vehiculo = as.character(estado_mecanico_de_los_vehiculo),
-         estado_mecanico_de_los_vehiculo = case_when(
-           estado_mecanico_de_los_vehiculo == "1" ~ "Muy deficiente",
-           estado_mecanico_de_los_vehiculo == "2" ~ "Deficiente",
-           estado_mecanico_de_los_vehiculo == "3" ~ "Aceptable",
-           estado_mecanico_de_los_vehiculo == "4" ~ "Bueno",
-           estado_mecanico_de_los_vehiculo == "5" ~ "Excelente",
-           TRUE ~ estado_mecanico_de_los_vehiculo)) %>% 
+transporte %>%
+  filter(!is.na(estado_mecanico_de_los_vehiculo)) %>% 
+  transformar_calificacion(estado_mecanico_de_los_vehiculo) %>%
   plot_barras(estado_mecanico_de_los_vehiculo, "", "", 
               titulo = "Calificación del estado mecánico de los vehículo")
   
@@ -1004,12 +1008,13 @@ transporte %>%
   arrange(desc(prom)) %>% 
   rename(
     "Promedio" = prom, 
-    "Nombre del conductor" = nombre_del_conductor_que_presto_el_servicio) %>% 
-  ftable(encabezado = "Calificación del estado mécanico del vehiculo por conductor") %>%
-  bg(i = nrow_part(.), bg = "white") %>%
-  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
-  color(i = nrow_part(.), color = "black") %>%
-  bold(i = nrow_part(.), bold = FALSE)
+    "Nombre del conductor" = nombre_del_conductor_que_presto_el_servicio) %>%
+  styled_dt()
+  #ftable(encabezado = "Calificación del estado mécanico del vehiculo por conductor") %>%
+  # bg(i = nrow_part(.), bg = "white") %>%
+  # bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+  # color(i = nrow_part(.), color = "black") %>%
+  # bold(i = nrow_part(.), bold = FALSE)
 
 
 ```
@@ -1048,12 +1053,13 @@ transporte %>%
   arrange(desc(prom)) %>% 
   rename(
     "Promedio" = prom, 
-    "Nombre del conductor" = nombre_del_conductor_que_presto_el_servicio) %>% 
-  ftable(encabezado = "Calificación de la limpieza y presentación general de los vehículos por conductor") %>%
-  bg(i = nrow_part(.), bg = "white") %>%
-  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
-  color(i = nrow_part(.), color = "black") %>%
-  bold(i = nrow_part(.), bold = FALSE)
+    "Nombre del conductor" = nombre_del_conductor_que_presto_el_servicio) %>%
+    styled_dt()
+  # ftable(encabezado = "Calificación de la limpieza y presentación general de los vehículos por conductor") %>%
+  # bg(i = nrow_part(.), bg = "white") %>%
+  # bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+  # color(i = nrow_part(.), color = "black") %>%
+  # bold(i = nrow_part(.), bold = FALSE)
 
 ```
 
@@ -1090,12 +1096,13 @@ transporte %>%
   arrange(desc(prom)) %>% 
   rename(
     "Promedio" = prom, 
-    "Nombre del conductor" = nombre_del_conductor_que_presto_el_servicio) %>% 
-  ftable(encabezado = "Calificación de la amabilidad y cortesía por conductor") %>%
-  bg(i = nrow_part(.), bg = "white") %>%
-  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
-  color(i = nrow_part(.), color = "black") %>%
-  bold(i = nrow_part(.), bold = FALSE)
+    "Nombre del conductor" = nombre_del_conductor_que_presto_el_servicio) %>%
+  styled_dt()
+  # ftable(encabezado = "Calificación de la amabilidad y cortesía por conductor") %>%
+  # bg(i = nrow_part(.), bg = "white") %>%
+  # bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+  # color(i = nrow_part(.), color = "black") %>%
+  # bold(i = nrow_part(.), bold = FALSE)
 
 ```
 
