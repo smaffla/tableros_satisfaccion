@@ -136,8 +136,8 @@ transformar_calificacion <- function(x, col) {
   col <- enquo(col)
   
    x %>% 
-    mutate(!!col := as.character(!!col),
-           !!col := case_when(
+    mutate(!!col := as.character(!!col)) %>% 
+    mutate(!!col := case_when(
              !!col == "1" ~ "Muy deficiente",
              !!col == "2" ~ "Deficiente",
              !!col == "3" ~ "Aceptable",

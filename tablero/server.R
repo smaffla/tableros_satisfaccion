@@ -671,192 +671,87 @@ server <- function(input, output, session) {
     
     output$plot_califi_categoria <- renderPlot({
       
-      if (input$select_categoria == "Calidad de tinto y aromática ofrecida") { 
+      if (input$select_categoria == "Calidad de tinto y aromática ofrecida") {
         
         aseo_cafeteria %>% 
           filter(anodili %in% input$select_anio, 
                  mesdili %in% input$select_mes) %>%
-          mutate(calidad_de_tinto_y_aromatica_ofrecida = as.character(calidad_de_tinto_y_aromatica_ofrecida),
-                 calidad_de_tinto_y_aromatica_ofrecida = case_when(
-                   calidad_de_tinto_y_aromatica_ofrecida == "1" ~ "Muy deficiente",
-                   calidad_de_tinto_y_aromatica_ofrecida == "2" ~ "Deficiente",
-                   calidad_de_tinto_y_aromatica_ofrecida == "3" ~ "Aceptable",
-                   calidad_de_tinto_y_aromatica_ofrecida == "4" ~ "Bueno",
-                   calidad_de_tinto_y_aromatica_ofrecida == "5" ~ "Excelente",
-                   TRUE ~ calidad_de_tinto_y_aromatica_ofrecida)) %>% 
-          plot_barras(calidad_de_tinto_y_aromatica_ofrecida, "", "")
-      
-        } else {
+          transformar_calificacion(calidad_de_tinto_y_aromatica_ofrecida) %>% 
+          plot_barras(calidad_de_tinto_y_aromatica_ofrecida, " ", " ")
         
-        if (input$select_categoria == "Oportunidad en el servicio de preparación") {
-          
-          aseo_cafeteria %>% 
-            filter(anodili %in% input$select_anio, 
-                   mesdili %in% input$select_mes) %>%
-            mutate(oportunidad_en_el_servicio_de_preparacion = as.character(oportunidad_en_el_servicio_de_preparacion),
-                   oportunidad_en_el_servicio_de_preparacion = case_when(
-                     oportunidad_en_el_servicio_de_preparacion == "1" ~ "Muy deficiente",
-                     oportunidad_en_el_servicio_de_preparacion == "2" ~ "Deficiente",
-                     oportunidad_en_el_servicio_de_preparacion == "3" ~ "Aceptable",
-                     oportunidad_en_el_servicio_de_preparacion == "4" ~ "Bueno",
-                     oportunidad_en_el_servicio_de_preparacion == "5" ~ "Excelente",
-                     TRUE ~ oportunidad_en_el_servicio_de_preparacion)) %>% 
-            plot_barras(oportunidad_en_el_servicio_de_preparacion, " ", " ")
+      } else if (input$select_categoria == "Oportunidad en el servicio de preparación") {
         
-          } else {
-          
-          if (input$select_categoria == "Amabilidad y actitud del personal") {
-            
-            aseo_cafeteria %>% 
-              filter(anodili %in% input$select_anio, 
-                     mesdili %in% input$select_mes) %>%
-              mutate(amabilidad_y_actitud_del_personal = as.character(amabilidad_y_actitud_del_personal),
-                     amabilidad_y_actitud_del_personal = case_when(
-                       amabilidad_y_actitud_del_personal == "1" ~ "Muy deficiente",
-                       amabilidad_y_actitud_del_personal == "2" ~ "Deficiente",
-                       amabilidad_y_actitud_del_personal == "3" ~ "Aceptable",
-                       amabilidad_y_actitud_del_personal == "4" ~ "Bueno",
-                       amabilidad_y_actitud_del_personal == "5" ~ "Excelente",
-                       TRUE ~ amabilidad_y_actitud_del_personal)) %>% 
-              plot_barras(amabilidad_y_actitud_del_personal, " ","")
-          
-            } else {
-            
-            if (input$select_categoria == "Limpieza de las oficinas, salones, auditorios y laboratorios") {
-              
-              aseo_cafeteria %>% 
-                filter(anodili %in% input$select_anio, 
-                       mesdili %in% input$select_mes) %>%
-                mutate(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios =
-                         as.character(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios),
-                       limpieza_de_las_oficinas_salones_auditorios_y_laboratorios = case_when(
-                         limpieza_de_las_oficinas_salones_auditorios_y_laboratorios == "1" ~ "Muy deficiente",
-                         limpieza_de_las_oficinas_salones_auditorios_y_laboratorios == "2" ~ "Deficiente",
-                         limpieza_de_las_oficinas_salones_auditorios_y_laboratorios == "3" ~ "Aceptable",
-                         limpieza_de_las_oficinas_salones_auditorios_y_laboratorios == "4" ~ "Bueno",
-                         limpieza_de_las_oficinas_salones_auditorios_y_laboratorios == "5" ~ "Excelente",
-                         TRUE ~ limpieza_de_las_oficinas_salones_auditorios_y_laboratorios)) %>% 
-                plot_barras(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios, "","")
-              
-            } else {
-              
-              if (input$select_categoria == "Limpieza general de las áreas comunes") {
-                
-                aseo_cafeteria %>% 
-                  filter(anodili %in% input$select_anio, 
-                         mesdili %in% input$select_mes) %>%
-                  mutate(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante =
-                           as.character(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante),
-                         limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante = case_when(
-                           limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante == "1" ~ "Muy deficiente",
-                           limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante == "2" ~ "Deficiente",
-                           limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante == "3" ~ "Aceptable",
-                           limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante == "4" ~ "Bueno",
-                           limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante == "5" ~ "Excelente",
-                           TRUE ~ limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante)) %>% 
-                  plot_barras(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante, 
-                              " ", " ")
-                
-              } else {
-                
-                if (input$select_categoria == "Limpieza general") {
-                  
-                  aseo_cafeteria %>% 
-                    filter(anodili %in% input$select_anio, 
-                           mesdili %in% input$select_mes) %>%
-                    mutate(limpieza_general = as.character(limpieza_general),
-                           limpieza_general = case_when(
-                             limpieza_general == "1" ~ "Muy deficiente",
-                             limpieza_general == "2" ~ "Deficiente",
-                             limpieza_general == "3" ~ "Aceptable",
-                             limpieza_general == "4" ~ "Bueno",
-                             limpieza_general == "5" ~ "Excelente",
-                             TRUE ~ limpieza_general)) %>% 
-                    plot_barras(limpieza_general, " "," ")
-                  
-                } else {
-                  
-                  if (input$select_categoria == "Limpieza de baños"){
-                    
-                    aseo_cafeteria %>% 
-                      filter(anodili %in% input$select_anio, 
-                             mesdili %in% input$select_mes) %>%
-                      mutate(limpieza_de_banos =
-                               as.character(limpieza_de_banos),
-                             limpieza_de_banos = case_when(
-                               limpieza_de_banos == "1" ~ "Muy deficiente",
-                               limpieza_de_banos == "2" ~ "Deficiente",
-                               limpieza_de_banos == "3" ~ "Aceptable",
-                               limpieza_de_banos == "4" ~ "Bueno",
-                               limpieza_de_banos == "5" ~ "Excelente",
-                               TRUE ~ limpieza_de_banos)) %>% 
-                      plot_barras(limpieza_de_banos, " ", " ")
-                    
-                  } else {
-                    
-                    if (input$select_categoria == "Labores de jardinería") {
-                      
-                      aseo_cafeteria %>% 
-                        filter(anodili %in% input$select_anio, 
-                               mesdili %in% input$select_mes) %>%
-                        mutate(labores_de_jardineria =
-                                 as.character(labores_de_jardineria),
-                               labores_de_jardineria = case_when(
-                                 labores_de_jardineria == "1" ~ "Muy deficiente",
-                                 labores_de_jardineria == "2" ~ "Deficiente",
-                                 labores_de_jardineria == "3" ~ "Aceptable",
-                                 labores_de_jardineria == "4" ~ "Bueno",
-                                 labores_de_jardineria == "5" ~ "Excelente",
-                                 TRUE ~ labores_de_jardineria)) %>% 
-                        plot_barras(labores_de_jardineria, " "," ")
-                      
-                    } else {
-                      
-                      if (input$select_categoria == "Frecuencia y labores de descanecado") {
-                        
-                        aseo_cafeteria %>% 
-                          filter(anodili %in% input$select_anio, 
-                                 mesdili %in% input$select_mes) %>%
-                          mutate(frecuencia_y_labores_de_descanecado =
-                                   as.character(frecuencia_y_labores_de_descanecado),
-                                 frecuencia_y_labores_de_descanecado = case_when(
-                                   frecuencia_y_labores_de_descanecado == "1" ~ "Muy deficiente",
-                                   frecuencia_y_labores_de_descanecado == "2" ~ "Deficiente",
-                                   frecuencia_y_labores_de_descanecado == "3" ~ "Aceptable",
-                                   frecuencia_y_labores_de_descanecado == "4" ~ "Bueno",
-                                   frecuencia_y_labores_de_descanecado == "5" ~ "Excelente",
-                                   TRUE ~ frecuencia_y_labores_de_descanecado)) %>% 
-                          plot_barras(frecuencia_y_labores_de_descanecado, " "," ")
-                        
-                      } else {
-                        
-                        if (input$select_categoria == "Atención y actitud de los funcionarios") {
-                          
-                          aseo_cafeteria %>% 
-                            filter(anodili %in% input$select_anio, 
-                                   mesdili %in% input$select_mes) %>%
-                            mutate(atencion_y_actitud_de_los_funcionarios =
-                                     as.character(atencion_y_actitud_de_los_funcionarios),
-                                   atencion_y_actitud_de_los_funcionarios = case_when(
-                                     atencion_y_actitud_de_los_funcionarios == "1" ~ "Muy deficiente",
-                                     atencion_y_actitud_de_los_funcionarios == "2" ~ "Deficiente",
-                                     atencion_y_actitud_de_los_funcionarios == "3" ~ "Aceptable",
-                                     atencion_y_actitud_de_los_funcionarios == "4" ~ "Bueno",
-                                     atencion_y_actitud_de_los_funcionarios == "5" ~ "Excelente",
-                                     TRUE ~ atencion_y_actitud_de_los_funcionarios)) %>% 
-                            plot_barras(atencion_y_actitud_de_los_funcionarios, " "," ")
-                          
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
+        aseo_cafeteria %>% 
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          transformar_calificacion(oportunidad_en_el_servicio_de_preparacion) %>% 
+          plot_barras(oportunidad_en_el_servicio_de_preparacion, " ", " ")
+        
+      } else if (input$select_categoria == "Amabilidad y actitud del personal") {
+        
+        aseo_cafeteria %>% 
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          transformar_calificacion(amabilidad_y_actitud_del_personal) %>% 
+          plot_barras(amabilidad_y_actitud_del_personal, " ", " ")
+        
+      } else if (input$select_categoria == "Limpieza de las oficinas, salones, auditorios y laboratorios") {
+        
+        aseo_cafeteria %>% 
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          transformar_calificacion(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios) %>% 
+          plot_barras(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios, " ", " ")
+        
+      } else if (input$select_categoria == "Limpieza general de las áreas comunes") {
+        
+        aseo_cafeteria %>% 
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          transformar_calificacion(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante) %>% 
+          plot_barras(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante, " ", " ")
+        
+      } else if (input$select_categoria == "Limpieza general") {
+        
+        aseo_cafeteria %>% 
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          transformar_calificacion(limpieza_general) %>% 
+          plot_barras(limpieza_general, " ", " ")
+        
+      } else if (input$select_categoria == "Limpieza de baños") {
+        
+        aseo_cafeteria %>% 
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          transformar_calificacion(limpieza_de_banos) %>% 
+          plot_barras(limpieza_de_banos, " ", " ")
+        
+      } else if (input$select_categoria == "Labores de jardinería") {
+        
+        aseo_cafeteria %>% 
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          transformar_calificacion(labores_de_jardineria) %>% 
+          plot_barras(labores_de_jardineria, " ", " ")
+        
+      } else if (input$select_categoria == "Frecuencia y labores de descanecado") {
+        
+        aseo_cafeteria %>% 
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          transformar_calificacion(frecuencia_y_labores_de_descanecado) %>% 
+          plot_barras(frecuencia_y_labores_de_descanecado, " ", " ")
+        
+      } else if (input$select_categoria == "Atención y actitud de los funcionarios") {
+        
+        aseo_cafeteria %>% 
+          filter(anodili %in% input$select_anio, 
+                 mesdili %in% input$select_mes) %>%
+          transformar_calificacion(atencion_y_actitud_de_los_funcionarios) %>% 
+          plot_barras(atencion_y_actitud_de_los_funcionarios, " ", " ")
+        
       }
-      
     })
     
     output$dt_califi_genero_ac <- renderDataTable({
