@@ -92,11 +92,6 @@ transporte <- transporte %>%
                                          TRUE~tipo_de_vinculacion))
 
 transporte <- transporte %>% 
-  mutate(a_que_grupo_de_pertenencia_etnica_pertenece =
-           if_else(a_que_grupo_de_pertenencia_etnica_pertenece == "Sin pertenencia étnica",
-                   "Ninguna", a_que_grupo_de_pertenencia_etnica_pertenece))
-
-transporte <- transporte %>% 
   mutate(fecha_en_que_se_efectuo_el_servicio_de_transporte =
            as.Date(fecha_en_que_se_efectuo_el_servicio_de_transporte)) %>% 
   mutate(mes = month(fecha_en_que_se_efectuo_el_servicio_de_transporte, label = TRUE, abbr = FALSE),
@@ -124,15 +119,20 @@ transporte <- transporte %>%
          mesdili = str_to_title(mesdili)) %>% 
   mutate(anodili = year(hora_de_finalizacion))
 
-# general <- transporte %>% 
-#   select(autoriza_datos, tipo_de_vinculacion, 
-#          en_que_instalaciones_de_la_upn_universidad_pedagogica_nacional_desarrolla_sus_actividades_y_o_labores,
-#          cual_es_su_identidad_de_genero, cual_es_su_rango_de_edad, 
-#          a_que_grupo_poblacional_o_sector_social_perteneces, a_que_grupo_de_pertenencia_etnica_pertenece,
-#          a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces) %>% 
-#   rename(instalaciones = en_que_instalaciones_de_la_upn_universidad_pedagogica_nacional_desarrolla_sus_actividades_y_o_labores,
-#          unidad_dependencia = )
-
+general <- transporte %>%
+  select(autoriza_datos, tipo_de_vinculacion,
+         en_que_instalaciones_de_la_upn_universidad_pedagogica_nacional_desarrolla_sus_actividades_y_o_labores,
+         cual_es_su_identidad_de_genero, cual_es_su_rango_de_edad,
+         a_que_grupo_poblacional_o_sector_social_perteneces, a_que_grupo_de_pertenencia_etnica_pertenece,
+         a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces,
+         anodili, mesdili) %>%
+  rbind(aseo_cafeteria %>% 
+        select(autoriza_datos, en_que_instalaciones_de_la_upn_universidad_pedagogica_nacional_desarrolla_sus_actividades_y_o_labores,
+               cual_es_su_rango_de_edad, cual_es_su_identidad_de_genero, a_que_grupo_poblacional_o_sector_social_perteneces,
+               a_que_grupo_de_pertenencia_etnica_pertenece,a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces,
+               cual_es_el_tipo_de_vinculacion_o_relacion_que_tiene_con_la_upn_universidad_pedagogica_nacional,
+               anodili, mesdili) %>%   
+          rename(tipo_de_vinculacion = cual_es_el_tipo_de_vinculacion_o_relacion_que_tiene_con_la_upn_universidad_pedagogica_nacional))
 
 ## Funciones
 
@@ -178,7 +178,7 @@ plot_donas <- function(x, col, group, titulo = "") {
   
   ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 10, xmin = 1, fill = !!group)) +
     geom_rect() +
-    geom_text(aes(x = -1.5, y = labelpos, label = labelname), size = 4, color = "black", fontface = "bold") +
+    geom_text(aes(x = -1.5, y = labelpos, label = labelname), size = 5, color = "black", fontface = "bold") +
     labs(title = str_wrap(titulo, width = 30)) +
     scale_fill_manual(values = colores_plot) +
     coord_polar(theta = "y") +
@@ -200,7 +200,7 @@ plot_barras <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
     mutate(perc = percent(n/sum(n), 0.1))
   
   if (is.null(top)) {
-    top <- 30
+    top <- 11
   }
   
   data %>% 
@@ -211,16 +211,16 @@ plot_barras <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
                fill = !!col, 
                label = paste(perc,"\n",n," "))) + 
     geom_col()+
-    geom_text(vjust = 0.5, hjust = -0.1, size = 3,position = position_dodge(width = 1))+
+    geom_text(vjust = 0.5, hjust = -0.1, size = 4,position = position_dodge(width = 1))+
     scale_y_continuous(limits = c(0, max(data$n)*1.1))+
     labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
     theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
     theme(legend.position="none")+
-    theme(axis.text.y = element_text(size = 8))+
-    theme(axis.text.x = element_text(size = 10))+
+    theme(axis.text.y = element_text(size = 12))+
+    theme(axis.text.x = element_text(size = 8))+
     theme(plot.title.position = "plot",
           plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
     scale_fill_manual(values = colores_plot)+
     coord_flip()
   
@@ -242,16 +242,16 @@ plot_cols <- function(x, col, xlab, ylab, titulo = "") {
                fill = !!col, 
                label = paste(perc,"\n",n," "))) + 
     geom_col()+
-    geom_text(vjust = 0.5, size = 3,position = position_dodge(width = 1))+
+    geom_text(vjust = 0.5, size = 4,position = position_dodge(width = 1))+
     scale_y_continuous(limits = c(0, max(data$n)*1.1))+
     labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30))+ 
     theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
     theme(legend.position="none")+
-    theme(axis.text.y = element_text(size = 8))+
-    theme(axis.text.x = element_text(size = 10))+
+    theme(axis.text.y = element_text(size = 12))+
+    theme(axis.text.x = element_text(size = 8))+
     theme(plot.title.position = "plot",
           plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
     scale_fill_manual(values = colores_plot)
   
 }
@@ -272,21 +272,20 @@ plot_barras_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo
                fill = !!group, 
                label = paste(perc,"\n",n," "))) + 
     geom_col(position = "dodge")+
-    geom_text(vjust = 0.5, hjust = -0.2 ,size = 2.5,position = position_dodge(width = 1))+
+    geom_text(vjust = 0.5, hjust = -0.2 ,size = 4,position = position_dodge(width = 1))+
     scale_y_continuous(limits = c(0, max(data$n)*1.1))+
     labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30))+ 
-    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
     theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
     guides(fill = guide_legend(title = leyenda, label.position = "right"
                                , nrow = 2, label.theme = element_text(size = 12)))+
     theme(legend.position = "bottom",
           axis.text.y = element_text(size = 13),
           axis.text.x = element_text(size = 13)) +
-    theme(axis.text.y = element_text(size = 8))+
-    theme(axis.text.x = element_text(size = 10))+
+    theme(axis.text.y = element_text(size = 12))+
+    theme(axis.text.x = element_text(size = 8))+
     theme(plot.title.position = "plot",
           plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
     scale_fill_manual(values = colores_plot)+
     coord_flip()
   
@@ -309,7 +308,7 @@ plot_cols_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo =
                fill = !!group, 
                label = paste(perc,"\n",n," "))) + 
     geom_col(position = "dodge")+
-    geom_text(vjust = 0.5,hjust = -0.5 , size = 2.5,position = position_dodge(width = 1))+
+    geom_text(vjust = 0.5,hjust = -0.5 , size = 4,position = position_dodge(width = 1))+
     scale_y_continuous(limits = c(0, max(data$n)*1.1))+
     labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30))+ 
     theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
@@ -318,11 +317,11 @@ plot_cols_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo =
     theme(legend.position = "bottom",
           axis.text.y = element_text(size = 13),
           axis.text.x = element_text(size = 13)) +
-    theme(axis.text.y = element_text(size = 8))+
-    theme(axis.text.x = element_text(size = 10))+
+    theme(axis.text.y = element_text(size = 12))+
+    theme(axis.text.x = element_text(size = 8))+
     theme(plot.title.position = "plot",
           plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
     scale_fill_manual(values = colores_plot)
   
 }
@@ -332,7 +331,7 @@ plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
   col <- enquo(col)
   
   if (is.null(top)) {
-    top <- 30
+    top <- 11
   }
   
   data <- x %>%  
@@ -349,16 +348,16 @@ plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
                fill = !!col, 
                label = promedio_general)) + 
     geom_col()+
-    geom_text(vjust = 0.5, hjust = -0.5, size = 3,position = position_dodge(width = 1))+
+    geom_text(vjust = 0.5, hjust = -0.5, size = 4,position = position_dodge(width = 1))+
     scale_y_continuous(limits = c(0, max(data$promedio_general)*1.1))+
     labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
     theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
     theme(legend.position="none")+
-    theme(axis.text.y = element_text(size = 8))+
-    theme(axis.text.x = element_text(size = 10))+
+    theme(axis.text.y = element_text(size = 12))+
+    theme(axis.text.x = element_text(size = 8))+
     theme(plot.title.position = "plot",
           plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
     scale_fill_manual(values = colores_plot)+
     coord_flip()
   

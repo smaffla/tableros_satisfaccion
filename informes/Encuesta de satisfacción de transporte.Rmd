@@ -972,9 +972,9 @@ transporte %>%
     valor3 = amabilidad_y_cortesia,
     valor4 = nivel_de_atencion_mientras_conduce,
     valor5 = capacidad_de_comunicacion) %>%
+
   plot_barras_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, "", "", titulo = "Prueba", top = 10)
-  
-```
+
 
 # Calificacion por categoría
 
