@@ -362,8 +362,8 @@ server <- function(input, output, session) {
     
     output$dt_califi_gene_aseocafe <- renderDataTable({
       promedios <- aseo_cafeteria %>% 
-        filter(anodili %in% input$select_anio, 
-               mesdili %in% input$select_mes,
+        filter(anodili %in% input$select_anio_ac, 
+               mesdili %in% input$select_mes_ac,
                autoriza_datos == "Si") %>% 
         summarise(
           "Calidad del tinto y aromatica ofrecida" = round(mean(calidad_de_tinto_y_aromatica_ofrecida, na.rm = TRUE), 1),
@@ -383,8 +383,8 @@ server <- function(input, output, session) {
       
       
       aseocafe <- aseo_cafeteria %>%
-        filter(anodili %in% input$select_anio, 
-               mesdili %in% input$select_mes,
+        filter(anodili %in% input$select_anio_ac, 
+               mesdili %in% input$select_mes_ac,
                autoriza_datos == "Si") %>% 
         mutate(
           calidad_de_tinto_y_aromatica_ofrecida = recode(calidad_de_tinto_y_aromatica_ofrecida,
@@ -442,8 +442,8 @@ server <- function(input, output, session) {
     output$plot_califi_gene_aseocafe <- renderPlot({
       
       promedios <- aseo_cafeteria %>% 
-        filter(anodili %in% input$select_anio, 
-               mesdili %in% input$select_mes,
+        filter(anodili %in% input$select_anio_ac, 
+               mesdili %in% input$select_mes_ac,
                autoriza_datos == "Si") %>% 
         summarise(
           "Calidad del tinto y aromatica ofrecida" = round(mean(calidad_de_tinto_y_aromatica_ofrecida, na.rm = TRUE), 1),
@@ -462,8 +462,8 @@ server <- function(input, output, session) {
         pivot_longer(cols = everything(), names_to = "Categoria", values_to = "Promedio")
 
       aseocafe <- aseo_cafeteria %>%
-        filter(anodili %in% input$select_anio, 
-               mesdili %in% input$select_mes,
+        filter(anodili %in% input$select_anio_ac, 
+               mesdili %in% input$select_mes_ac,
                autoriza_datos == "Si") %>% 
         mutate(
           calidad_de_tinto_y_aromatica_ofrecida = recode(calidad_de_tinto_y_aromatica_ofrecida,
@@ -534,8 +534,8 @@ server <- function(input, output, session) {
     output$value_box_promedio_general <- renderUI({
         
         promedio <- aseo_cafeteria %>% 
-          filter(anodili %in% input$select_anio, 
-               mesdili %in% input$select_mes,
+          filter(anodili %in% input$select_anio_ac, 
+               mesdili %in% input$select_mes_ac,
                autoriza_datos == "Si") %>% 
           summarise(
             "Calidad del tinto y aromatica ofrecida" = round(mean(calidad_de_tinto_y_aromatica_ofrecida, na.rm = TRUE), 1),
@@ -603,80 +603,80 @@ server <- function(input, output, session) {
       if (input$select_categoria == "Calidad de tinto y aromática ofrecida") {
         
         aseo_cafeteria %>% 
-          filter(anodili %in% input$select_anio, 
-                 mesdili %in% input$select_mes) %>%
+          filter(anodili %in% input$select_anio_ac, 
+                 mesdili %in% input$select_mes_ac) %>%
           transformar_calificacion(calidad_de_tinto_y_aromatica_ofrecida) %>% 
           categorica_1var(calidad_de_tinto_y_aromatica_ofrecida, "Calificación")
           
       } else if (input$select_categoria == "Oportunidad en el servicio de preparación") {
         
         aseo_cafeteria %>% 
-          filter(anodili %in% input$select_anio, 
-                 mesdili %in% input$select_mes) %>%
+          filter(anodili %in% input$select_anio_ac, 
+                 mesdili %in% input$select_mes_ac) %>%
           transformar_calificacion(oportunidad_en_el_servicio_de_preparacion) %>% 
           categorica_1var(oportunidad_en_el_servicio_de_preparacion, "Calificación")
         
       } else if (input$select_categoria == "Amabilidad y actitud del personal") {
         
         aseo_cafeteria %>% 
-          filter(anodili %in% input$select_anio, 
-                 mesdili %in% input$select_mes) %>%
+          filter(anodili %in% input$select_anio_ac, 
+                 mesdili %in% input$select_mes_ac) %>%
           transformar_calificacion(amabilidad_y_actitud_del_personal) %>% 
           categorica_1var(amabilidad_y_actitud_del_personal, "Calificación")
         
       } else if (input$select_categoria == "Limpieza de las oficinas, salones, auditorios y laboratorios") {
         
         aseo_cafeteria %>% 
-          filter(anodili %in% input$select_anio, 
-                 mesdili %in% input$select_mes) %>%
+          filter(anodili %in% input$select_anio_ac, 
+                 mesdili %in% input$select_mes_ac) %>%
           transformar_calificacion(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios) %>% 
           categorica_1var(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios, "Calificación")
         
       } else if (input$select_categoria == "Limpieza general de las áreas comunes") {
         
         aseo_cafeteria %>% 
-          filter(anodili %in% input$select_anio, 
-                 mesdili %in% input$select_mes) %>%
+          filter(anodili %in% input$select_anio_ac, 
+                 mesdili %in% input$select_mes_ac) %>%
           transformar_calificacion(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante) %>% 
           categorica_1var(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante, "Calificación")
         
       } else if (input$select_categoria == "Limpieza general") {
         
         aseo_cafeteria %>% 
-          filter(anodili %in% input$select_anio, 
-                 mesdili %in% input$select_mes) %>%
+          filter(anodili %in% input$select_anio_ac, 
+                 mesdili %in% input$select_mes_ac) %>%
           transformar_calificacion(limpieza_general) %>% 
           categorica_1var(limpieza_general, "Calificación")
         
       } else if (input$select_categoria == "Limpieza de baños") {
         
         aseo_cafeteria %>% 
-          filter(anodili %in% input$select_anio, 
-                 mesdili %in% input$select_mes) %>%
+          filter(anodili %in% input$select_anio_ac, 
+                 mesdili %in% input$select_mes_ac) %>%
           transformar_calificacion(limpieza_de_banos) %>% 
           categorica_1var(limpieza_de_banos, "Calificación")
         
       } else if (input$select_categoria == "Labores de jardinería") {
         
         aseo_cafeteria %>% 
-          filter(anodili %in% input$select_anio, 
-                 mesdili %in% input$select_mes) %>%
+          filter(anodili %in% input$select_anio_ac, 
+                 mesdili %in% input$select_mes_ac) %>%
           transformar_calificacion(labores_de_jardineria) %>% 
           categorica_1var(labores_de_jardineria, "Calificación")
         
       } else if (input$select_categoria == "Frecuencia y labores de descanecado") {
         
         aseo_cafeteria %>% 
-          filter(anodili %in% input$select_anio, 
-                 mesdili %in% input$select_mes) %>%
+          filter(anodili %in% input$select_anio_ac, 
+                 mesdili %in% input$select_mes_ac) %>%
           transformar_calificacion(frecuencia_y_labores_de_descanecado) %>% 
           categorica_1var(frecuencia_y_labores_de_descanecado, "Calificación")
         
       } else if (input$select_categoria == "Atención y actitud de los funcionarios") {
         
         aseo_cafeteria %>% 
-          filter(anodili %in% input$select_anio, 
-                 mesdili %in% input$select_mes) %>%
+          filter(anodili %in% input$select_anio_ac, 
+                 mesdili %in% input$select_mes_ac) %>%
           transformar_calificacion(atencion_y_actitud_de_los_funcionarios) %>% 
           categorica_1var(atencion_y_actitud_de_los_funcionarios, "Calificación")
         
@@ -689,80 +689,79 @@ server <- function(input, output, session) {
       if (input$select_categoria == "Calidad de tinto y aromática ofrecida") {
         
         aseo_cafeteria %>% 
-          filter(anodili %in% input$select_anio, 
-                 mesdili %in% input$select_mes) %>%
+          filter(anodili %in% input$select_anio_ac, 
+                 mesdili %in% input$select_mes_ac) %>%
           transformar_calificacion(calidad_de_tinto_y_aromatica_ofrecida) %>% 
           plot_barras(calidad_de_tinto_y_aromatica_ofrecida, " ", " ")
         
       } else if (input$select_categoria == "Oportunidad en el servicio de preparación") {
         
-        aseo_cafeteria %>% 
-          filter(anodili %in% input$select_anio, 
-                 mesdili %in% input$select_mes) %>%
+        filter(anodili %in% input$select_anio_ac, 
+               mesdili %in% input$select_mes_ac) %>%
           transformar_calificacion(oportunidad_en_el_servicio_de_preparacion) %>% 
           plot_barras(oportunidad_en_el_servicio_de_preparacion, " ", " ")
         
       } else if (input$select_categoria == "Amabilidad y actitud del personal") {
         
         aseo_cafeteria %>% 
-          filter(anodili %in% input$select_anio, 
-                 mesdili %in% input$select_mes) %>%
+          filter(anodili %in% input$select_anio_ac, 
+                 mesdili %in% input$select_mes_ac) %>%
           transformar_calificacion(amabilidad_y_actitud_del_personal) %>% 
           plot_barras(amabilidad_y_actitud_del_personal, " ", " ")
         
       } else if (input$select_categoria == "Limpieza de las oficinas, salones, auditorios y laboratorios") {
         
         aseo_cafeteria %>% 
-          filter(anodili %in% input$select_anio, 
-                 mesdili %in% input$select_mes) %>%
+          filter(anodili %in% input$select_anio_ac, 
+                 mesdili %in% input$select_mes_ac) %>%
           transformar_calificacion(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios) %>% 
           plot_barras(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios, " ", " ")
         
       } else if (input$select_categoria == "Limpieza general de las áreas comunes") {
         
         aseo_cafeteria %>% 
-          filter(anodili %in% input$select_anio, 
-                 mesdili %in% input$select_mes) %>%
+          filter(anodili %in% input$select_anio_ac, 
+                 mesdili %in% input$select_mes_ac) %>%
           transformar_calificacion(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante) %>% 
           plot_barras(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante, " ", " ")
         
       } else if (input$select_categoria == "Limpieza general") {
         
         aseo_cafeteria %>% 
-          filter(anodili %in% input$select_anio, 
-                 mesdili %in% input$select_mes) %>%
+          filter(anodili %in% input$select_anio_ac, 
+                 mesdili %in% input$select_mes_ac) %>%
           transformar_calificacion(limpieza_general) %>% 
           plot_barras(limpieza_general, " ", " ")
         
       } else if (input$select_categoria == "Limpieza de baños") {
         
         aseo_cafeteria %>% 
-          filter(anodili %in% input$select_anio, 
-                 mesdili %in% input$select_mes) %>%
+          filter(anodili %in% input$select_anio_ac, 
+                 mesdili %in% input$select_mes_ac) %>%
           transformar_calificacion(limpieza_de_banos) %>% 
           plot_barras(limpieza_de_banos, " ", " ")
         
       } else if (input$select_categoria == "Labores de jardinería") {
         
         aseo_cafeteria %>% 
-          filter(anodili %in% input$select_anio, 
-                 mesdili %in% input$select_mes) %>%
+          filter(anodili %in% input$select_anio_ac, 
+                 mesdili %in% input$select_mes_ac) %>%
           transformar_calificacion(labores_de_jardineria) %>% 
           plot_barras(labores_de_jardineria, " ", " ")
         
       } else if (input$select_categoria == "Frecuencia y labores de descanecado") {
         
         aseo_cafeteria %>% 
-          filter(anodili %in% input$select_anio, 
-                 mesdili %in% input$select_mes) %>%
+          filter(anodili %in% input$select_anio_ac, 
+                 mesdili %in% input$select_mes_ac) %>%
           transformar_calificacion(frecuencia_y_labores_de_descanecado) %>% 
           plot_barras(frecuencia_y_labores_de_descanecado, " ", " ")
         
       } else if (input$select_categoria == "Atención y actitud de los funcionarios") {
         
         aseo_cafeteria %>% 
-          filter(anodili %in% input$select_anio, 
-                 mesdili %in% input$select_mes) %>%
+          filter(anodili %in% input$select_anio_ac, 
+                 mesdili %in% input$select_mes_ac) %>%
           transformar_calificacion(atencion_y_actitud_de_los_funcionarios) %>% 
           plot_barras(atencion_y_actitud_de_los_funcionarios, " ", " ")
         
@@ -772,8 +771,8 @@ server <- function(input, output, session) {
     output$dt_califi_genero_ac <- renderDataTable({
       
       aseo_cafe %>% 
-        filter(anodili %in% input$select_anio, 
-               mesdili %in% input$select_mes) %>% 
+        filter(anodili %in% input$select_anio_ac, 
+               mesdili %in% input$select_mes_ac) %>% 
         tabla_prom(cual_es_su_identidad_de_genero, "Identidad de género")
       
     })
@@ -781,8 +780,8 @@ server <- function(input, output, session) {
     output$plot_califi_genero_ac <- renderPlot({
       
       aseo_cafe %>% 
-        filter(anodili %in% input$select_anio, 
-               mesdili %in% input$select_mes) %>% 
+        filter(anodili %in% input$select_anio_ac, 
+               mesdili %in% input$select_mes_ac) %>% 
         plot_barras_prom(cual_es_su_identidad_de_genero, "", "")
       
     })
@@ -790,8 +789,8 @@ server <- function(input, output, session) {
     output$plot_califi_edad_ac <- renderPlot({
       
       aseo_cafe %>% 
-        filter(anodili %in% input$select_anio, 
-               mesdili %in% input$select_mes) %>% 
+        filter(anodili %in% input$select_anio_ac, 
+               mesdili %in% input$select_mes_ac) %>%
         plot_barras_prom(cual_es_su_rango_de_edad, "", "")
       
     })
@@ -799,8 +798,8 @@ server <- function(input, output, session) {
     output$dt_califi_edad_ac <- renderDataTable({
       
       aseo_cafe %>% 
-        filter(anodili %in% input$select_anio, 
-               mesdili %in% input$select_mes) %>% 
+        filter(anodili %in% input$select_anio_ac, 
+               mesdili %in% input$select_mes_ac) %>% 
         tabla_prom(cual_es_su_rango_de_edad, "Rango de edad")
       
     })
@@ -808,8 +807,8 @@ server <- function(input, output, session) {
     output$dt_califi_dependencia_ac <- renderDataTable({
       
       aseo_cafe %>% 
-        filter(anodili %in% input$select_anio, 
-               mesdili %in% input$select_mes) %>% 
+        filter(anodili %in% input$select_anio_ac, 
+               mesdili %in% input$select_mes_ac) %>% 
         tabla_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces,
                    "Unidad o dependencia")
       
@@ -818,8 +817,8 @@ server <- function(input, output, session) {
     output$plot_califi_dependencia_ac <- renderPlot({
       
       aseo_cafe %>% 
-        filter(anodili %in% input$select_anio, 
-               mesdili %in% input$select_mes) %>% 
+        filter(anodili %in% input$select_anio_ac, 
+               mesdili %in% input$select_mes_ac) %>% 
         plot_barras_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces,
                          "", "")
       
@@ -828,8 +827,8 @@ server <- function(input, output, session) {
     output$dt_califi_vinculacion_ac <- renderDataTable({
       
       aseo_cafe %>% 
-        filter(anodili %in% input$select_anio, 
-               mesdili %in% input$select_mes) %>% 
+        filter(anodili %in% input$select_anio_ac, 
+               mesdili %in% input$select_mes_ac) %>% 
         tabla_prom(cual_es_el_tipo_de_vinculacion_o_relacion_que_tiene_con_la_upn_universidad_pedagogica_nacional,
                    "Tipo de vinculación")
       
@@ -838,8 +837,8 @@ server <- function(input, output, session) {
     output$plot_califi_vinculacion_ac <- renderPlot({
       
       aseo_cafe %>% 
-        filter(anodili %in% input$select_anio, 
-               mesdili %in% input$select_mes) %>% 
+        filter(anodili %in% input$select_anio_ac, 
+               mesdili %in% input$select_mes_ac) %>%
         plot_barras_prom(cual_es_el_tipo_de_vinculacion_o_relacion_que_tiene_con_la_upn_universidad_pedagogica_nacional,
                          "", "")
       

@@ -124,6 +124,16 @@ transporte <- transporte %>%
          mesdili = str_to_title(mesdili)) %>% 
   mutate(anodili = year(hora_de_finalizacion))
 
+# general <- transporte %>% 
+#   select(autoriza_datos, tipo_de_vinculacion, 
+#          en_que_instalaciones_de_la_upn_universidad_pedagogica_nacional_desarrolla_sus_actividades_y_o_labores,
+#          cual_es_su_identidad_de_genero, cual_es_su_rango_de_edad, 
+#          a_que_grupo_poblacional_o_sector_social_perteneces, a_que_grupo_de_pertenencia_etnica_pertenece,
+#          a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces) %>% 
+#   rename(instalaciones = en_que_instalaciones_de_la_upn_universidad_pedagogica_nacional_desarrolla_sus_actividades_y_o_labores,
+#          unidad_dependencia = )
+
+
 ## Funciones
 
 generate_html <- function(variable) {

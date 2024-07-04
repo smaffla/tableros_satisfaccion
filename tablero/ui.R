@@ -418,7 +418,7 @@ dashboardPage(
               column(
                 width = 6,
                 sliderInput(
-                  inputId = "select_anio",
+                  inputId = "select_anio_ac",
                   label = "Seleccione un año",
                   min = 2024,
                   max = 2025,
@@ -430,7 +430,7 @@ dashboardPage(
               column(
                 width = 6,
                 pickerInput(
-                  inputId = "select_mes",
+                  inputId = "select_mes_ac",
                   options = list(`actions-box` = TRUE,
                                  `deselect-all-text` = "Deseleccionar todo",
                                  `select-all-text` = "Seleccionar todo",
