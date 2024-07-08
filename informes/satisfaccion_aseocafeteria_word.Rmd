@@ -1,30 +1,33 @@
 ---
-title: "Encuesta de satisfacción del servicio de aseo y cafetería"
-date: "`r Sys.Date()`"
-author: "Universidad Pedagógica Nacional"
+title: "ANÁLISIS DESCRIPTIVO DE INSCRIPCIONES Y ADMISIONES"
+author: "Oficina de Desarrollo y Planeación"
 output:
   word_document:
-    toc: yes
-    toc_depth: '4'
-  pdf_document:
-    toc: yes
-    toc_depth: '4'
-  html_document: 
     fig_height: 7
     fig_width: 10
-    highlight: tango
-    keep_md: no
-    number_sections: yes
-    theme: cerulean
     toc: yes
-    toc_depth: 4
-    toc_float:
-      collapsed: no
-      smooth_scroll: yes
+    toc_depth: '4'
+  html_document:
+    toc: yes
+    toc_depth: '4'
+    df_print: paged
+params:
+  facu: NA
+  prog: NA
+  año: NA
+  periodo: NA
+  rendered_by_shiny: no
+subtitle: Universidad Pedagógica Nacional
 editor_options:
-  
   chunk_output_type: inline
+toc-title: Tabla de contenido
 ---
+
+<div>
+<img src="https://estilos.upn.edu.co/userfiles/footer/footer.svg" alt="UPN" class="watermark">
+</div>
+
+\newpage
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
@@ -40,7 +43,7 @@ library(flextable)
 library(scales)
 library(lubridate)
 
-aseo_cafeteria <- read.xlsx("../vistas/Encuesta de satisfacción del servicio de aseo y cafetería..xlsx")
+aseo_cafeteria <- read.xlsx("Encuesta de satisfacción del servicio de aseo y cafetería..xlsx")
 
 colores_plot <- c(#"#2171b5",
                                               "#4292c6","#74a9cf",

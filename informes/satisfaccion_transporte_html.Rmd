@@ -1,15 +1,8 @@
 ---
-title: "Encuesta de satisfacción del servicio de transporte"
-date: "`r Sys.Date()`"
-author: "Universidad Pedagógica Nacional"
+title: "ANÁLISIS DESCRIPTIVO DE INSCRIPCIONES Y ADMISIONES"
+author: "Oficina de Desarrollo y Planeación"
 output:
-  word_document:
-    toc: yes
-    toc_depth: '4'
-  pdf_document:
-    toc: yes
-    toc_depth: '4'
-  html_document: 
+  html_document:
     fig_height: 7
     fig_width: 10
     highlight: tango
@@ -17,14 +10,29 @@ output:
     number_sections: yes
     theme: cerulean
     toc: yes
+    css: "corp-styles.css"
     toc_depth: 4
     toc_float:
       collapsed: no
       smooth_scroll: yes
+  word_document:
+    toc: yes
+    toc_depth: '4'
+params:
+  facu: NA
+  prog: NA
+  año: NA
+  periodo: NA
+  rendered_by_shiny: no
+subtitle: Universidad Pedagógica Nacional
 editor_options:
-  
   chunk_output_type: inline
 ---
+
+<div>
+<img src="https://estilos.upn.edu.co/userfiles/footer/footer.svg" alt="UPN" class="watermark">
+</div>
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
@@ -47,7 +55,7 @@ colores_plot <- c(#"#2171b5",
                                               "#fe9929","#ec7014")
 
 
-transporte <- read.xlsx("../vistas/Encuesta de satisfacción del servicio de transporte.xlsx")
+transporte <- read.xlsx("Encuesta de satisfacción del servicio de transporte.xlsx")
 
 ```
 
@@ -965,7 +973,6 @@ transporte %>%
 ### Gráfico
 
 ```{r}
-
 transporte %>% 
   rename(valor1 = estado_mecanico_de_los_vehiculo, 
     valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
@@ -975,6 +982,9 @@ transporte %>%
 
   plot_barras_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, "", "", titulo = "Prueba", top = 10)
 
+
+
+```
 
 # Calificacion por categoría
 
@@ -1009,12 +1019,11 @@ transporte %>%
   rename(
     "Promedio" = prom, 
     "Nombre del conductor" = nombre_del_conductor_que_presto_el_servicio) %>%
-  styled_dt()
-  #ftable(encabezado = "Calificación del estado mécanico del vehiculo por conductor") %>%
-  # bg(i = nrow_part(.), bg = "white") %>%
-  # bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
-  # color(i = nrow_part(.), color = "black") %>%
-  # bold(i = nrow_part(.), bold = FALSE)
+  ftable(encabezado = "Calificación del estado mécanico del vehiculo por conductor") %>%
+  bg(i = nrow_part(.), bg = "white") %>%
+  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+  color(i = nrow_part(.), color = "black") %>%
+  bold(i = nrow_part(.), bold = FALSE)
 
 
 ```
@@ -1054,12 +1063,11 @@ transporte %>%
   rename(
     "Promedio" = prom, 
     "Nombre del conductor" = nombre_del_conductor_que_presto_el_servicio) %>%
-    styled_dt()
-  # ftable(encabezado = "Calificación de la limpieza y presentación general de los vehículos por conductor") %>%
-  # bg(i = nrow_part(.), bg = "white") %>%
-  # bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
-  # color(i = nrow_part(.), color = "black") %>%
-  # bold(i = nrow_part(.), bold = FALSE)
+  ftable(encabezado = "Calificación de la limpieza y presentación general de los vehículos por conductor") %>%
+  bg(i = nrow_part(.), bg = "white") %>%
+  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+  color(i = nrow_part(.), color = "black") %>%
+  bold(i = nrow_part(.), bold = FALSE)
 
 ```
 
@@ -1097,12 +1105,11 @@ transporte %>%
   rename(
     "Promedio" = prom, 
     "Nombre del conductor" = nombre_del_conductor_que_presto_el_servicio) %>%
-  styled_dt()
-  # ftable(encabezado = "Calificación de la amabilidad y cortesía por conductor") %>%
-  # bg(i = nrow_part(.), bg = "white") %>%
-  # bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
-  # color(i = nrow_part(.), color = "black") %>%
-  # bold(i = nrow_part(.), bold = FALSE)
+  ftable(encabezado = "Calificación de la amabilidad y cortesía por conductor") %>%
+  bg(i = nrow_part(.), bg = "white") %>%
+  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+  color(i = nrow_part(.), color = "black") %>%
+  bold(i = nrow_part(.), bold = FALSE)
 
 ```
 
