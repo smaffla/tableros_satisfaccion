@@ -23,9 +23,9 @@ colores_plot <- c(#"#2171b5",
   "#78c679","#c7e9b4","#edf8b1","#fee391","#fec44f",
   "#fe9929","#ec7014")
 
-transporte <- read.xlsx("../vistas/Encuesta de satisfacción del servicio de transporte.xlsx")
+transporte <- read.xlsx("Encuesta de satisfacción del servicio de transporte.xlsx")
 
-aseo_cafeteria <- read.xlsx("../vistas/Encuesta de satisfacción del servicio de aseo y cafetería..xlsx")
+aseo_cafeteria <- read.xlsx("Encuesta de satisfacción del servicio de aseo y cafetería..xlsx")
 
 # Depuracion de datos 
 

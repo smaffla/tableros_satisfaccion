@@ -47,7 +47,7 @@ colores_plot <- c(#"#2171b5",
                                               "#fe9929","#ec7014")
 
 
-transporte <- read.xlsx("../vistas/Encuesta de satisfacción del servicio de transporte.xlsx")
+transporte <- read.xlsx("Encuesta de satisfacción del servicio de transporte.xlsx")
 
 ```
 
