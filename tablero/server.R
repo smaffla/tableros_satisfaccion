@@ -1273,6 +1273,7 @@ server <- function(input, output, session) {
         
       } else if (input$select_categoria == "Oportunidad en el servicio de preparación") {
         
+        aseo_cafeteria %>% 
         filter(anodili %in% input$select_anio_ac, 
                mesdili %in% input$select_mes_ac) %>%
           transformar_calificacion(oportunidad_en_el_servicio_de_preparacion) %>% 
