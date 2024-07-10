@@ -133,6 +133,16 @@ dashboardPage(
           ),
         
           br(),
+        
+        fluidRow(
+          align = "center",
+          div(
+            style = "max-width: 900px; margin: 0 auto;",
+            HTML("<h5 style='color: #393939;'><strong>A continuación, se presenta una serie de tablas y gráficas detalladas que ilustran la distribución de la cantidad y porcentaje de 
+                 personas que han participado en todas encuesta. Estos gráficos están organizados en diversas categorías para ofrecer una visión integral y comprensiva de los datos recolectados:</strong></h5>")
+          )
+        ),
+        
           br(),
         
         #### 📊📋 Gráfico y tabla por tipo de vinculacion ----------------------------------------------------
@@ -367,7 +377,7 @@ dashboardPage(
         ),
         
         
-        #Tabla y gráfica para meses en los que se calificó el servicio de transporte
+
         
         br(),
         
@@ -390,8 +400,18 @@ dashboardPage(
               ),
               
               column(
-                width = 6,
+                width = 2,
                 uiOutput("value_box_promedio_general_trans") %>% withSpinner(type = 8, size = 0.5)
+              ),
+              
+              column(
+                width = 3,
+                uiOutput("value_box_promedio_actitudinal_trans") %>% withSpinner(type = 8, size = 0.5)
+              ),
+              
+              column(
+                width = 3,
+                uiOutput("value_box_promedio_vehiculo_trans") %>% withSpinner(type = 8, size = 0.5)
               )
             )
           )
@@ -400,6 +420,8 @@ dashboardPage(
         br(),
         
         
+        #Tabla y gráfica para meses en los que se calificó el servicio de transporte
+        
         fluidRow(
           align = "center",
           HTML("<h2 style = 'color: #00609d'><strong>Meses en los que se calificó el servicio de transporte</strong></h2>"),
@@ -407,7 +429,16 @@ dashboardPage(
         
         br(),
         
-
+        fluidRow(
+          align = "center",
+          div(
+            style = "max-width: 900px; margin: 0 auto;",
+            HTML("<h5 style='color: #393939;'>A continuación, se muestra la cantidad y porcentaje de personas que contestaron la encuesta por cada mes: </h5>")
+          )
+        ),
+        
+        br(),
+        
         fluidRow(
           column(
             width = 6,
@@ -431,6 +462,15 @@ dashboardPage(
         
         br(),
         
+        fluidRow(
+          align = "center",
+          div(
+            style = "max-width: 900px; margin: 0 auto;",
+            HTML("<h5 style='color: #393939;'>A continuación se muestra la cantidad y porcentaje de personas que contestaron la encuesta, haciendo énfasis en el tipo de servicio de transporte que estaban calificando y el mes en el que se respondió la encuesta: </h5>")
+          )
+        ),
+        
+        br(), 
 
         fluidRow(
           column(
@@ -443,6 +483,39 @@ dashboardPage(
             plotOutput("plot_tipo_servicio_trans") %>% withSpinner(type = 8, size = 0.5)
           )
 
+        ),
+        
+        br(),
+        br(),
+        
+        fluidRow(
+          align = "center",
+          HTML("<h2 style = 'color: #00609d'><strong>Calificación general para cada conductor</strong></h2>"),
+        ),
+        
+        br(),
+        
+        fluidRow(
+          align = "center",
+          div(
+            style = "max-width: 900px; margin: 0 auto;",
+            HTML("<h5 style='color: #393939;'>Se muestra la calificación general dada a cada conductor, esta calificación muestra como el encuestado percibe la calidad del servicio prestado por parte del conductor. </h5>")
+          )
+        ),
+        
+        br(), 
+        
+        fluidRow(
+          column(
+            width = 6,
+            dataTableOutput("dt_calificacion_conductor") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          
+          column(
+            width = 6,
+            plotOutput("plot_calificacion_conductor") %>% withSpinner(type = 8, size = 0.5)
+          )
+          
         ),
         
         fluidRow(
@@ -473,8 +546,8 @@ dashboardPage(
                                    size = 7),
                     multiple = F,
                     label = "Seleccione una categoria",
-                    choices = c("Conductor", "Tipo de vinculación", "Edad", "Identidad de género", "Unidad o dependencia de la UPN"),
-                    selected = "Conductor"
+                    choices = c("Tipo de vinculación", "Edad", "Identidad de género", "Unidad o dependencia de la UPN"),
+                    selected = "Tipo de vinculación"
                   )
                 )
               )
@@ -490,6 +563,14 @@ dashboardPage(
         ),
         
         br(),
+        
+        fluidRow(
+          align = "center",
+          div(
+            style = "max-width: 900px; margin: 0 auto;",
+            uiOutput("html_text_encuestado_trans")
+            )
+        ),
         
         fluidRow(
           column(
@@ -519,6 +600,7 @@ dashboardPage(
           fluidRow(
             column(
               width = 10,
+              offset = 1,
               box(
                 width = 12,
                 style = "margin-top: 2%",
@@ -552,6 +634,14 @@ dashboardPage(
         ),
         
         br(),
+        
+        fluidRow(
+          align = "center",
+          div(
+            style = "max-width: 900px; margin: 0 auto;",
+            uiOutput("html_text_servicio_trans")
+          )
+        ),
         
         fluidRow(
           column(
@@ -599,7 +689,7 @@ dashboardPage(
                   choices = c("Cumplimiento de itinerarios solicitados", 
                               "Cumplimiento de horarios solicitados", 
                               "Cumplimiento de normas de tránsito",
-                              "Se presento algun incidente o accidente", "Recomendaría el servicio"),
+                              "¿Se presentó algún incidente o accidente?", "¿Recomendaría el servicio?"),
                   selected = "Cumplimiento de itinerarios solicitados"
                 )
               )
@@ -612,6 +702,16 @@ dashboardPage(
         fluidRow(
           align = "center",
           uiOutput("html_output_aspecto_trans"),
+        ),
+        
+        br(),
+        
+        fluidRow(
+          align = "center",
+          div(
+            style = "max-width: 900px; margin: 0 auto;",
+            uiOutput("html_text_aspecto"),
+            )
         ),
         
         fluidRow(
@@ -652,7 +752,7 @@ dashboardPage(
         
       )
         
-      ),# Cierra dashboarTransporte
+      ),# Cierra dashboardTransporte
     
     ### Dashboard aseo y cafetería -------------------------------------------------------
     
@@ -762,6 +862,16 @@ dashboardPage(
         br(),
         
         fluidRow(
+          align = "center",
+          div(
+            style = "max-width: 900px; margin: 0 auto;",
+            HTML("<h5 style='color: #393939;'>Se muestra la calificación general que se obtuvo para cada uno de los criterios de evaluación del servicio de aseo y cafetería: </h5>")
+          )
+        ),
+        
+        br(),
+        
+        fluidRow(
           column(
             width = 10,
             offset = 1,
@@ -771,25 +881,25 @@ dashboardPage(
         
         br(),
         
-        # fluidRow(
-        #   column(
-        #     width = 10,
-        #     offset = 1,
-        #     plotOutput("plot_califi_gene_aseocafe") %>% withSpinner(type = 8, size = 0.5)
-        #   )
-        # ),
-        
-        # fluidRow(
-        #   column(
-        #     width = 6,
-        #     plotOutput("plot_servicio") %>% withSpinner(type = 8, size = 0.5)
-        #   ),
-        #   column(
-        #     width = 6,
-        #     DTOutput("dt_servicio") %>% withSpinner(type = 8, size = 0.5)
-        #   )
-        # ),
-        # 
+        fluidRow(
+          column(
+            width = 10,
+            offset = 1,
+            plotOutput("plot_califi_gene_aseocafe") %>% withSpinner(type = 8, size = 0.5)
+          )
+        ),
+
+        fluidRow(
+          column(
+            width = 6,
+            plotOutput("plot_servicio") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          column(
+            width = 6,
+            DTOutput("dt_servicio") %>% withSpinner(type = 8, size = 0.5)
+          )
+        ),
+
         br(),
         br(),
         
@@ -838,6 +948,15 @@ dashboardPage(
         
         br(),
         
+        
+        fluidRow(
+          align = "center",
+          div(
+            style = "max-width: 900px; margin: 0 auto;",
+            HTML("<h5 style='color: #393939;'><strong>Se muestra la a través de una gráfica y una tabla la percepción del encuestado frente a cada categoría del servicio de aseo y cafetería</strong></h5>")
+          )
+        ),
+        
         fluidRow(
           align = "center",
           uiOutput("html_output"),
@@ -865,6 +984,14 @@ dashboardPage(
         ),
         
         br(),
+        
+        fluidRow(
+          align = "center",
+          div(
+            style = "max-width: 900px; margin: 0 auto;",
+            HTML("<h5 style='color: #393939;'>Se muestra la calificación promedio que se obtuvo para el servicio de aseo y cafetería, dividiendolos en las siguientes categorías: </h5>")
+          )
+        ),
         
         fluidRow(
           align = "center",

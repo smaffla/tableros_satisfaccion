@@ -143,6 +143,11 @@ generate_html <- function(variable) {
   
 }
 
+generate_html_text <- function(variable) {
+  HTML(glue("<h5 style = 'color: #393939'>{variable()}</h5>"))
+  
+}
+
 transformar_calificacion <- function(x, col) {
  
   col <- enquo(col)
