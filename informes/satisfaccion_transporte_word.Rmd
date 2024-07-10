@@ -1,30 +1,33 @@
 ---
-title: "Encuesta de satisfacción del servicio de transporte"
-date: "`r Sys.Date()`"
-author: "Universidad Pedagógica Nacional"
+title: "ANÁLISIS DESCRIPTIVO DE LA ENCUESTA DE SATISFACCIÓN DEL SERVICIO DE TRANSPORTE"
+author: "Oficina de Desarrollo y Planeación"
 output:
   word_document:
-    toc: yes
-    toc_depth: '4'
-  pdf_document:
-    toc: yes
-    toc_depth: '4'
-  html_document: 
     fig_height: 7
     fig_width: 10
-    highlight: tango
-    keep_md: no
-    number_sections: yes
-    theme: cerulean
     toc: yes
-    toc_depth: 4
-    toc_float:
-      collapsed: no
-      smooth_scroll: yes
+    toc_depth: '4'
+  html_document:
+    toc: yes
+    toc_depth: '4'
+    df_print: paged
+params:
+  facu: NA
+  prog: NA
+  año: NA
+  periodo: NA
+  rendered_by_shiny: no
+subtitle: Universidad Pedagógica Nacional
 editor_options:
-  
   chunk_output_type: inline
+toc-title: Tabla de contenido
 ---
+
+<div>
+<img src="https://estilos.upn.edu.co/userfiles/footer/footer.svg" alt="UPN" class="watermark">
+</div>
+
+\newpage
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
@@ -50,8 +53,6 @@ colores_plot <- c(#"#2171b5",
 transporte <- read.xlsx("Encuesta de satisfacción del servicio de transporte.xlsx")
 
 ```
-
-# Funciones
 
 ```{r}
 
@@ -82,6 +83,20 @@ ftable <- function(x, encabezado = NULL, title = NULL) {
   return(table)
     
 }
+transformar_calificacion <- function(x, col) {
+ 
+  col <- enquo(col)
+  
+   x %>% 
+    mutate(!!col := as.character(!!col)) %>% 
+    mutate(!!col := case_when(
+             !!col == "1" ~ "Muy deficiente",
+             !!col == "2" ~ "Deficiente",
+             !!col == "3" ~ "Aceptable",
+             !!col == "4" ~ "Bueno",
+             !!col == "5" ~ "Excelente",
+             TRUE ~ !!col))
+}
 
 plot_donas <- function(x, col, group, titulo = "") {
   
@@ -89,26 +104,27 @@ plot_donas <- function(x, col, group, titulo = "") {
   col <- enquo(col)
   
   data <- x %>%
+    filter(autoriza_datos == "Si") %>% 
     count(!!group, !!col) %>% 
     mutate(porcentaje = n / sum(n),
            ymax = cumsum(porcentaje),
            ymin = c(0, head(ymax, n = -1)),
            labelpos = (ymax + ymin) / 2,
            labelname = paste(n,"\n",percent(porcentaje, 0.1)))
-    #filter(porcentaje >= 0.005)
+  #filter(porcentaje >= 0.005)
   
   ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 10, xmin = 1, fill = !!group)) +
     geom_rect() +
-    geom_text(aes(x = -1.5, y = labelpos, label = labelname), size = 4, color = "black", fontface = "bold") +
+    geom_text(aes(x = -1.5, y = labelpos, label = labelname), size = 5, color = "black", fontface = "bold") +
     labs(title = str_wrap(titulo, width = 30)) +
     scale_fill_manual(values = colores_plot) +
     coord_polar(theta = "y") +
     xlim(c(20, -10)) +
     theme_void() +
     theme(plot.title.position = "plot",
-          plot.title = element_text(hjust = 0.5, size = 16, face = 'bold', color = "#525252")) +
+          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
     guides(fill = guide_legend(title = "", label.position = "right",
-                               label.theme = element_text(size = 12)))
+                               label.theme = element_text(size = 18)))
 }
 
 ## Función gráfico de barras para df caracterizacion
@@ -116,11 +132,12 @@ plot_barras <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
   col <- enquo(col)
   
   data <- x %>%
+    filter(autoriza_datos == "Si") %>% 
     count(!!col )%>% 
     mutate(perc = percent(n/sum(n), 0.1))
   
-    if (is.null(top)) {
-    top <- 30
+  if (is.null(top)) {
+    top <- 11
   }
   
   data %>% 
@@ -131,16 +148,15 @@ plot_barras <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
                fill = !!col, 
                label = paste(perc,"\n",n," "))) + 
     geom_col()+
-    geom_text(vjust = 0.5, hjust = -0.1, size = 3,position = position_dodge(width = 1))+
+    geom_text(vjust = 0.5, hjust = -0.1, size = 4,position = position_dodge(width = 1))+
     scale_y_continuous(limits = c(0, max(data$n)*1.1))+
     labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
-    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
     theme(legend.position="none")+
-    theme(axis.text.y = element_text(size = 8))+
-    theme(axis.text.x = element_text(size = 10))+
+    theme(axis.text.y = element_text(size = 14))+
+    theme(axis.text.x = element_text(size = 8))+
     theme(plot.title.position = "plot",
-          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
+          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
     scale_fill_manual(values = colores_plot)+
     coord_flip()
   
@@ -152,6 +168,7 @@ plot_cols <- function(x, col, xlab, ylab, titulo = "") {
   col <- enquo(col)
   
   data <- x %>%
+    filter(autoriza_datos == "Si") %>% 
     count(!!col) %>% 
     mutate(perc = percent(n/sum(n), 0.1))
   
@@ -161,16 +178,16 @@ plot_cols <- function(x, col, xlab, ylab, titulo = "") {
                fill = !!col, 
                label = paste(perc,"\n",n," "))) + 
     geom_col()+
-    geom_text(vjust = 0.5, size = 3,position = position_dodge(width = 1))+
+    geom_text(vjust = 0.5, size = 4,position = position_dodge(width = 1))+
     scale_y_continuous(limits = c(0, max(data$n)*1.1))+
     labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30))+ 
     theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
     theme(legend.position="none")+
-    theme(axis.text.y = element_text(size = 8))+
-    theme(axis.text.x = element_text(size = 10))+
+    theme(axis.text.y = element_text(size = 12))+
+    theme(axis.text.x = element_text(size = 8))+
     theme(plot.title.position = "plot",
           plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
     scale_fill_manual(values = colores_plot)
   
 }
@@ -181,6 +198,7 @@ plot_barras_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo
   group <- enquo(group)
   
   data <- x %>%
+    filter(autoriza_datos == "Si") %>% 
     count(!!group, !!col) %>% 
     mutate(perc = percent(n/sum(n), 0.1))
   
@@ -190,21 +208,20 @@ plot_barras_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo
                fill = !!group, 
                label = paste(perc,"\n",n," "))) + 
     geom_col(position = "dodge")+
-    geom_text(vjust = 0.5, hjust = -0.2 ,size = 2.5,position = position_dodge(width = 1))+
+    geom_text(vjust = 0.5, hjust = -0.2 ,size = 4,position = position_dodge(width = 1))+
     scale_y_continuous(limits = c(0, max(data$n)*1.1))+
     labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30))+ 
     theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
-     theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
-        guides(fill = guide_legend(title = leyenda, label.position = "right"
-                     , nrow = 2, label.theme = element_text(size = 12)))+
-        theme(legend.position = "bottom",
+    guides(fill = guide_legend(title = leyenda, label.position = "right"
+                               , nrow = 2, label.theme = element_text(size = 12)))+
+    theme(legend.position = "bottom",
           axis.text.y = element_text(size = 13),
           axis.text.x = element_text(size = 13)) +
-    theme(axis.text.y = element_text(size = 8))+
-    theme(axis.text.x = element_text(size = 10))+
+    theme(axis.text.y = element_text(size = 12))+
+    theme(axis.text.x = element_text(size = 8))+
     theme(plot.title.position = "plot",
           plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
     scale_fill_manual(values = colores_plot)+
     coord_flip()
   
@@ -217,6 +234,7 @@ plot_cols_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo =
   group <- enquo(group)
   
   data <- x %>%
+    filter(autoriza_datos == "Si") %>% 
     count(!!group, !!col) %>% 
     mutate(perc = percent(n/sum(n), 0.1))
   
@@ -226,21 +244,58 @@ plot_cols_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo =
                fill = !!group, 
                label = paste(perc,"\n",n," "))) + 
     geom_col(position = "dodge")+
-    geom_text(vjust = 0.5,hjust = -0.5 , size = 2.5,position = position_dodge(width = 1))+
+    geom_text(vjust = 0.5,hjust = -0.5 , size = 4,position = position_dodge(width = 1))+
     scale_y_continuous(limits = c(0, max(data$n)*1.1))+
     labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30))+ 
     theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
-        guides(fill = guide_legend(title = leyenda, label.position = "right"
-                     , nrow = 2, label.theme = element_text(size = 12)))+
-        theme(legend.position = "bottom",
+    guides(fill = guide_legend(title = leyenda, label.position = "right"
+                               , nrow = 2, label.theme = element_text(size = 12)))+
+    theme(legend.position = "bottom",
           axis.text.y = element_text(size = 13),
           axis.text.x = element_text(size = 13)) +
-    theme(axis.text.y = element_text(size = 8))+
-    theme(axis.text.x = element_text(size = 10))+
+    theme(axis.text.y = element_text(size = 12))+
+    theme(axis.text.x = element_text(size = 8))+
     theme(plot.title.position = "plot",
           plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
     scale_fill_manual(values = colores_plot)
+  
+}
+
+plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
+  
+  col <- enquo(col)
+  
+  if (is.null(top)) {
+    top <- 11
+  }
+  
+  data <- x %>%  
+    filter(autoriza_datos == "Si") %>% 
+    group_by(!!col) %>%
+    summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
+    ungroup()
+  
+  data %>% 
+    arrange(desc(promedio_general)) %>% 
+    slice(1:top) %>% 
+    ggplot(aes(x = !!col, 
+               y= promedio_general, 
+               fill = !!col, 
+               label = promedio_general)) + 
+    geom_col()+
+    geom_text(vjust = 0.5, hjust = -0.5, size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$promedio_general)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
+    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+    theme(legend.position="none")+
+    theme(axis.text.y = element_text(size = 14))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
+    scale_fill_manual(values = colores_plot)+
+    coord_flip()
   
 }
 
@@ -265,6 +320,7 @@ categorica_1var <- function(x, cat1, rename, encabezado = NULL, title = NULL, wr
     }
   
   table <- x %>% 
+    filter(autoriza_datos == "Si") %>% 
     count(!!cat1) %>% 
     adorn_totals(where = "row", name = "Total General") %>%
     rename('{rename}' := !!cat1, "Cantidad" = n) %>% 
@@ -280,9 +336,11 @@ categorica_2var <- function(x, cat1, cat2, rename, encabezado = NULL, title = NU
   cat2 <- enquo(cat2)
   
   table <- x %>% 
+    filter(autoriza_datos == "Si") %>% 
     count(!!cat1, !!cat2) %>% 
     rbind(
       x %>% 
+        filter(!is.na(!!cat2)) %>% 
         count(!!cat2) %>% 
         mutate(!!cat1 := "Total General")
     ) %>% 
@@ -313,9 +371,11 @@ categorica_2varp <- function(x, cat1, cat2, rename, encabezado = NULL, title = N
   cat2 <- enquo(cat2)
   
   table <- x %>% 
+    filter(autoriza_datos == "Si") %>% 
     count(!!cat1, !!cat2) %>% 
     rbind(
       x %>% 
+        filter(!is.na(!!cat2)) %>% 
         count(!!cat2) %>% 
         mutate(!!cat1 := "Total General")
     ) %>% 
@@ -347,8 +407,7 @@ wrap_text <- function(x, width) {
   })
 }
 
-
-tabla_prom <- function(x, col, rename, encabezado = NULL, titulo = NULL, wrap_width = NULL) {
+tabla_prom <- function(x, col, rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
   
   col <- enquo(col)
   
@@ -357,6 +416,7 @@ tabla_prom <- function(x, col, rename, encabezado = NULL, titulo = NULL, wrap_wi
   }
   
   table <- x %>% 
+  filter(autoriza_datos == "Si") %>% 
   group_by(!!col) %>%
   summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
   ungroup() %>% 
@@ -365,7 +425,7 @@ tabla_prom <- function(x, col, rename, encabezado = NULL, titulo = NULL, wrap_wi
          "Promedio" = promedio_general) %>% 
   as.data.frame()  
   
-  formatted_table <- ftable(table, encabezado, titulo) %>% 
+  formatted_table <- ftable(table, encabezado, title) %>% 
   bg(i = nrow_part(.), bg = "white") %>%
   bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
   color(i = nrow_part(.), color = "black") %>%
@@ -375,86 +435,8 @@ tabla_prom <- function(x, col, rename, encabezado = NULL, titulo = NULL, wrap_wi
   
 }
 
-plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
-  
-  col <- enquo(col)
-  
-  if (is.null(top)) {
-    top <- 30
-  }
-  
-  data <- x %>%  
-    filter(autoriza_datos == "Si") %>% 
-    group_by(!!col) %>%
-    summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
-    ungroup()
-  
-  data %>% 
-    arrange(desc(promedio_general)) %>% 
-    slice(1:top) %>% 
-    ggplot(aes(x = !!col, 
-               y= promedio_general, 
-               fill = !!col, 
-               label = promedio_general)) + 
-    geom_col()+
-    geom_text(vjust = 0.5, hjust = -0.5, size = 3,position = position_dodge(width = 1))+
-    scale_y_continuous(limits = c(0, max(data$promedio_general)*1.1))+
-    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
-    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
-    theme(legend.position="none")+
-    theme(axis.text.y = element_text(size = 8))+
-    theme(axis.text.x = element_text(size = 10))+
-    theme(plot.title.position = "plot",
-          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
-    scale_fill_manual(values = colores_plot)+
-    coord_flip()
-  
-}
 
-transformar_calificacion <- function(x, col) {
- 
-  col <- enquo(col)
-  
-   x %>% 
-    mutate(!!col := as.character(!!col)) %>% 
-    mutate(!!col := case_when(
-             !!col == "1" ~ "Muy deficiente",
-             !!col == "2" ~ "Deficiente",
-             !!col == "3" ~ "Aceptable",
-             !!col == "4" ~ "Bueno",
-             !!col == "5" ~ "Excelente",
-             TRUE ~ !!col))
-}
-
-styled_dt <- function(x, title = NULL) {
-  table <- x %>%
-    datatable(
-      options = list(
-        pageLength = 7,
-        lengthMenu = list(c(7, 10, 15, -1), c(7, 10, 15, "Todos")),
-        initComplete = JS(
-          "function(settings, json) {",
-          "$(this.api().table().header()).css({'background-color': '#2c7fb8', 'color': 'white', 'font-weight': 'bold'});",
-          "}"
-        )
-      ),
-      caption = htmltools::tags$caption(
-        style = 'caption-side: top; text-align: center; color:black; font-size:150%',
-        title
-      )
-    ) %>%
-    formatStyle(
-      columns = names(x),
-      backgroundColor = styleEqual(names(x), rep('#D9D9D9', length(names(x)))),
-      color = styleEqual(names(x), rep('black', length(names(x)))),
-      fontWeight = styleEqual(names(x), rep('bold', length(names(x))))
-    )
-  return(table)
-}
 ```
-
-# Depuracion de datos 
 
 ```{r}
 transporte <- transporte %>% 
@@ -508,15 +490,22 @@ transporte <- transporte %>%
          mesdili = str_to_title(mesdili)) %>% 
   mutate(anodili = year(hora_de_finalizacion))
 
+trans <- transporte %>% 
+    rename(valor1 = estado_mecanico_de_los_vehiculo, 
+    valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
+    valor3 = amabilidad_y_cortesia,
+    valor4 = nivel_de_atencion_mientras_conduce,
+    valor5 = capacidad_de_comunicacion)
+
 ```
 
 # Cantidad de encuestados
 
 ```{r}
 
-total <- count(transporte) %>% pull()
+total <- transporte %>% filter(autoriza_datos == "Si") %>% count() %>% pull()
 
-```
+``` 
 
 La encuesta de satisfacción del servicio de transporte fue respondida por **`r total`** personas.
 
@@ -683,7 +672,6 @@ Se analiza la calificación del servicio de transporte por mes.
 ```{r}
 
 transporte %>%
-  filter(!is.na(mes)) %>% 
   categorica_1var(mes, "Mes")
 
 ```
@@ -693,7 +681,6 @@ transporte %>%
 ```{r}
 
 transporte %>%
-  filter(!is.na(mes)) %>% 
   plot_barras(mes, "", "", titulo = "Meses en los que se utilizo el servicio de transporte")
 
 ```
@@ -708,8 +695,6 @@ Se examinan los tipos de servicios de transporte utilizados por los encuestados 
 ```{r}
 
 transporte %>%
-  filter(!is.na(tipo_de_servicio_prestado)) %>% 
-  filter(!is.na(mes)) %>% 
   categorica_2var(mes, tipo_de_servicio_prestado, "Tipo de servicio", label_width = 20)
 
 ```
@@ -719,8 +704,6 @@ transporte %>%
 ```{r}
 
 transporte %>%
-  filter(!is.na(tipo_de_servicio_prestado)) %>% 
-  filter(!is.na(mes)) %>% 
   plot_barras_agrupado(mes, tipo_de_servicio_prestado, "", "", leyenda = "", 
                        titulo = "Tipo de servicio utilizado cada mes")
 
@@ -736,36 +719,20 @@ Se examinan las calificaciones generales otorgadas a cada conductor. Teniendo en
 
 ### Tabla
 
-```{r}
-```
-
 
 ```{r}
-transporte %>%
-  filter(!is.na(nombre_del_conductor_que_presto_el_servicio)) %>%
-    rename(
-    valor1 = estado_mecanico_de_los_vehiculo, 
-    valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
-    valor3 = amabilidad_y_cortesia,
-    valor4 = nivel_de_atencion_mientras_conduce,
-    valor5 = capacidad_de_comunicacion
-  ) %>%
-  tabla_prom(nombre_del_conductor_que_presto_el_servicio, "Nombre del conductor", encabezado = "Calificación general por conductor")
+trans %>%
+  tabla_prom(nombre_del_conductor_que_presto_el_servicio, "Nombre del conductor", encabezado = "Calificación promedio por conductor")
 ```
 
 
 ### Gráfico
 
 ```{r}
-  transporte %>%
-  rename(
-    valor1 = estado_mecanico_de_los_vehiculo, 
-    valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
-    valor3 = amabilidad_y_cortesia,
-    valor4 = nivel_de_atencion_mientras_conduce,
-    valor5 = capacidad_de_comunicacion
-  ) %>%
-  plot_barras_prom(nombre_del_conductor_que_presto_el_servicio, "", "", titulo = "Prueba")
+
+trans %>% 
+  plot_barras_prom(nombre_del_conductor_que_presto_el_servicio, "", "", 
+                   titulo = "Calificación promedio por conductor")
 
 ```
 
@@ -777,14 +744,8 @@ Se analiza la calificación del servicio según el tipo de vinculación de los e
 
 ```{r}
 
-transporte %>% 
-  filter(!is.na(tipo_de_vinculacion)) %>% 
-  rename(valor1 = estado_mecanico_de_los_vehiculo, 
-    valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
-    valor3 = amabilidad_y_cortesia,
-    valor4 = nivel_de_atencion_mientras_conduce,
-    valor5 = capacidad_de_comunicacion) %>%
-  tabla_prom(tipo_de_vinculacion, "Tipo de vinculacion", "")
+trans %>% 
+  tabla_prom(tipo_de_vinculacion, "Tipo de vinculación",encabezado = "Calificación promedio por tipo de vinculación")
 
 ```
 
@@ -793,31 +754,9 @@ transporte %>%
 
 ```{r}
 
-transporte %>% 
-  filter(!is.na(tipo_de_vinculacion)) %>% 
-  rename(valor1 = estado_mecanico_de_los_vehiculo, 
-    valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
-    valor3 = amabilidad_y_cortesia,
-    valor4 = nivel_de_atencion_mientras_conduce,
-    valor5 = capacidad_de_comunicacion) %>%
-  group_by(tipo_de_vinculacion) %>%
-  summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
-  ungroup() %>% 
-  arrange(desc(promedio_general)) %>% 
-  ggplot(aes(x = tipo_de_vinculacion, 
-               y= promedio_general, 
-               fill = tipo_de_vinculacion, 
-               label = promedio_general)) + 
-    geom_col()+
-    geom_text(vjust = 0.5, hjust = -0.5, size = 3,position = position_dodge(width = 1))+
-    labs(x = "", y = "", title = str_wrap("Calificación promedio por tipo de vinculación", width = 40)) +
-    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
-    theme(legend.position="none")+
-    theme(axis.text.y = element_text(size = 8))+
-    theme(axis.text.x = element_text(size = 10))+
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
-    scale_fill_manual(values = colores_plot)+
-    coord_flip()
+trans %>% 
+  plot_barras_prom(tipo_de_vinculacion, "", "", 
+                   titulo = "Calificación promedio por tipo de vinculación")
 
 ```
 
@@ -829,24 +768,9 @@ Se examina la calificación del servicio según la identidad de género de los e
 
 ```{r}
 
-transporte %>%
-  filter(!is.na(cual_es_su_identidad_de_genero)) %>% 
-  rename(valor1 = estado_mecanico_de_los_vehiculo, 
-    valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
-    valor3 = amabilidad_y_cortesia,
-    valor4 = nivel_de_atencion_mientras_conduce,
-    valor5 = capacidad_de_comunicacion) %>%
-  group_by(cual_es_su_identidad_de_genero) %>%
-  summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
-  ungroup() %>% 
-  arrange(desc(promedio_general)) %>% 
-  rename("Identidad de género" = cual_es_su_identidad_de_genero,
-         "Promedio" = promedio_general) %>% 
-  ftable() %>%
-  bg(i = nrow_part(.), bg = "white") %>%
-  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
-  color(i = nrow_part(.), color = "black") %>%
-  bold(i = nrow_part(.), bold = FALSE)
+trans %>% 
+  tabla_prom(cual_es_su_identidad_de_genero, "Identidad de género",encabezado = 
+               "Calificación promedio por identidad de género")
 
 ```
 
@@ -855,30 +779,9 @@ transporte %>%
 
 ```{r}
 
-transporte %>%
-  filter(!is.na(cual_es_su_identidad_de_genero)) %>% 
-  rename(valor1 = estado_mecanico_de_los_vehiculo, 
-    valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
-    valor3 = amabilidad_y_cortesia,
-    valor4 = nivel_de_atencion_mientras_conduce,
-    valor5 = capacidad_de_comunicacion) %>%
-  group_by(cual_es_su_identidad_de_genero) %>%
-  summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
-  ungroup() %>% 
-  arrange(desc(promedio_general)) %>% 
-  ggplot(aes(x = cual_es_su_identidad_de_genero, 
-               y= promedio_general, 
-               fill = cual_es_su_identidad_de_genero, 
-               label = promedio_general)) + 
-    geom_col()+
-    geom_text(vjust = -0.8, size = 3,position = position_dodge(width = 1))+
-    labs(x = "", y = "", title = str_wrap("Calificación promedio por identidad de género", width = 40)) +
-    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
-    theme(legend.position="none")+
-    theme(axis.text.y = element_text(size = 8))+
-    theme(axis.text.x = element_text(size = 10))+
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
-    scale_fill_manual(values = colores_plot)
+trans %>% 
+  plot_barras_prom(cual_es_su_identidad_de_genero, "", "" ,titulo = 
+               "Calificación promedio por identidad de género")
 
 ```
 
@@ -890,24 +793,9 @@ Se analiza la calificación del servicio según los diferentes rangos de edad de
 
 ```{r}
 
-transporte %>%
-  filter(!is.na(cual_es_su_rango_de_edad)) %>% 
-  rename(valor1 = estado_mecanico_de_los_vehiculo, 
-    valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
-    valor3 = amabilidad_y_cortesia,
-    valor4 = nivel_de_atencion_mientras_conduce,
-    valor5 = capacidad_de_comunicacion) %>%
-  group_by(cual_es_su_rango_de_edad) %>%
-  summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
-  ungroup() %>% 
-  arrange(desc(promedio_general)) %>% 
-  rename("Rango de edad" = cual_es_su_rango_de_edad,
-         "Promedio" = promedio_general) %>% 
-  ftable() %>%
-  bg(i = nrow_part(.), bg = "white") %>%
-  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
-  color(i = nrow_part(.), color = "black") %>%
-  bold(i = nrow_part(.), bold = FALSE)
+trans %>% 
+  tabla_prom(cual_es_su_rango_de_edad, "Rango de edad", encabezado = 
+               "Calificación promedio por rango de edad")
 
 ```
 
@@ -916,31 +804,9 @@ transporte %>%
 
 ```{r}
 
-transporte %>%
-  filter(!is.na(cual_es_su_rango_de_edad)) %>% 
-  rename(valor1 = estado_mecanico_de_los_vehiculo, 
-    valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
-    valor3 = amabilidad_y_cortesia,
-    valor4 = nivel_de_atencion_mientras_conduce,
-    valor5 = capacidad_de_comunicacion) %>%
-  group_by(cual_es_su_rango_de_edad) %>%
-  summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
-  ungroup() %>% 
-  arrange(desc(promedio_general)) %>% 
-  ggplot(aes(x = cual_es_su_rango_de_edad, 
-               y= promedio_general, 
-               fill = cual_es_su_rango_de_edad, 
-               label = promedio_general)) + 
-    geom_col()+
-    geom_text(vjust = 0.5, hjust = -0.5, size = 3,position = position_dodge(width = 1))+
-    labs(x = "", y = "", title = str_wrap("Calificación promedio por rango de edad", width = 40)) +
-    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
-    theme(legend.position="none")+
-    theme(axis.text.y = element_text(size = 8))+
-    theme(axis.text.x = element_text(size = 10))+
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
-    scale_fill_manual(values = colores_plot)+
-    coord_flip()
+trans %>% 
+  plot_barras_prom(cual_es_su_rango_de_edad, "", "", titulo = 
+               "Calificación promedio por rango de edad")
 
 ```
 
@@ -951,13 +817,9 @@ Se examina la calificación del servicio según la unidad o dependencia de la UP
 ### Tabla
 
 ```{r}
-transporte %>% 
-  rename(valor1 = estado_mecanico_de_los_vehiculo, 
-    valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
-    valor3 = amabilidad_y_cortesia,
-    valor4 = nivel_de_atencion_mientras_conduce,
-    valor5 = capacidad_de_comunicacion) %>%
-  tabla_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, "Encabezado", titulo = "titulo")
+trans %>% 
+  tabla_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, "Unidad o dependencia", 
+             encabezado  = "Calificación promedio por unidad o dependencia")
 
 ```
 
@@ -966,14 +828,11 @@ transporte %>%
 
 ```{r}
 
-transporte %>% 
-  rename(valor1 = estado_mecanico_de_los_vehiculo, 
-    valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
-    valor3 = amabilidad_y_cortesia,
-    valor4 = nivel_de_atencion_mientras_conduce,
-    valor5 = capacidad_de_comunicacion) %>%
+trans %>% 
+  plot_barras_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, " ", "", 
+             titulo = "Calificación promedio por unidad o dependencia")
 
-  plot_barras_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, "", "", titulo = "Prueba", top = 10)
+```
 
 
 # Calificacion por categoría
@@ -989,12 +848,9 @@ Se analiza el estado mecánico de los vehículos utilizados en el servicio de tr
 ```{r}
 
 transporte %>%
-  filter(!is.na(estado_mecanico_de_los_vehiculo)) %>% 
   transformar_calificacion(estado_mecanico_de_los_vehiculo) %>%
   plot_barras(estado_mecanico_de_los_vehiculo, "", "", 
               titulo = "Calificación del estado mecánico de los vehículo")
-  
-
 
 ```
 
@@ -1003,18 +859,18 @@ transporte %>%
 ```{r}
 
 transporte %>% 
+  filter(autoriza_datos == "Si") %>% 
   group_by(nombre_del_conductor_que_presto_el_servicio) %>%
   summarise(prom = round(mean(estado_mecanico_de_los_vehiculo),1)) %>%
   arrange(desc(prom)) %>% 
   rename(
     "Promedio" = prom, 
     "Nombre del conductor" = nombre_del_conductor_que_presto_el_servicio) %>%
-  styled_dt()
-  #ftable(encabezado = "Calificación del estado mécanico del vehiculo por conductor") %>%
-  # bg(i = nrow_part(.), bg = "white") %>%
-  # bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
-  # color(i = nrow_part(.), color = "black") %>%
-  # bold(i = nrow_part(.), bold = FALSE)
+  ftable(encabezado = "Calificación del estado mécanico del vehiculo por conductor") %>%
+  bg(i = nrow_part(.), bg = "white") %>%
+  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+  color(i = nrow_part(.), color = "black") %>%
+  bold(i = nrow_part(.), bold = FALSE)
 
 
 ```
@@ -1029,15 +885,7 @@ Se examina la limpieza y presentación general de los vehículos de transporte.
 ```{r}
 
 transporte %>% 
-  mutate(limpieza_y_presentacion_general_de_los_vehiculos = 
-           as.character(limpieza_y_presentacion_general_de_los_vehiculos),
-         limpieza_y_presentacion_general_de_los_vehiculos = case_when(
-           limpieza_y_presentacion_general_de_los_vehiculos == "1" ~ "Muy deficiente",
-           limpieza_y_presentacion_general_de_los_vehiculos == "2" ~ "Deficiente",
-           limpieza_y_presentacion_general_de_los_vehiculos == "3" ~ "Aceptable",
-           limpieza_y_presentacion_general_de_los_vehiculos == "4" ~ "Bueno",
-           limpieza_y_presentacion_general_de_los_vehiculos == "5" ~ "Excelente",
-           TRUE ~ limpieza_y_presentacion_general_de_los_vehiculos)) %>% 
+transformar_calificacion(limpieza_y_presentacion_general_de_los_vehiculos) %>%  
   plot_barras(limpieza_y_presentacion_general_de_los_vehiculos, "", "", 
               titulo = "Calificación de la limpieza y presentación general de los vehículos")
 
@@ -1048,18 +896,18 @@ transporte %>%
 ```{r}
 
 transporte %>% 
+  filter(autoriza_datos == "Si") %>% 
   group_by(nombre_del_conductor_que_presto_el_servicio) %>%
   summarise(prom = round(mean(limpieza_y_presentacion_general_de_los_vehiculos),1)) %>%
   arrange(desc(prom)) %>% 
   rename(
     "Promedio" = prom, 
     "Nombre del conductor" = nombre_del_conductor_que_presto_el_servicio) %>%
-    styled_dt()
-  # ftable(encabezado = "Calificación de la limpieza y presentación general de los vehículos por conductor") %>%
-  # bg(i = nrow_part(.), bg = "white") %>%
-  # bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
-  # color(i = nrow_part(.), color = "black") %>%
-  # bold(i = nrow_part(.), bold = FALSE)
+  ftable(encabezado = "Calificación de la limpieza y presentación general de los vehículos por conductor") %>%
+  bg(i = nrow_part(.), bg = "white") %>%
+  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+  color(i = nrow_part(.), color = "black") %>%
+  bold(i = nrow_part(.), bold = FALSE)
 
 ```
 
@@ -1073,14 +921,7 @@ Se analiza la amabilidad y cortesía de los conductores del servicio de transpor
 ```{r}
 
 transporte %>% 
-  mutate(amabilidad_y_cortesia = as.character(amabilidad_y_cortesia),
-         amabilidad_y_cortesia = case_when(
-           amabilidad_y_cortesia == "1" ~ "Muy deficiente",
-           amabilidad_y_cortesia == "2" ~ "Deficiente",
-           amabilidad_y_cortesia == "3" ~ "Aceptable",
-           amabilidad_y_cortesia == "4" ~ "Bueno",
-           amabilidad_y_cortesia == "5" ~ "Excelente",
-           TRUE ~ amabilidad_y_cortesia)) %>% 
+  transformar_calificacion(amabilidad_y_cortesia) %>% 
   plot_barras(amabilidad_y_cortesia, "", "", 
               titulo = "Calificación de la amabilidad y cortesía")
 
@@ -1091,18 +932,18 @@ transporte %>%
 ```{r}
 
 transporte %>% 
+  filter(autoriza_datos == "Si") %>% 
   group_by(nombre_del_conductor_que_presto_el_servicio) %>%
   summarise(prom = round(mean(amabilidad_y_cortesia),1)) %>%
   arrange(desc(prom)) %>% 
   rename(
     "Promedio" = prom, 
     "Nombre del conductor" = nombre_del_conductor_que_presto_el_servicio) %>%
-  styled_dt()
-  # ftable(encabezado = "Calificación de la amabilidad y cortesía por conductor") %>%
-  # bg(i = nrow_part(.), bg = "white") %>%
-  # bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
-  # color(i = nrow_part(.), color = "black") %>%
-  # bold(i = nrow_part(.), bold = FALSE)
+  ftable(encabezado = "Calificación de la amabilidad y cortesía por conductor") %>%
+  bg(i = nrow_part(.), bg = "white") %>%
+  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+  color(i = nrow_part(.), color = "black") %>%
+  bold(i = nrow_part(.), bold = FALSE)
 
 ```
 
@@ -1116,14 +957,7 @@ Se examina el nivel de atención de los conductores mientras prestan el servicio
 ```{r}
 
 transporte %>% 
-  mutate(nivel_de_atencion_mientras_conduce = as.character(nivel_de_atencion_mientras_conduce),
-         nivel_de_atencion_mientras_conduce = case_when(
-           nivel_de_atencion_mientras_conduce == "1" ~ "Muy deficiente",
-           nivel_de_atencion_mientras_conduce == "2" ~ "Deficiente",
-           nivel_de_atencion_mientras_conduce == "3" ~ "Aceptable",
-           nivel_de_atencion_mientras_conduce == "4" ~ "Bueno",
-           nivel_de_atencion_mientras_conduce == "5" ~ "Excelente",
-           TRUE ~ nivel_de_atencion_mientras_conduce)) %>% 
+  transformar_calificacion(nivel_de_atencion_mientras_conduce) %>%  
   plot_barras(nivel_de_atencion_mientras_conduce, "", "", 
               titulo = "Calificación del nivel de atención mientras conduce")
 
@@ -1134,6 +968,7 @@ transporte %>%
 ```{r}
 
 transporte %>% 
+  filter(autoriza_datos == "Si") %>% 
   group_by(nombre_del_conductor_que_presto_el_servicio) %>%
   summarise(prom = round(mean(nivel_de_atencion_mientras_conduce),1)) %>%
   arrange(desc(prom)) %>% 
@@ -1158,14 +993,7 @@ Se analiza la capacidad de comunicación de los conductores del servicio de tran
 ```{r}
 
 transporte %>% 
-  mutate(capacidad_de_comunicacion = as.character(capacidad_de_comunicacion),
-         capacidad_de_comunicacion = case_when(
-           capacidad_de_comunicacion == "1" ~ "Muy deficiente",
-           capacidad_de_comunicacion == "2" ~ "Deficiente",
-           capacidad_de_comunicacion == "3" ~ "Aceptable",
-           capacidad_de_comunicacion == "4" ~ "Bueno",
-           capacidad_de_comunicacion == "5" ~ "Excelente",
-           TRUE ~ capacidad_de_comunicacion)) %>% 
+  transformar_calificacion(capacidad_de_comunicacion) %>% 
   plot_barras(capacidad_de_comunicacion, "", "", 
               titulo = "Calificación de la capacidad de comunicación")
 
@@ -1176,6 +1004,7 @@ transporte %>%
 ```{r}
 
 transporte %>% 
+  filter(autoriza_datos == "Si") %>% 
   group_by(nombre_del_conductor_que_presto_el_servicio) %>%
   summarise(prom = round(mean(capacidad_de_comunicacion),1)) %>%
   arrange(desc(prom)) %>% 

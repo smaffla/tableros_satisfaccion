@@ -1,30 +1,33 @@
 ---
-title: "Encuesta de satisfacción del servicio de aseo y cafetería"
-date: "`r Sys.Date()`"
-author: "Universidad Pedagógica Nacional"
+title: "ANÁLISIS DESCRIPTIVO DE LA ENCUESTA DE SATISFACCIÓN DEL SERVICIO DE ASEO Y CAFETERÍA"
+author: "Oficina de Desarrollo y Planeación"
 output:
   word_document:
-    toc: yes
-    toc_depth: '4'
-  pdf_document:
-    toc: yes
-    toc_depth: '4'
-  html_document: 
     fig_height: 7
     fig_width: 10
-    highlight: tango
-    keep_md: no
-    number_sections: yes
-    theme: cerulean
     toc: yes
-    toc_depth: 4
-    toc_float:
-      collapsed: no
-      smooth_scroll: yes
+    toc_depth: '4'
+  html_document:
+    toc: yes
+    toc_depth: '4'
+    df_print: paged
+params:
+  facu: NA
+  prog: NA
+  año: NA
+  periodo: NA
+  rendered_by_shiny: no
+subtitle: Universidad Pedagógica Nacional
 editor_options:
-  
   chunk_output_type: inline
+toc-title: Tabla de contenido
 ---
+
+<div>
+<img src="https://estilos.upn.edu.co/userfiles/footer/footer.svg" alt="UPN" class="watermark">
+</div>
+
+\newpage
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
@@ -49,8 +52,6 @@ colores_plot <- c(#"#2171b5",
                                               "#fe9929","#ec7014")
 
 ```
-
-# Funciones
 
 ```{r}
 
@@ -81,6 +82,20 @@ ftable <- function(x, encabezado = NULL, title = NULL) {
   return(table)
     
 }
+transformar_calificacion <- function(x, col) {
+ 
+  col <- enquo(col)
+  
+   x %>% 
+    mutate(!!col := as.character(!!col)) %>% 
+    mutate(!!col := case_when(
+             !!col == "1" ~ "Muy deficiente",
+             !!col == "2" ~ "Deficiente",
+             !!col == "3" ~ "Aceptable",
+             !!col == "4" ~ "Bueno",
+             !!col == "5" ~ "Excelente",
+             TRUE ~ !!col))
+}
 
 plot_donas <- function(x, col, group, titulo = "") {
   
@@ -88,26 +103,27 @@ plot_donas <- function(x, col, group, titulo = "") {
   col <- enquo(col)
   
   data <- x %>%
+    filter(autoriza_datos == "Si") %>% 
     count(!!group, !!col) %>% 
     mutate(porcentaje = n / sum(n),
            ymax = cumsum(porcentaje),
            ymin = c(0, head(ymax, n = -1)),
            labelpos = (ymax + ymin) / 2,
            labelname = paste(n,"\n",percent(porcentaje, 0.1)))
-    #filter(porcentaje >= 0.005)
+  #filter(porcentaje >= 0.005)
   
   ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 10, xmin = 1, fill = !!group)) +
     geom_rect() +
-    geom_text(aes(x = -1.5, y = labelpos, label = labelname), size = 4, color = "black", fontface = "bold") +
+    geom_text(aes(x = -1.5, y = labelpos, label = labelname), size = 5, color = "black", fontface = "bold") +
     labs(title = str_wrap(titulo, width = 30)) +
     scale_fill_manual(values = colores_plot) +
     coord_polar(theta = "y") +
     xlim(c(20, -10)) +
     theme_void() +
     theme(plot.title.position = "plot",
-          plot.title = element_text(hjust = 0.5, size = 16, face = 'bold', color = "#525252")) +
+          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
     guides(fill = guide_legend(title = "", label.position = "right",
-                               label.theme = element_text(size = 12)))
+                               label.theme = element_text(size = 18)))
 }
 
 ## Función gráfico de barras para df caracterizacion
@@ -115,11 +131,12 @@ plot_barras <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
   col <- enquo(col)
   
   data <- x %>%
+    filter(autoriza_datos == "Si") %>% 
     count(!!col )%>% 
     mutate(perc = percent(n/sum(n), 0.1))
   
-    if (is.null(top)) {
-    top <- 30
+  if (is.null(top)) {
+    top <- 11
   }
   
   data %>% 
@@ -130,16 +147,15 @@ plot_barras <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
                fill = !!col, 
                label = paste(perc,"\n",n," "))) + 
     geom_col()+
-    geom_text(vjust = 0.5, hjust = -0.1, size = 3,position = position_dodge(width = 1))+
+    geom_text(vjust = 0.5, hjust = -0.1, size = 4,position = position_dodge(width = 1))+
     scale_y_continuous(limits = c(0, max(data$n)*1.1))+
     labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
-    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
     theme(legend.position="none")+
-    theme(axis.text.y = element_text(size = 8))+
-    theme(axis.text.x = element_text(size = 10))+
+    theme(axis.text.y = element_text(size = 14))+
+    theme(axis.text.x = element_text(size = 8))+
     theme(plot.title.position = "plot",
-          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
+          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
     scale_fill_manual(values = colores_plot)+
     coord_flip()
   
@@ -151,6 +167,7 @@ plot_cols <- function(x, col, xlab, ylab, titulo = "") {
   col <- enquo(col)
   
   data <- x %>%
+    filter(autoriza_datos == "Si") %>% 
     count(!!col) %>% 
     mutate(perc = percent(n/sum(n), 0.1))
   
@@ -160,16 +177,16 @@ plot_cols <- function(x, col, xlab, ylab, titulo = "") {
                fill = !!col, 
                label = paste(perc,"\n",n," "))) + 
     geom_col()+
-    geom_text(vjust = 0.5, size = 3,position = position_dodge(width = 1))+
+    geom_text(vjust = 0.5, size = 4,position = position_dodge(width = 1))+
     scale_y_continuous(limits = c(0, max(data$n)*1.1))+
     labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30))+ 
     theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
     theme(legend.position="none")+
-    theme(axis.text.y = element_text(size = 8))+
-    theme(axis.text.x = element_text(size = 10))+
+    theme(axis.text.y = element_text(size = 12))+
+    theme(axis.text.x = element_text(size = 8))+
     theme(plot.title.position = "plot",
           plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
     scale_fill_manual(values = colores_plot)
   
 }
@@ -180,6 +197,7 @@ plot_barras_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo
   group <- enquo(group)
   
   data <- x %>%
+    filter(autoriza_datos == "Si") %>% 
     count(!!group, !!col) %>% 
     mutate(perc = percent(n/sum(n), 0.1))
   
@@ -189,21 +207,20 @@ plot_barras_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo
                fill = !!group, 
                label = paste(perc,"\n",n," "))) + 
     geom_col(position = "dodge")+
-    geom_text(vjust = 0.5, hjust = -0.2 ,size = 2.5,position = position_dodge(width = 1))+
+    geom_text(vjust = 0.5, hjust = -0.2 ,size = 4,position = position_dodge(width = 1))+
     scale_y_continuous(limits = c(0, max(data$n)*1.1))+
     labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30))+ 
     theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
-     theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
-        guides(fill = guide_legend(title = leyenda, label.position = "right"
-                     , nrow = 2, label.theme = element_text(size = 12)))+
-        theme(legend.position = "bottom",
+    guides(fill = guide_legend(title = leyenda, label.position = "right"
+                               , nrow = 2, label.theme = element_text(size = 12)))+
+    theme(legend.position = "bottom",
           axis.text.y = element_text(size = 13),
           axis.text.x = element_text(size = 13)) +
-    theme(axis.text.y = element_text(size = 8))+
-    theme(axis.text.x = element_text(size = 10))+
+    theme(axis.text.y = element_text(size = 12))+
+    theme(axis.text.x = element_text(size = 8))+
     theme(plot.title.position = "plot",
           plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
     scale_fill_manual(values = colores_plot)+
     coord_flip()
   
@@ -216,6 +233,7 @@ plot_cols_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo =
   group <- enquo(group)
   
   data <- x %>%
+    filter(autoriza_datos == "Si") %>% 
     count(!!group, !!col) %>% 
     mutate(perc = percent(n/sum(n), 0.1))
   
@@ -225,21 +243,58 @@ plot_cols_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo =
                fill = !!group, 
                label = paste(perc,"\n",n," "))) + 
     geom_col(position = "dodge")+
-    geom_text(vjust = 0.5,hjust = -0.5 , size = 2.5,position = position_dodge(width = 1))+
+    geom_text(vjust = 0.5,hjust = -0.5 , size = 4,position = position_dodge(width = 1))+
     scale_y_continuous(limits = c(0, max(data$n)*1.1))+
     labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30))+ 
     theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
-        guides(fill = guide_legend(title = leyenda, label.position = "right"
-                     , nrow = 2, label.theme = element_text(size = 12)))+
-        theme(legend.position = "bottom",
+    guides(fill = guide_legend(title = leyenda, label.position = "right"
+                               , nrow = 2, label.theme = element_text(size = 12)))+
+    theme(legend.position = "bottom",
           axis.text.y = element_text(size = 13),
           axis.text.x = element_text(size = 13)) +
-    theme(axis.text.y = element_text(size = 8))+
-    theme(axis.text.x = element_text(size = 10))+
+    theme(axis.text.y = element_text(size = 12))+
+    theme(axis.text.x = element_text(size = 8))+
     theme(plot.title.position = "plot",
           plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
     scale_fill_manual(values = colores_plot)
+  
+}
+
+plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
+  
+  col <- enquo(col)
+  
+  if (is.null(top)) {
+    top <- 11
+  }
+  
+  data <- x %>%  
+    filter(autoriza_datos == "Si") %>% 
+    group_by(!!col) %>%
+    summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
+    ungroup()
+  
+  data %>% 
+    arrange(desc(promedio_general)) %>% 
+    slice(1:top) %>% 
+    ggplot(aes(x = !!col, 
+               y= promedio_general, 
+               fill = !!col, 
+               label = promedio_general)) + 
+    geom_col()+
+    geom_text(vjust = 0.5, hjust = -0.5, size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$promedio_general)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
+    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+    theme(legend.position="none")+
+    theme(axis.text.y = element_text(size = 14))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
+    scale_fill_manual(values = colores_plot)+
+    coord_flip()
   
 }
 
@@ -264,6 +319,7 @@ categorica_1var <- function(x, cat1, rename, encabezado = NULL, title = NULL, wr
     }
   
   table <- x %>% 
+    filter(autoriza_datos == "Si") %>% 
     count(!!cat1) %>% 
     adorn_totals(where = "row", name = "Total General") %>%
     rename('{rename}' := !!cat1, "Cantidad" = n) %>% 
@@ -279,9 +335,11 @@ categorica_2var <- function(x, cat1, cat2, rename, encabezado = NULL, title = NU
   cat2 <- enquo(cat2)
   
   table <- x %>% 
+    filter(autoriza_datos == "Si") %>% 
     count(!!cat1, !!cat2) %>% 
     rbind(
       x %>% 
+        filter(!is.na(!!cat2)) %>% 
         count(!!cat2) %>% 
         mutate(!!cat1 := "Total General")
     ) %>% 
@@ -312,9 +370,11 @@ categorica_2varp <- function(x, cat1, cat2, rename, encabezado = NULL, title = N
   cat2 <- enquo(cat2)
   
   table <- x %>% 
+    filter(autoriza_datos == "Si") %>% 
     count(!!cat1, !!cat2) %>% 
     rbind(
       x %>% 
+        filter(!is.na(!!cat2)) %>% 
         count(!!cat2) %>% 
         mutate(!!cat1 := "Total General")
     ) %>% 
@@ -346,7 +406,7 @@ wrap_text <- function(x, width) {
   })
 }
 
-tabla_prom <- function(x, col, rename, encabezado = NULL, titulo = NULL, wrap_width = NULL) {
+tabla_prom <- function(x, col, rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
   
   col <- enquo(col)
   
@@ -355,6 +415,7 @@ tabla_prom <- function(x, col, rename, encabezado = NULL, titulo = NULL, wrap_wi
   }
   
   table <- x %>% 
+  filter(autoriza_datos == "Si") %>% 
   group_by(!!col) %>%
   summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
   ungroup() %>% 
@@ -363,7 +424,7 @@ tabla_prom <- function(x, col, rename, encabezado = NULL, titulo = NULL, wrap_wi
          "Promedio" = promedio_general) %>% 
   as.data.frame()  
   
-  formatted_table <- ftable(table, encabezado, titulo) %>% 
+  formatted_table <- ftable(table, encabezado, title) %>% 
   bg(i = nrow_part(.), bg = "white") %>%
   bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
   color(i = nrow_part(.), color = "black") %>%
@@ -373,46 +434,8 @@ tabla_prom <- function(x, col, rename, encabezado = NULL, titulo = NULL, wrap_wi
   
 }
 
-plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
-  
-    col <- enquo(col)
-  
-      if (is.null(top)) {
-    top <- 30
-  }
-  
-  data <- x %>%  
-  group_by(!!col) %>%
-  summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
-  ungroup()
-  
-  data %>% 
-  arrange(desc(promedio_general)) %>% 
-  slice(1:top) %>% 
-  ggplot(aes(x = !!col, 
-               y= promedio_general, 
-               fill = !!col, 
-               label = promedio_general)) + 
-    geom_col()+
-    geom_text(vjust = 0.5, hjust = -0.5, size = 3,position = position_dodge(width = 1))+
-    scale_y_continuous(limits = c(0, max(data$promedio_general)*1.1))+
-    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
-    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
-    theme(legend.position="none")+
-    theme(axis.text.y = element_text(size = 8))+
-    theme(axis.text.x = element_text(size = 10))+
-    theme(plot.title.position = "plot",
-          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
-    scale_fill_manual(values = colores_plot)+
-    coord_flip()
-  
-}
-
 
 ```
-
-# Depuracion de datos 
 
 ```{r}
 
@@ -421,6 +444,9 @@ aseo_cafeteria <- aseo_cafeteria %>%
 
 aseo_cafeteria <- aseo_cafeteria %>% 
   clean_names()
+
+aseo_cafeteria <- aseo_cafeteria %>% 
+  rename(autoriza_datos = autoriza_el_tratamiento_de_sus_datos_personales_consignados_en_este_formulario_de_asistencia_de_la_universidad_pedagogica_nacional_con_el_objetivo_de_demostrar_su_participacion_en_el_evento_o_reu)
 
 ```
 
@@ -466,7 +492,7 @@ aseo_cafeteria <- aseo_cafeteria %>%
 
 ```{r}
 
-total <- count(aseo_cafeteria) %>% pull()
+total <- aseo_cafeteria %>% filter(autoriza_datos == "Si") %>% count() %>% pull()
 
 ```
 
@@ -730,8 +756,8 @@ aseocafe %>%
         theme(legend.position = "bottom",
           axis.text.y = element_text(size = 13),
           axis.text.x = element_text(size = 13)) +
-    theme(axis.text.y = element_text(size = 8))+
-    theme(axis.text.x = element_text(size = 10))+
+    theme(axis.text.y = element_text(size = 12))+
+    theme(axis.text.x = element_text(size = 8))+
     theme(plot.title.position = "plot",
           plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
     scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
@@ -749,14 +775,7 @@ aseocafe %>%
 ```{r}
 
 aseo_cafeteria %>% 
-  mutate(calidad_de_tinto_y_aromatica_ofrecida = as.character(calidad_de_tinto_y_aromatica_ofrecida),
-         calidad_de_tinto_y_aromatica_ofrecida = case_when(
-           calidad_de_tinto_y_aromatica_ofrecida == "1" ~ "Muy deficiente",
-           calidad_de_tinto_y_aromatica_ofrecida == "2" ~ "Deficiente",
-           calidad_de_tinto_y_aromatica_ofrecida == "3" ~ "Aceptable",
-           calidad_de_tinto_y_aromatica_ofrecida == "4" ~ "Bueno",
-           calidad_de_tinto_y_aromatica_ofrecida == "5" ~ "Excelente",
-           TRUE ~ calidad_de_tinto_y_aromatica_ofrecida)) %>% 
+  transformar_calificacion(calidad_de_tinto_y_aromatica_ofrecida) %>% 
   categorica_1var(calidad_de_tinto_y_aromatica_ofrecida, "Calificación", encabezado = "Calidad de tinto y arómatica ofrecida")
 
 ```
@@ -766,14 +785,7 @@ aseo_cafeteria %>%
 ```{r}
 
 aseo_cafeteria %>% 
-  mutate(calidad_de_tinto_y_aromatica_ofrecida = as.character(calidad_de_tinto_y_aromatica_ofrecida),
-         calidad_de_tinto_y_aromatica_ofrecida = case_when(
-           calidad_de_tinto_y_aromatica_ofrecida == "1" ~ "Muy deficiente",
-           calidad_de_tinto_y_aromatica_ofrecida == "2" ~ "Deficiente",
-           calidad_de_tinto_y_aromatica_ofrecida == "3" ~ "Aceptable",
-           calidad_de_tinto_y_aromatica_ofrecida == "4" ~ "Bueno",
-           calidad_de_tinto_y_aromatica_ofrecida == "5" ~ "Excelente",
-           TRUE ~ calidad_de_tinto_y_aromatica_ofrecida)) %>% 
+  transformar_calificacion(calidad_de_tinto_y_aromatica_ofrecida) %>% 
   plot_barras(calidad_de_tinto_y_aromatica_ofrecida, "", "",titulo  = "Calidad de tinto y arómatica ofrecida")
 
 ```
@@ -785,14 +797,7 @@ aseo_cafeteria %>%
 ```{r}
 
 aseo_cafeteria %>% 
-  mutate(oportunidad_en_el_servicio_de_preparacion = as.character(oportunidad_en_el_servicio_de_preparacion),
-         oportunidad_en_el_servicio_de_preparacion = case_when(
-           oportunidad_en_el_servicio_de_preparacion == "1" ~ "Muy deficiente",
-           oportunidad_en_el_servicio_de_preparacion == "2" ~ "Deficiente",
-           oportunidad_en_el_servicio_de_preparacion == "3" ~ "Aceptable",
-           oportunidad_en_el_servicio_de_preparacion == "4" ~ "Bueno",
-           oportunidad_en_el_servicio_de_preparacion == "5" ~ "Excelente",
-           TRUE ~ oportunidad_en_el_servicio_de_preparacion)) %>% 
+  transformar_calificacion(oportunidad_en_el_servicio_de_preparacion) %>% 
   categorica_1var(oportunidad_en_el_servicio_de_preparacion, "Calificación", encabezado = "Oportunidad en el servicio de preparación")
 
 ```
@@ -802,14 +807,7 @@ aseo_cafeteria %>%
 ```{r}
 
 aseo_cafeteria %>% 
-  mutate(oportunidad_en_el_servicio_de_preparacion = as.character(oportunidad_en_el_servicio_de_preparacion),
-         oportunidad_en_el_servicio_de_preparacion = case_when(
-           oportunidad_en_el_servicio_de_preparacion == "1" ~ "Muy deficiente",
-           oportunidad_en_el_servicio_de_preparacion == "2" ~ "Deficiente",
-           oportunidad_en_el_servicio_de_preparacion == "3" ~ "Aceptable",
-           oportunidad_en_el_servicio_de_preparacion == "4" ~ "Bueno",
-           oportunidad_en_el_servicio_de_preparacion == "5" ~ "Excelente",
-           TRUE ~ oportunidad_en_el_servicio_de_preparacion)) %>% 
+  transformar_calificacion(oportunidad_en_el_servicio_de_preparacion) %>% 
   plot_barras(oportunidad_en_el_servicio_de_preparacion, " ", " ", titulo = "Oportunidad en el servicio de preparación")
 
 ```
@@ -821,14 +819,7 @@ aseo_cafeteria %>%
 ```{r}
 
 aseo_cafeteria %>% 
-  mutate(amabilidad_y_actitud_del_personal = as.character(amabilidad_y_actitud_del_personal),
-         amabilidad_y_actitud_del_personal = case_when(
-           amabilidad_y_actitud_del_personal == "1" ~ "Muy deficiente",
-           amabilidad_y_actitud_del_personal == "2" ~ "Deficiente",
-           amabilidad_y_actitud_del_personal == "3" ~ "Aceptable",
-           amabilidad_y_actitud_del_personal == "4" ~ "Bueno",
-           amabilidad_y_actitud_del_personal == "5" ~ "Excelente",
-           TRUE ~ amabilidad_y_actitud_del_personal)) %>% 
+  transformar_calificacion(amabilidad_y_actitud_del_personal) %>% 
   categorica_1var(amabilidad_y_actitud_del_personal, "Calificación", encabezado = "Amabilidad y actitud del personal")
 
 ```
@@ -838,14 +829,7 @@ aseo_cafeteria %>%
 ```{r}
 
 aseo_cafeteria %>% 
-  mutate(amabilidad_y_actitud_del_personal = as.character(amabilidad_y_actitud_del_personal),
-         amabilidad_y_actitud_del_personal = case_when(
-           amabilidad_y_actitud_del_personal == "1" ~ "Muy deficiente",
-           amabilidad_y_actitud_del_personal == "2" ~ "Deficiente",
-           amabilidad_y_actitud_del_personal == "3" ~ "Aceptable",
-           amabilidad_y_actitud_del_personal == "4" ~ "Bueno",
-           amabilidad_y_actitud_del_personal == "5" ~ "Excelente",
-           TRUE ~ amabilidad_y_actitud_del_personal)) %>% 
+  transformar_calificacion(amabilidad_y_actitud_del_personal) %>% 
   plot_barras(amabilidad_y_actitud_del_personal, " ","", titulo = "Amabilidad y actitud del personal")
 
 ```
@@ -857,14 +841,7 @@ aseo_cafeteria %>%
 ```{r}
 
 aseo_cafeteria %>% 
-  mutate(limpieza_general = as.character(limpieza_general),
-         limpieza_general = case_when(
-           limpieza_general == "1" ~ "Muy deficiente",
-           limpieza_general == "2" ~ "Deficiente",
-           limpieza_general == "3" ~ "Aceptable",
-           limpieza_general == "4" ~ "Bueno",
-           limpieza_general == "5" ~ "Excelente",
-           TRUE ~ limpieza_general)) %>% 
+  transformar_calificacion(limpieza_general) %>%  
   categorica_1var(limpieza_general, "Calificación", encabezado = "Limpieza general")
 
 ```
@@ -874,14 +851,7 @@ aseo_cafeteria %>%
 ```{r}
 
 aseo_cafeteria %>% 
-  mutate(limpieza_general = as.character(limpieza_general),
-         limpieza_general = case_when(
-           limpieza_general == "1" ~ "Muy deficiente",
-           limpieza_general == "2" ~ "Deficiente",
-           limpieza_general == "3" ~ "Aceptable",
-           limpieza_general == "4" ~ "Bueno",
-           limpieza_general == "5" ~ "Excelente",
-           TRUE ~ limpieza_general)) %>% 
+  transformar_calificacion(limpieza_general) %>% 
   plot_barras(limpieza_general, " "," ", titulo = "Limpieza general")
 
 ```
@@ -893,15 +863,7 @@ aseo_cafeteria %>%
 ```{r}
 
 aseo_cafeteria %>% 
-  mutate(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios =
-           as.character(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios),
-         limpieza_de_las_oficinas_salones_auditorios_y_laboratorios = case_when(
-           limpieza_de_las_oficinas_salones_auditorios_y_laboratorios == "1" ~ "Muy deficiente",
-           limpieza_de_las_oficinas_salones_auditorios_y_laboratorios == "2" ~ "Deficiente",
-           limpieza_de_las_oficinas_salones_auditorios_y_laboratorios == "3" ~ "Aceptable",
-           limpieza_de_las_oficinas_salones_auditorios_y_laboratorios == "4" ~ "Bueno",
-           limpieza_de_las_oficinas_salones_auditorios_y_laboratorios == "5" ~ "Excelente",
-           TRUE ~ limpieza_de_las_oficinas_salones_auditorios_y_laboratorios)) %>% 
+  transformar_calificacion(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios) %>% 
   categorica_1var(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios, "Calificación", 
                   encabezado = "Limpieza de las oficinas, salones, auditorios y laboratorios")
 
@@ -912,15 +874,7 @@ aseo_cafeteria %>%
 ```{r}
 
 aseo_cafeteria %>% 
-  mutate(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios =
-           as.character(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios),
-         limpieza_de_las_oficinas_salones_auditorios_y_laboratorios = case_when(
-           limpieza_de_las_oficinas_salones_auditorios_y_laboratorios == "1" ~ "Muy deficiente",
-           limpieza_de_las_oficinas_salones_auditorios_y_laboratorios == "2" ~ "Deficiente",
-           limpieza_de_las_oficinas_salones_auditorios_y_laboratorios == "3" ~ "Aceptable",
-           limpieza_de_las_oficinas_salones_auditorios_y_laboratorios == "4" ~ "Bueno",
-           limpieza_de_las_oficinas_salones_auditorios_y_laboratorios == "5" ~ "Excelente",
-           TRUE ~ limpieza_de_las_oficinas_salones_auditorios_y_laboratorios)) %>% 
+  transformar_calificacion(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios) %>% 
   plot_barras(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios, "","", 
                   titulo = "Limpieza de las oficinas, salones, auditorios y laboratorios")
 
@@ -933,15 +887,7 @@ aseo_cafeteria %>%
 ```{r}
 
 aseo_cafeteria %>% 
-  mutate(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante =
-           as.character(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante),
-         limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante = case_when(
-           limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante == "1" ~ "Muy deficiente",
-           limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante == "2" ~ "Deficiente",
-           limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante == "3" ~ "Aceptable",
-           limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante == "4" ~ "Bueno",
-           limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante == "5" ~ "Excelente",
-           TRUE ~ limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante)) %>% 
+  transformar_calificacion(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante) %>% 
   categorica_1var(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante, "Calificación", 
                   encabezado = "Limpieza general de las áreas comunes")
 
@@ -952,15 +898,7 @@ aseo_cafeteria %>%
 ```{r}
 
 aseo_cafeteria %>% 
-  mutate(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante =
-           as.character(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante),
-         limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante = case_when(
-           limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante == "1" ~ "Muy deficiente",
-           limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante == "2" ~ "Deficiente",
-           limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante == "3" ~ "Aceptable",
-           limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante == "4" ~ "Bueno",
-           limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante == "5" ~ "Excelente",
-           TRUE ~ limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante)) %>% 
+  transformar_calificacion(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante) %>% 
   plot_barras(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante, " ", " ", 
                   titulo = "Limpieza general de las áreas comunes")
 
@@ -973,15 +911,7 @@ aseo_cafeteria %>%
 ```{r}
 
 aseo_cafeteria %>% 
-  mutate(limpieza_de_banos =
-           as.character(limpieza_de_banos),
-         limpieza_de_banos = case_when(
-           limpieza_de_banos == "1" ~ "Muy deficiente",
-           limpieza_de_banos == "2" ~ "Deficiente",
-           limpieza_de_banos == "3" ~ "Aceptable",
-           limpieza_de_banos == "4" ~ "Bueno",
-           limpieza_de_banos == "5" ~ "Excelente",
-           TRUE ~ limpieza_de_banos)) %>% 
+  transformar_calificacion(limpieza_de_banos) %>% 
   categorica_1var(limpieza_de_banos, "Calificación", 
                   encabezado = "Limpieza de baños")
 
@@ -992,15 +922,7 @@ aseo_cafeteria %>%
 ```{r}
 
 aseo_cafeteria %>% 
-  mutate(limpieza_de_banos =
-           as.character(limpieza_de_banos),
-         limpieza_de_banos = case_when(
-           limpieza_de_banos == "1" ~ "Muy deficiente",
-           limpieza_de_banos == "2" ~ "Deficiente",
-           limpieza_de_banos == "3" ~ "Aceptable",
-           limpieza_de_banos == "4" ~ "Bueno",
-           limpieza_de_banos == "5" ~ "Excelente",
-           TRUE ~ limpieza_de_banos)) %>% 
+  transformar_calificacion(limpieza_de_banos) %>% 
   plot_barras(limpieza_de_banos, " ", " ", 
                   titulo = "Limpieza de baños")
 
@@ -1013,15 +935,7 @@ aseo_cafeteria %>%
 ```{r}
 
 aseo_cafeteria %>% 
-  mutate(labores_de_jardineria =
-           as.character(labores_de_jardineria),
-         labores_de_jardineria = case_when(
-           labores_de_jardineria == "1" ~ "Muy deficiente",
-           labores_de_jardineria == "2" ~ "Deficiente",
-           labores_de_jardineria == "3" ~ "Aceptable",
-           labores_de_jardineria == "4" ~ "Bueno",
-           labores_de_jardineria == "5" ~ "Excelente",
-           TRUE ~ labores_de_jardineria)) %>% 
+  transformar_calificacion(labores_de_jardineria) %>% 
   categorica_1var(labores_de_jardineria, "Calificación", 
                   encabezado = "Labores de jardinería")
 
@@ -1032,15 +946,7 @@ aseo_cafeteria %>%
 ```{r}
 
 aseo_cafeteria %>% 
-  mutate(labores_de_jardineria =
-           as.character(labores_de_jardineria),
-         labores_de_jardineria = case_when(
-           labores_de_jardineria == "1" ~ "Muy deficiente",
-           labores_de_jardineria == "2" ~ "Deficiente",
-           labores_de_jardineria == "3" ~ "Aceptable",
-           labores_de_jardineria == "4" ~ "Bueno",
-           labores_de_jardineria == "5" ~ "Excelente",
-           TRUE ~ labores_de_jardineria)) %>% 
+  transformar_calificacion(labores_de_jardineria) %>% 
   plot_barras(labores_de_jardineria, " "," ", 
                   titulo  = "Labores de jardinería")
 
@@ -1053,15 +959,7 @@ aseo_cafeteria %>%
 ```{r}
 
 aseo_cafeteria %>% 
-  mutate(frecuencia_y_labores_de_descanecado =
-           as.character(frecuencia_y_labores_de_descanecado),
-         frecuencia_y_labores_de_descanecado = case_when(
-           frecuencia_y_labores_de_descanecado == "1" ~ "Muy deficiente",
-           frecuencia_y_labores_de_descanecado == "2" ~ "Deficiente",
-           frecuencia_y_labores_de_descanecado == "3" ~ "Aceptable",
-           frecuencia_y_labores_de_descanecado == "4" ~ "Bueno",
-           frecuencia_y_labores_de_descanecado == "5" ~ "Excelente",
-           TRUE ~ frecuencia_y_labores_de_descanecado)) %>% 
+  transformar_calificacion(frecuencia_y_labores_de_descanecado) %>% 
   categorica_1var(frecuencia_y_labores_de_descanecado, "Calificación", 
                   encabezado = "Frecuencia y labores de descanecado")
 
@@ -1072,15 +970,7 @@ aseo_cafeteria %>%
 ```{r}
 
 aseo_cafeteria %>% 
-  mutate(frecuencia_y_labores_de_descanecado =
-           as.character(frecuencia_y_labores_de_descanecado),
-         frecuencia_y_labores_de_descanecado = case_when(
-           frecuencia_y_labores_de_descanecado == "1" ~ "Muy deficiente",
-           frecuencia_y_labores_de_descanecado == "2" ~ "Deficiente",
-           frecuencia_y_labores_de_descanecado == "3" ~ "Aceptable",
-           frecuencia_y_labores_de_descanecado == "4" ~ "Bueno",
-           frecuencia_y_labores_de_descanecado == "5" ~ "Excelente",
-           TRUE ~ frecuencia_y_labores_de_descanecado)) %>% 
+  transformar_calificacion(frecuencia_y_labores_de_descanecado) %>% 
   plot_barras(frecuencia_y_labores_de_descanecado, " "," ", 
                   titulo  = "Frecuencia y labores de descanecado")
 
@@ -1093,15 +983,7 @@ aseo_cafeteria %>%
 ```{r}
 
 aseo_cafeteria %>% 
-  mutate(atencion_y_actitud_de_los_funcionarios =
-           as.character(atencion_y_actitud_de_los_funcionarios),
-         atencion_y_actitud_de_los_funcionarios = case_when(
-           atencion_y_actitud_de_los_funcionarios == "1" ~ "Muy deficiente",
-           atencion_y_actitud_de_los_funcionarios == "2" ~ "Deficiente",
-           atencion_y_actitud_de_los_funcionarios == "3" ~ "Aceptable",
-           atencion_y_actitud_de_los_funcionarios == "4" ~ "Bueno",
-           atencion_y_actitud_de_los_funcionarios == "5" ~ "Excelente",
-           TRUE ~ atencion_y_actitud_de_los_funcionarios)) %>% 
+  transformar_calificacion(atencion_y_actitud_de_los_funcionarios) %>% 
   categorica_1var(atencion_y_actitud_de_los_funcionarios, "Calificación", 
                   encabezado = "Limpieza general de las áreas comunes")
 
@@ -1112,15 +994,7 @@ aseo_cafeteria %>%
 ```{r}
 
 aseo_cafeteria %>% 
-  mutate(atencion_y_actitud_de_los_funcionarios =
-           as.character(atencion_y_actitud_de_los_funcionarios),
-         atencion_y_actitud_de_los_funcionarios = case_when(
-           atencion_y_actitud_de_los_funcionarios == "1" ~ "Muy deficiente",
-           atencion_y_actitud_de_los_funcionarios == "2" ~ "Deficiente",
-           atencion_y_actitud_de_los_funcionarios == "3" ~ "Aceptable",
-           atencion_y_actitud_de_los_funcionarios == "4" ~ "Bueno",
-           atencion_y_actitud_de_los_funcionarios == "5" ~ "Excelente",
-           TRUE ~ atencion_y_actitud_de_los_funcionarios)) %>% 
+  transformar_calificacion(atencion_y_actitud_de_los_funcionarios) %>% 
   plot_barras(atencion_y_actitud_de_los_funcionarios, " "," ", 
                   titulo = "Limpieza general de las áreas comunes")
 
