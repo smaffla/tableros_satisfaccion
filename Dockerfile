@@ -6,6 +6,9 @@ COPY requirements.R /docker_tablero/requirements/
 
 RUN Rscript /docker_tablero/requirements/requirements.R
 
+RUN apt-get install locales
+RUN locale-gen es_ES.UTF-8
+
 COPY ./tablero/ /docker_tablero/
 
 EXPOSE 3838

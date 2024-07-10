@@ -17,6 +17,8 @@ library(ggrepel)
 library(lubridate)
 library(glue)
 
+Sys.setlocale("LC_TIME", "es_ES.utf8")
+
 colores_plot <- c(#"#2171b5",
   "#4292c6","#74a9cf",
   "#41b6c4","#7fcdbb",#"#238b45","#41ab5d",

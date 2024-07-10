@@ -367,7 +367,39 @@ dashboardPage(
         ),
         
         
-        #Tabla y gráfica para meses en los que se utilizó el servicio de transporte
+        #Tabla y gráfica para meses en los que se calificó el servicio de transporte
+        
+        br(),
+        
+        fluidRow(
+          column(
+            width = 10,
+            offset = 1,
+            box(
+              width = 12,
+              style = "margin-top: 2%",
+              background = "light-blue",
+              align = "center",
+              column(
+                width = 4,
+                fluidRow(align="center",
+                         column(width = 10,offset = 1, align = "center",
+                                textOutput("texto_introduccion_transporte") %>% withSpinner(type = 8, size = 0.5)
+                         )
+                )
+              ),
+              
+              column(
+                width = 6,
+                uiOutput("value_box_promedio_general_trans") %>% withSpinner(type = 8, size = 0.5)
+              )
+            )
+          )
+        ),
+        
+        br(),
+        
+        
         fluidRow(
           align = "center",
           HTML("<h2 style = 'color: #00609d'><strong>Meses en los que se calificó el servicio de transporte</strong></h2>"),
@@ -739,13 +771,14 @@ dashboardPage(
         
         br(),
         
-        fluidRow(
-          column(
-            width = 10,
-            offset = 1,
-            plotOutput("plot_califi_gene_aseocafe") %>% withSpinner(type = 8, size = 0.5)
-          )
-        ),
+        # fluidRow(
+        #   column(
+        #     width = 10,
+        #     offset = 1,
+        #     plotOutput("plot_califi_gene_aseocafe") %>% withSpinner(type = 8, size = 0.5)
+        #   )
+        # ),
+        
         # fluidRow(
         #   column(
         #     width = 6,

@@ -1,8 +1,7 @@
-
 server <- function(input, output, session) {
   theme_set(theme_fivethirtyeight())
-  
 
+  
   ## 👥👥 General -----------------------------------------------------------------
   
   observe({
@@ -16,7 +15,7 @@ server <- function(input, output, session) {
     ### Texto introduccion ------------------------------------------------------
   
     output$texto_introduccion_general <- renderText({
-      paste("En esta página se encuentra el análisis descriptivo de datos, correspondiente a las encuestas de satisfacción de los servicios de transporte, aseo y cafetería que se realizo en la Universidad Pedagógica Nacional",
+      paste("En esta página se encuentra el análisis descriptivo de datos, correspondiente a las encuestas de satisfacción de los servicios de transporte, aseo y cafetería que se realizó en la Universidad Pedagógica Nacional",
             " (Cifras actualizadas a ", "27-06-2024",
             #Sys.Date()-1,
             ").", sep = "")
@@ -291,7 +290,7 @@ server <- function(input, output, session) {
       
     })
     
-    ### - 📊️ Gráfico de barra porgrupo poblacional ---------------------------------
+    ### - 📊️ Gráfico de barra por grupo poblacional ---------------------------------
     output$plot_general_grupo_problacional <- renderPlot({
       
       if (input$select_encuesta == "General"){
@@ -493,9 +492,49 @@ server <- function(input, output, session) {
       updatePickerInput(session, "select_mes_trans", selected = "Mayo")
     }
   })
+
+    
   
-    ##  Meses en los que se utilizo el servicio de transporte
-    ### Se analiza el uso del servicio de transporte durante los diferentes meses.
+  
+    output$texto_introduccion_transporte <- renderText({
+      paste("En esta página se encuentra el análisis descriptivo de datos correspondiente a la encuesta de satisfacción del servicio de transporte que se realizó en la Universidad Pedagógica Nacional",
+            " (Cifras actualizadas a ", "27-06-2024",
+            #Sys.Date()-1,
+            ").", sep = "")
+    })
+    
+    
+    output$value_box_promedio_general_trans <- renderUI({
+      
+      promedio <- transporte %>% 
+        filter(anodili %in% input$select_anio_ac, 
+               mesdili %in% input$select_mes_ac,
+               autoriza_datos == "Si") %>% 
+        summarise(
+          "Estado mecánico de los vehículo" = round(mean(estado_mecanico_de_los_vehiculo, na.rm = TRUE), 1),
+          "Limpieza y presentación general de los vehículos" = round(mean(limpieza_y_presentacion_general_de_los_vehiculos, na.rm = TRUE), 1),
+          "Amabilidad y cortesía" = round(mean(amabilidad_y_cortesia, na.rm = TRUE), 1),
+          "Nivel de concentración mientras conduce" = round(mean(nivel_de_atencion_mientras_conduce, na.rm = TRUE), 1),
+          "Capacidad de comunicación" = round(mean(capacidad_de_comunicacion, na.rm = TRUE), 1)) %>%
+        pivot_longer(cols = everything(), names_to = "Categoria", values_to = "Promedio") %>% 
+        summarise(promedio = mean(Promedio, na.rm = TRUE)) %>% 
+        pull(promedio)
+      
+      fluidRow(
+        column(
+          width = 12,
+          summaryBox2(
+            title = "Promedio general",
+            value = round(promedio, 2),
+            style = "success",
+            width = 12
+          )
+        )
+      )
+    })
+
+    ##  Meses en los que se calificó el servicio de transporte
+    
     output$dt_meses_transporte <- renderDataTable({
       
       transporte %>%
@@ -1016,97 +1055,97 @@ server <- function(input, output, session) {
       
        })
     
-    output$plot_califi_gene_aseocafe <- renderPlot({
-      
-      promedios <- aseo_cafeteria %>% 
-        filter(anodili %in% input$select_anio_ac, 
-               mesdili %in% input$select_mes_ac,
-               autoriza_datos == "Si") %>% 
-        summarise(
-          "Calidad del tinto y aromatica ofrecida" = round(mean(calidad_de_tinto_y_aromatica_ofrecida, na.rm = TRUE), 1),
-          "Oportunidad en el servicio de preparación" = round(mean(oportunidad_en_el_servicio_de_preparacion, na.rm = TRUE), 1),
-          "Amabilidad y actitud del personal" = round(mean(amabilidad_y_actitud_del_personal, na.rm = TRUE), 1),
-          "Limpieza de las oficinas, salones, auditorios y laboratorios" = round(mean(limpieza_general, na.rm = TRUE), 1),
-          "Limpieza general de las áreas comunes" = round(mean(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios, 
-                                                               na.rm = TRUE), 1),
-          "Limpieza general" = round(mean(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante, 
-                                          na.rm = TRUE), 1),
-          "Limpieza de baños" = round(mean(limpieza_de_banos, na.rm = TRUE), 1),
-          "Labores de jardinería" = round(mean(labores_de_jardineria, na.rm = TRUE), 1),
-          "Frecuencia y labores de descanecado" = round(mean(frecuencia_y_labores_de_descanecado, na.rm = TRUE), 1),
-          "Atención y actitud de los funcionarios" = round(mean(atencion_y_actitud_de_los_funcionarios, na.rm = TRUE), 1)
-        ) %>%
-        pivot_longer(cols = everything(), names_to = "Categoria", values_to = "Promedio")
-
-      aseocafe <- aseo_cafeteria %>%
-        filter(anodili %in% input$select_anio_ac, 
-               mesdili %in% input$select_mes_ac,
-               autoriza_datos == "Si") %>% 
-        mutate(
-          calidad_de_tinto_y_aromatica_ofrecida = recode(calidad_de_tinto_y_aromatica_ofrecida,
-                                                         "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
-          oportunidad_en_el_servicio_de_preparacion = recode(oportunidad_en_el_servicio_de_preparacion,
-                                                             "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
-          amabilidad_y_actitud_del_personal = recode(amabilidad_y_actitud_del_personal,
-                                                     "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
-          limpieza_general = recode(limpieza_general,
-                                    "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
-          limpieza_de_las_oficinas_salones_auditorios_y_laboratorios = recode(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios,
-                                                                              "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
-          limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante = recode(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante,
-                                                                                                   "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
-          limpieza_de_banos = recode(limpieza_de_banos,
-                                     "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
-          labores_de_jardineria = recode(labores_de_jardineria,
-                                         "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
-          frecuencia_y_labores_de_descanecado = recode(frecuencia_y_labores_de_descanecado,
-                                                       "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
-          atencion_y_actitud_de_los_funcionarios = recode(atencion_y_actitud_de_los_funcionarios,
-                                                          "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente")) %>% 
-        select(calidad_de_tinto_y_aromatica_ofrecida, oportunidad_en_el_servicio_de_preparacion, amabilidad_y_actitud_del_personal,
-               limpieza_general, limpieza_de_las_oficinas_salones_auditorios_y_laboratorios,
-               limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante,
-               limpieza_de_banos, labores_de_jardineria, frecuencia_y_labores_de_descanecado, atencion_y_actitud_de_los_funcionarios) %>%
-        rename("Calidad del tinto y aromatica ofrecida" = calidad_de_tinto_y_aromatica_ofrecida, 
-               "Oportunidad en el servicio de preparación" = oportunidad_en_el_servicio_de_preparacion, 
-               "Amabilidad y actitud del personal" = amabilidad_y_actitud_del_personal,
-               "Limpieza de las oficinas, salones, auditorios y laboratorios" = limpieza_general, 
-               "Limpieza general de las áreas comunes" = limpieza_de_las_oficinas_salones_auditorios_y_laboratorios,
-               "Limpieza general" = limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante,
-               "Limpieza de baños" = limpieza_de_banos, 
-               "Labores de jardinería" = labores_de_jardineria, 
-               "Frecuencia y labores de descanecado"  =frecuencia_y_labores_de_descanecado, 
-               "Atención y actitud de los funcionarios" = atencion_y_actitud_de_los_funcionarios) %>%
-        pivot_longer(cols = everything(), 
-                     names_to = "Categoria", 
-                     values_to = "Calificacion") %>% 
-        count(Categoria, Calificacion)
-        
-        aseocafe %>% 
-        ggplot(aes(x = Categoria, 
-                   y= n, 
-                   fill = Calificacion, 
-                   label = n))+
-        geom_col(position = "dodge")+
-        geom_text(vjust = 0.5, hjust = -0.2 ,size = 2.5,position = position_dodge(width = 1))+
-        scale_y_continuous(limits = c(0, max(aseocafe$n)*1.1))+
-        labs(x = "", y = "", title = str_wrap("Calificación general", width = 30))+ 
-        theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
-        theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
-        guides(fill = guide_legend(title = "", label.position = "right"
-                                   , nrow = 1, label.theme = element_text(size = 12)))+
-        theme(legend.position = "bottom",
-              axis.text.y = element_text(size = 13),
-              axis.text.x = element_text(size = 13)) +
-        theme(axis.text.y = element_text(size = 8))+
-        theme(axis.text.x = element_text(size = 10))+
-        theme(plot.title.position = "plot",
-              plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
-        scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
-        scale_fill_manual(values = colores_plot)+
-        coord_flip()
-      
-    })
+    #  output$plot_califi_gene_aseocafe <- renderPlot({
+    #   
+    #   promedios <- aseo_cafeteria %>%
+    #     filter(anodili %in% input$select_anio_ac, 
+    #            mesdili %in% input$select_mes_ac,
+    #            autoriza_datos == "Si") %>% 
+    #     summarise(
+    #       "Calidad del tinto y aromatica ofrecida" = round(mean(calidad_de_tinto_y_aromatica_ofrecida, na.rm = TRUE), 1),
+    #       "Oportunidad en el servicio de preparación" = round(mean(oportunidad_en_el_servicio_de_preparacion, na.rm = TRUE), 1),
+    #       "Amabilidad y actitud del personal" = round(mean(amabilidad_y_actitud_del_personal, na.rm = TRUE), 1),
+    #       "Limpieza de las oficinas, salones, auditorios y laboratorios" = round(mean(limpieza_general, na.rm = TRUE), 1),
+    #       "Limpieza general de las áreas comunes" = round(mean(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios, 
+    #                                                            na.rm = TRUE), 1),
+    #       "Limpieza general" = round(mean(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante, 
+    #                                       na.rm = TRUE), 1),
+    #       "Limpieza de baños" = round(mean(limpieza_de_banos, na.rm = TRUE), 1),
+    #       "Labores de jardinería" = round(mean(labores_de_jardineria, na.rm = TRUE), 1),
+    #       "Frecuencia y labores de descanecado" = round(mean(frecuencia_y_labores_de_descanecado, na.rm = TRUE), 1),
+    #       "Atención y actitud de los funcionarios" = round(mean(atencion_y_actitud_de_los_funcionarios, na.rm = TRUE), 1)
+    #     ) %>%
+    #     pivot_longer(cols = everything(), names_to = "Categoria", values_to = "Promedio")
+    # 
+    #   aseocafe <- aseo_cafeteria %>%
+    #     filter(anodili %in% input$select_anio_ac, 
+    #            mesdili %in% input$select_mes_ac,
+    #            autoriza_datos == "Si") %>% 
+    #     mutate(
+    #       calidad_de_tinto_y_aromatica_ofrecida = recode(calidad_de_tinto_y_aromatica_ofrecida,
+    #                                                      "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
+    #       oportunidad_en_el_servicio_de_preparacion = recode(oportunidad_en_el_servicio_de_preparacion,
+    #                                                          "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
+    #       amabilidad_y_actitud_del_personal = recode(amabilidad_y_actitud_del_personal,
+    #                                                  "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
+    #       limpieza_general = recode(limpieza_general,
+    #                                 "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
+    #       limpieza_de_las_oficinas_salones_auditorios_y_laboratorios = recode(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios,
+    #                                                                           "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
+    #       limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante = recode(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante,
+    #                                                                                                "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
+    #       limpieza_de_banos = recode(limpieza_de_banos,
+    #                                  "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
+    #       labores_de_jardineria = recode(labores_de_jardineria,
+    #                                      "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
+    #       frecuencia_y_labores_de_descanecado = recode(frecuencia_y_labores_de_descanecado,
+    #                                                    "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
+    #       atencion_y_actitud_de_los_funcionarios = recode(atencion_y_actitud_de_los_funcionarios,
+    #                                                       "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente")) %>% 
+    #     select(calidad_de_tinto_y_aromatica_ofrecida, oportunidad_en_el_servicio_de_preparacion, amabilidad_y_actitud_del_personal,
+    #            limpieza_general, limpieza_de_las_oficinas_salones_auditorios_y_laboratorios,
+    #            limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante,
+    #            limpieza_de_banos, labores_de_jardineria, frecuencia_y_labores_de_descanecado, atencion_y_actitud_de_los_funcionarios) %>%
+    #     rename("Calidad del tinto y aromatica ofrecida" = calidad_de_tinto_y_aromatica_ofrecida, 
+    #            "Oportunidad en el servicio de preparación" = oportunidad_en_el_servicio_de_preparacion, 
+    #            "Amabilidad y actitud del personal" = amabilidad_y_actitud_del_personal,
+    #            "Limpieza de las oficinas, salones, auditorios y laboratorios" = limpieza_general, 
+    #            "Limpieza general de las áreas comunes" = limpieza_de_las_oficinas_salones_auditorios_y_laboratorios,
+    #            "Limpieza general" = limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante,
+    #            "Limpieza de baños" = limpieza_de_banos, 
+    #            "Labores de jardinería" = labores_de_jardineria, 
+    #            "Frecuencia y labores de descanecado"  =frecuencia_y_labores_de_descanecado, 
+    #            "Atención y actitud de los funcionarios" = atencion_y_actitud_de_los_funcionarios) %>%
+    #     pivot_longer(cols = everything(), 
+    #                  names_to = "Categoria", 
+    #                  values_to = "Calificacion") %>% 
+    #     count(Categoria, Calificacion)
+    #     
+    #     aseocafe %>% 
+    #     ggplot(aes(x = Categoria, 
+    #                y= n, 
+    #                fill = Calificacion, 
+    #                label = n))+
+    #     geom_col(position = "dodge")+
+    #     geom_text(vjust = 0.5, hjust = -0.2 ,size = 2.5,position = position_dodge(width = 1))+
+    #     scale_y_continuous(limits = c(0, max(aseocafe)*1.1))+
+    #     labs(x = "", y = "", title = str_wrap("Calificación general", width = 30))+ 
+    #     theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+    #     theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+    #     guides(fill = guide_legend(title = "", label.position = "right"
+    #                                , nrow = 1, label.theme = element_text(size = 12)))+
+    #     theme(legend.position = "bottom",
+    #           axis.text.y = element_text(size = 13),
+    #           axis.text.x = element_text(size = 13)) +
+    #     theme(axis.text.y = element_text(size = 8))+
+    #     theme(axis.text.x = element_text(size = 10))+
+    #     theme(plot.title.position = "plot",
+    #           plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
+    #     scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
+    #     scale_fill_manual(values = colores_plot)+
+    #     coord_flip()
+    #   
+    # })
     
     output$value_box_promedio_general <- renderUI({
         
