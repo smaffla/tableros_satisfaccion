@@ -390,6 +390,7 @@ dashboardPage(
               style = "margin-top: 2%",
               background = "light-blue",
               align = "center",
+              
               column(
                 width = 4,
                 fluidRow(align="center",
@@ -400,7 +401,7 @@ dashboardPage(
               ),
               
               column(
-                width = 2,
+                width = 3,
                 uiOutput("value_box_promedio_general_trans") %>% withSpinner(type = 8, size = 0.5)
               ),
               
@@ -410,7 +411,8 @@ dashboardPage(
               ),
               
               column(
-                width = 3,
+                width = 4,
+                offset = 5,
                 uiOutput("value_box_promedio_vehiculo_trans") %>% withSpinner(type = 8, size = 0.5)
               )
             )
@@ -886,17 +888,6 @@ dashboardPage(
             width = 10,
             offset = 1,
             plotOutput("plot_califi_gene_aseocafe") %>% withSpinner(type = 8, size = 0.5)
-          )
-        ),
-
-        fluidRow(
-          column(
-            width = 6,
-            plotOutput("plot_servicio") %>% withSpinner(type = 8, size = 0.5)
-          ),
-          column(
-            width = 6,
-            DTOutput("dt_servicio") %>% withSpinner(type = 8, size = 0.5)
           )
         ),
 
