@@ -139,7 +139,7 @@ dashboardPage(
           div(
             style = "max-width: 900px; margin: 0 auto;",
             HTML("<h5 style='color: #393939;'><strong>A continuación, se presenta una serie de tablas y gráficas detalladas que ilustran la distribución de la cantidad y porcentaje de 
-                 personas que han participado en todas encuesta. Estos gráficos están organizados en diversas categorías para ofrecer una visión integral y comprensiva de los datos recolectados:</strong></h5>")
+                 personas que han participado en todas las encuestas. Estos gráficos están organizados en diversas categorías para ofrecer una visión integral y comprensiva de los datos recolectados:</strong></h5>")
           )
         ),
         
@@ -391,14 +391,25 @@ dashboardPage(
               background = "light-blue",
               align = "center",
               
+              
+              fluidRow(
+                
+                column(  
+                  width = 10,
+                  offset = 2,
+                  HTML("<h2 style = 'color: #ffffff'><strong>Promedio</strong></h2>"),
+                )
+              ),
+              
               column(
-                width = 4,
+                width = 3,
                 fluidRow(align="center",
                          column(width = 10,offset = 1, align = "center",
                                 textOutput("texto_introduccion_transporte") %>% withSpinner(type = 8, size = 0.5)
                          )
                 )
               ),
+              
               
               column(
                 width = 3,
@@ -411,8 +422,7 @@ dashboardPage(
               ),
               
               column(
-                width = 4,
-                offset = 5,
+                width = 3,
                 uiOutput("value_box_promedio_vehiculo_trans") %>% withSpinner(type = 8, size = 0.5)
               )
             )
@@ -501,7 +511,7 @@ dashboardPage(
           align = "center",
           div(
             style = "max-width: 900px; margin: 0 auto;",
-            HTML("<h5 style='color: #393939;'>Se muestra la calificación general dada a cada conductor, esta calificación muestra como el encuestado percibe la calidad del servicio prestado por parte del conductor. </h5>")
+            HTML("<h5 style='color: #393939;'>Se muestra la calificación general dada a cada conductor, esta calificación muestra como el encuestado percibe la calidad del servicio prestado por parte del mismo. </h5>")
           )
         ),
         
@@ -944,7 +954,7 @@ dashboardPage(
           align = "center",
           div(
             style = "max-width: 900px; margin: 0 auto;",
-            HTML("<h5 style='color: #393939;'><strong>Se muestra la a través de una gráfica y una tabla la percepción del encuestado frente a cada categoría del servicio de aseo y cafetería</strong></h5>")
+            HTML("<h5 style='color: #393939;'>Se muestra a través de una gráfica y una tabla la percepción del encuestado frente a cada categoría del servicio de aseo y cafetería</h5>")
           )
         ),
         

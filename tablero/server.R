@@ -527,7 +527,7 @@ server <- function(input, output, session) {
         column(
           width = 12,
           summaryBox2(
-            title = "Promedio general",
+            title = "General",
             value = round(promedio, 2),
             style = "success",
             width = 12
@@ -554,9 +554,9 @@ server <- function(input, output, session) {
         column(
           width = 12,
           summaryBox2(
-            title = "Promedio - actitudinal",
+            title = "Actitudinal",
             value = round(promedio, 2),
-            style = "success",
+            style = "info",
             width = 12
           )
         )
@@ -580,9 +580,9 @@ server <- function(input, output, session) {
         column(
           width = 12,
           summaryBox2(
-            title = "Promedio - Estado del Vehiculo",
+            title = "Vehículo",
             value = round(promedio, 2),
-            style = "success",
+            style = "primary",
             width = 12
           )
         )
@@ -603,7 +603,7 @@ server <- function(input, output, session) {
       transporte %>%
         filter(anodili %in% input$select_anio_trans, 
                mesdili %in% input$select_mes_trans) %>% 
-        plot_barras(mes, "", "", titulo = "Meses en los que se utilizo el servicio de transporte")
+        plot_barras(mes, "", "", titulo = "Meses en los que se calificó el servicio de transporte")
     
       })
     
@@ -684,7 +684,7 @@ server <- function(input, output, session) {
       } else if (input$select_categoria_trans == "Edad"){
         "Se muestra el promedio de calificación dada al servicio, categorizando a los encuestados por el rango de edad el que están ubicados."
       } else if (input$select_categoria_trans == "Identidad de género") {
-        "Se muestra el promedio de calificación dada al servicio, categorizando a los encuestados por el género con el que se identifican"
+        "Se muestra el promedio de calificación dada al servicio, categorizando a los encuestados por el género con el que se identifican."
         
       } else if (input$select_categoria_trans == "Unidad o dependencia de la UPN"){
         "Se muestra el promedio de calificación dada al servicio, categorizando a los encuestados por la dependencia de la UPN a la que pertenecen."
@@ -762,7 +762,7 @@ server <- function(input, output, session) {
             valor4 = nivel_de_atencion_mientras_conduce,
             valor5 = capacidad_de_comunicacion
           ) %>%
-          plot_barras_prom(nombre_del_conductor_que_presto_el_servicio, "", "", titulo = "Calificación promedio po tipo de vinculación")
+          plot_barras_prom(nombre_del_conductor_que_presto_el_servicio, "", "", titulo = "Calificación promedio por tipo de vinculación")
     
       } else if (input$select_categoria_trans == "Edad"){
         transporte %>%
