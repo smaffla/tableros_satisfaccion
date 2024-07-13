@@ -511,7 +511,7 @@ dashboardPage(
           align = "center",
           div(
             style = "max-width: 900px; margin: 0 auto;",
-            HTML("<h5 style='color: #393939;'>Se muestra la calificación general dada a cada conductor, esta calificación muestra como el encuestado percibe la calidad del servicio prestado por parte del mismo. </h5>")
+            HTML("<h5 style='color: #393939;'>Se muestra la calificación general dada a cada conductor, esta calificación muestra cómo el encuestado percibe la calidad del servicio prestado por parte del mismo. </h5>")
           )
         ),
         
@@ -529,6 +529,10 @@ dashboardPage(
           )
           
         ),
+        
+        br(),
+        br(),
+        br(),
         
         fluidRow(
           align = "center",

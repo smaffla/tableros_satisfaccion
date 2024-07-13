@@ -762,7 +762,7 @@ server <- function(input, output, session) {
             valor4 = nivel_de_atencion_mientras_conduce,
             valor5 = capacidad_de_comunicacion
           ) %>%
-          plot_barras_prom(nombre_del_conductor_que_presto_el_servicio, "", "", titulo = "Calificación promedio por tipo de vinculación")
+          plot_barras_prom(tipo_de_vinculacion, "", "", titulo = "Calificación promedio por tipo de vinculación")
     
       } else if (input$select_categoria_trans == "Edad"){
         transporte %>%
@@ -774,7 +774,7 @@ server <- function(input, output, session) {
                  valor3 = amabilidad_y_cortesia,
                  valor4 = nivel_de_atencion_mientras_conduce,
                  valor5 = capacidad_de_comunicacion) %>%
-          plot_barras_prom(cual_es_su_rango_de_edad, "", "", titulo = "Calificación promedio po categoría de edad")
+          plot_barras_prom(cual_es_su_rango_de_edad, "", "", titulo = "Calificación promedio por categoría de edad")
 
       } else if (input$select_categoria_trans == "Identidad de género") {
         
