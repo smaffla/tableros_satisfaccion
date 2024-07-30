@@ -17,15 +17,17 @@ library(ggrepel)
 library(lubridate)
 library(glue)
 
+Sys.setlocale("LC_TIME", "es_ES.utf8")
+
 colores_plot <- c(#"#2171b5",
   "#4292c6","#74a9cf",
   "#41b6c4","#7fcdbb",#"#238b45","#41ab5d",
   "#78c679","#c7e9b4","#edf8b1","#fee391","#fec44f",
   "#fe9929","#ec7014")
 
-transporte <- read.xlsx("../vistas/Encuesta de satisfacción del servicio de transporte.xlsx")
+transporte <- read.xlsx("Encuesta de satisfacción del servicio de transporte.xlsx")
 
-aseo_cafeteria <- read.xlsx("../vistas/Encuesta de satisfacción del servicio de aseo y cafetería..xlsx")
+aseo_cafeteria <- read.xlsx("Encuesta de satisfacción del servicio de aseo y cafetería..xlsx")
 
 # Depuracion de datos 
 
@@ -138,6 +140,11 @@ general <- transporte %>%
 
 generate_html <- function(variable) {
   HTML(glue("<h2 style = 'color: #00609d'>{variable()}</h2>"))
+  
+}
+
+generate_html_text <- function(variable) {
+  HTML(glue("<h5 style = 'color: #393939'>{variable()}</h5>"))
   
 }
 
