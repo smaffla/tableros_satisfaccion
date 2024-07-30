@@ -824,7 +824,7 @@ server <- function(input, output, session) {
       } else if (input$select_categoria_ind_trans == "Limpieza y presentación del vehículo"){
         transporte %>%
           filter(anodili %in% input$select_anio_trans, 
-                 mesdili %in% input$select_mes_trans) %>% 
+                 mesdili %in% input$select_mes_trans) %>%
           group_by(nombre_del_conductor_que_presto_el_servicio) %>%
           summarise(prom = round(mean(limpieza_y_presentacion_general_de_los_vehiculos),1)) %>%
           arrange(desc(prom)) %>% 

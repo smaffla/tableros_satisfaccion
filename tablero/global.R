@@ -121,6 +121,9 @@ transporte <- transporte %>%
          mesdili = str_to_title(mesdili)) %>% 
   mutate(anodili = year(hora_de_finalizacion))
 
+transporte <- transporte %>%  
+  filter(!is.na(nombre_del_conductor_que_presto_el_servicio))
+
 general <- transporte %>%
   select(autoriza_datos, tipo_de_vinculacion,
          en_que_instalaciones_de_la_upn_universidad_pedagogica_nacional_desarrolla_sus_actividades_y_o_labores,
