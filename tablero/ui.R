@@ -396,33 +396,24 @@ dashboardPage(
                 
                 column(  
                   width = 10,
-                  offset = 2,
+                  offset = 1,
                   HTML("<h2 style = 'color: #ffffff'><strong>Promedio</strong></h2>"),
                 )
               ),
               
-              column(
-                width = 3,
-                fluidRow(align="center",
-                         column(width = 10,offset = 1, align = "center",
-                                textOutput("texto_introduccion_transporte") %>% withSpinner(type = 8, size = 0.5)
-                         )
-                )
-              ),
-              
               
               column(
-                width = 3,
+                width = 4,
                 uiOutput("value_box_promedio_general_trans") %>% withSpinner(type = 8, size = 0.5)
               ),
               
               column(
-                width = 3,
+                width = 4,
                 uiOutput("value_box_promedio_actitudinal_trans") %>% withSpinner(type = 8, size = 0.5)
               ),
               
               column(
-                width = 3,
+                width = 4,
                 uiOutput("value_box_promedio_vehiculo_trans") %>% withSpinner(type = 8, size = 0.5)
               )
             )
