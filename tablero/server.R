@@ -1275,7 +1275,7 @@ server <- function(input, output, session) {
         theme(axis.text.x = element_text(size = 8))+
         theme(plot.title.position = "plot",
               plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
-        scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
+        scale_x_discrete(labels = function(x) str_wrap(x, width = 30))+
         scale_fill_manual(values = colores_plot)+
         coord_flip()
       
@@ -1311,7 +1311,7 @@ server <- function(input, output, session) {
           summaryBox2(
             title = "Promedio general",
             value = round(promedio, 2),
-            style = "danger",
+            style = "success",
             width = 12
           )
         )
