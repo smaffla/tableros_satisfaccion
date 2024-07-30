@@ -2,32 +2,34 @@
 title: "ANÁLISIS DESCRIPTIVO DE LA ENCUESTA DE SATISFACCIÓN DEL SERVICIO DE TRANSPORTE"
 author: "Oficina de Desarrollo y Planeación"
 output:
-  word_document:
+  html_document:
     fig_height: 7
     fig_width: 10
+    highlight: tango
+    keep_md: no
+    number_sections: no
+    theme: cerulean
+    toc: yes
+    css: "corp-styles.css"
+    toc_depth: 4
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+  word_document:
     toc: yes
     toc_depth: '4'
-  html_document:
-    toc: yes
-    toc_depth: '4'
-    df_print: paged
 params:
-  facu: NA
-  prog: NA
-  año: NA
-  periodo: NA
+  mes: NA
   rendered_by_shiny: no
 subtitle: Universidad Pedagógica Nacional
 editor_options:
   chunk_output_type: inline
-toc-title: Tabla de contenido
 ---
 
 <div>
 <img src="https://estilos.upn.edu.co/userfiles/footer/footer.svg" alt="UPN" class="watermark">
 </div>
 
-\newpage
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
@@ -448,6 +450,14 @@ transporte <- transporte %>%
 transporte <- transporte %>% 
   rename(autoriza_datos = autoriza_el_tratamiento_de_sus_datos_personales_consignados_en_este_formulario_de_asistencia_de_la_universidad_pedagogica_nacional_con_el_objetivo_de_demostrar_su_participacion_en_el_evento_o_reu)
 
+transporte <- transporte %>% 
+  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
+  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+         mesdili = str_to_title(mesdili)) %>% 
+  mutate(anodili = year(hora_de_finalizacion))
+
+transporte <- transporte %>% 
+  filter(mesdili %in% params$mes)
 
 ```
 
@@ -483,12 +493,6 @@ categorias = c("Estado mecánico de los vehículo", "Limpieza y presentación ge
 promedios = transporte %>% 
   select(estado_mecanico_de_los_vehiculo, limpieza_y_presentacion_general_de_los_vehiculos, amabilidad_y_cortesia, nivel_de_atencion_mientras_conduce, capacidad_de_comunicacion) %>% 
   colMeans())
-
-transporte <- transporte %>% 
-  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
-  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
-         mesdili = str_to_title(mesdili)) %>% 
-  mutate(anodili = year(hora_de_finalizacion))
 
 trans <- transporte %>% 
     rename(valor1 = estado_mecanico_de_los_vehiculo, 

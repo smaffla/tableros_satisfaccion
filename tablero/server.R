@@ -1594,6 +1594,77 @@ server <- function(input, output, session) {
       
     })
     
+    output$download_HTML_trans <- downloadHandler(
+      filename = "Transporte.html",
+      content = function(file) {
+        withProgress(message = 'Descargando informe HTML', {
+          # Pasamos los parámetros para el reporte
+          params <- list(mes = input$select_mes_trans, rendered_by_shiny = TRUE)
+          
+          # Renderizamos el archivo pasando la lista de parámetros e aislando el código del reporte en un 
+          # entorno global
+          rmarkdown::render("satisfaccion_transporte_html.Rmd", output_file = file,
+                            params = params,
+                            envir = new.env(parent = globalenv())
+          )
+        })
+      }
+    )
+    
+    
+    
+    output$download_doc_trans <- downloadHandler(
+      filename = "Transporte.docx",
+      content = function(file) {
+        withProgress(message = 'Descargando informe word', {
+          # Pasamos los parámetros para el reporte
+          params <- list(mes = input$select_mes_trans, rendered_by_shiny = TRUE)
+          
+          # Renderizamos el archivo pasando la lista de parámetros e aislando el código del reporte en un
+          # entorno global
+          rmarkdown::render("satisfaccion_transporte_word.Rmd", output_file = file,
+                            params = params,
+                            envir = new.env(parent = globalenv())
+          )
+        })
+      }
+    )
+    
+    output$download_HTML_aseocafe <- downloadHandler(
+      filename = "Aseo y cafetería.html",
+      content = function(file) {
+        withProgress(message = 'Descargando informe html', {
+          # Pasamos los parámetros para el reporte
+          params <- list(mes = input$select_mes_ac, rendered_by_shiny = TRUE)
+          
+          # Renderizamos el archivo pasando la lista de parámetros e aislando el código del reporte en un 
+          # entorno global
+          rmarkdown::render("satisfaccion_aseocafeteria_html.Rmd", output_file = file,
+                            # rmarkdown::render("prueba.Rmd", output_file = file,
+                            params = params,
+                            envir = new.env(parent = globalenv())
+          )
+        })
+      }
+    )
+    
+    output$download_doc_aseocafe <- downloadHandler(
+      filename = "Aseo y cafetería.docx",
+      content = function(file) {
+        withProgress(message = 'Descargando informe word', {
+          # Pasamos los parámetros para el reporte
+          params <- list(mes = input$select_mes_ac, rendered_by_shiny = TRUE)
+          
+          # Renderizamos el archivo pasando la lista de parámetros e aislando el código del reporte en un 
+          # entorno global
+          rmarkdown::render("satisfaccion_aseocafeteria_word.Rmd", output_file = file,
+                            params = params,
+                            envir = new.env(parent = globalenv())
+          )
+        })
+      }
+    )
+    
     }
     
   

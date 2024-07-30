@@ -366,14 +366,26 @@ dashboardPage(
       div(
         class = "contenido",
         fluidRow(
-          align = "center",
-          div(style="display: inline-block; margin-right: 30px;", img(src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg/1200px-Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg.png", height=104, width=120)),
-          div(style="display: inline-block; vertical-align: middle;", h1(span("Servicio de ", style = "font-weight: 300"), "transporte",
-                                                                         style = "font-family: 'Source Sans Pro';
-                                                                                    color: #fff; text-align: center;
-                                                                                    background-image: url('https://raw.githubusercontent.com/rstudio/shiny-examples/main/081-widgets-gallery/www/texturebg.png');
-                                                                                    padding: 20px")
-          )
+          column(
+            width=7,
+            offset = 1,
+            #align = "center",
+            div(style="display: inline-block; margin-right: 30px;", img(src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg/1200px-Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg.png", height=104, width=120)),
+            div(style="display: inline-block; vertical-align: middle;", h1(span("Servicio de", style = "font-weight: 300"), "transporte",
+                                                                           style = "font-family: 'Source Sans Pro';
+                                                                                      color: #fff; text-align: center;
+                                                                                      background-image: url('https://raw.githubusercontent.com/rstudio/shiny-examples/main/081-widgets-gallery/www/texturebg.png');
+                                                                                      padding: 20px")
+            )),        
+          column(
+            width = 2,
+            #offset = -2,
+            h4("Botones para descargar el informe: "),
+            column(
+              width = 12,
+              downloadButton('download_doc_trans', "Descargar Word"),
+              downloadButton('download_HTML_trans', "Descargar HTML")
+            )),
         ),
         
         
@@ -817,15 +829,28 @@ dashboardPage(
       div(
         class = "contenido",
         fluidRow(
-          align = "center",
-          div(style="display: inline-block; margin-right: 30px;", img(src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg/1200px-Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg.png", height=104, width=120)),
-          div(style="display: inline-block; vertical-align: middle;", h1(span("Servicio de", style = "font-weight: 300"), "aseo y cafetería",
-                                                                         style = "font-family: 'Source Sans Pro';
-                                                                                    color: #fff; text-align: center;
-                                                                                    background-image: url('https://raw.githubusercontent.com/rstudio/shiny-examples/main/081-widgets-gallery/www/texturebg.png');
-                                                                                    padding: 20px")
-          )
+          column(
+            width=7,
+            offset = 1,
+            #align = "center",
+            div(style="display: inline-block; margin-right: 30px;", img(src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg/1200px-Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg.png", height=104, width=120)),
+            div(style="display: inline-block; vertical-align: middle;", h1(span("Servicio de", style = "font-weight: 300"), "aseo y cafetería",
+                                                                           style = "font-family: 'Source Sans Pro';
+                                                                                      color: #fff; text-align: center;
+                                                                                      background-image: url('https://raw.githubusercontent.com/rstudio/shiny-examples/main/081-widgets-gallery/www/texturebg.png');
+                                                                                      padding: 20px")
+            )),        
+            column(
+            width = 2,
+            #offset = 1,
+            h4("Botones para descargar el informe: "),
+            column(
+              width = 6,
+              downloadButton('download_doc_aseocafe', "Descargar Word"),
+              downloadButton('download_HTML_aseocafe', "Descargar HTML")
+            )),
         ),
+  
         
         #### 🔡 Texto introducción -------------------------------------------------------------
         

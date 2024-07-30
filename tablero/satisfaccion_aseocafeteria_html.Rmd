@@ -7,7 +7,7 @@ output:
     fig_width: 10
     highlight: tango
     keep_md: no
-    number_sections: yes
+    number_sections: no
     theme: cerulean
     toc: yes
     css: "corp-styles.css"
@@ -19,10 +19,7 @@ output:
     toc: yes
     toc_depth: '4'
 params:
-  facu: NA
-  prog: NA
-  año: NA
-  periodo: NA
+  mes: NA
   rendered_by_shiny: no
 subtitle: Universidad Pedagógica Nacional
 editor_options:
@@ -58,8 +55,6 @@ colores_plot <- c(#"#2171b5",
 ```
 
 ```{r}
-
-
 
 ## Función para crear flextable
 ftable <- function(x, encabezado = NULL, title = NULL) {
@@ -454,6 +449,15 @@ aseo_cafeteria <- aseo_cafeteria %>%
 aseo_cafeteria <- aseo_cafeteria %>% 
   rename(autoriza_datos = autoriza_el_tratamiento_de_sus_datos_personales_consignados_en_este_formulario_de_asistencia_de_la_universidad_pedagogica_nacional_con_el_objetivo_de_demostrar_su_participacion_en_el_evento_o_reu)
 
+aseo_cafeteria <- aseo_cafeteria %>% 
+  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
+  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+         mesdili = str_to_title(mesdili)) %>% 
+  mutate(anodili = year(hora_de_finalizacion))
+
+aseo_cafeteria <- aseo_cafeteria %>% 
+  filter(mesdili %in% params$mes)
+
 ```
 
 ```{r}
@@ -485,12 +489,6 @@ aseo_cafe <- aseo_cafeteria %>%
     valor9 = frecuencia_y_labores_de_descanecado,
     valor10 = atencion_y_actitud_de_los_funcionarios
     ) 
-
-aseo_cafeteria <- aseo_cafeteria %>% 
-  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
-  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
-         mesdili = str_to_title(mesdili)) %>% 
-  mutate(anodili = year(hora_de_finalizacion))
 
 ```
 
