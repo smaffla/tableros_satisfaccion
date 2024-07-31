@@ -164,7 +164,7 @@ transformar_calificacion_plot <- function(x, col) {
              !!col == "4" ~ "Bueno",
              !!col == "5" ~ "Excelente",
              TRUE ~ !!col)) %>% 
-    mutate(!!col := factor(!!col, levels = c("Muy deficiente", "Deficiente", "Aceptable", "Bueno", "Excelente")))
+    mutate(!!col := factor(!!col, levels = c("Muy deficiente", "Deficiente", "Aceptable", "Bueno", "Excelente"), ordered = TRUE))
 
    }
 
@@ -181,7 +181,7 @@ transformar_calificacion_dt <- function(x, col) {
       !!col == "4" ~ "Bueno",
       !!col == "5" ~ "Excelente",
       TRUE ~ !!col)) %>% 
-    mutate(!!col := factor(!!col, levels = c("Excelente", "Bueno", "Aceptable", "Deficiente", "Muy deficiente")))
+    mutate(!!col := factor(!!col, levels = c("Excelente", "Bueno", "Aceptable", "Deficiente", "Muy deficiente"), ordered = TRUE))
   
 }
 
@@ -192,7 +192,7 @@ generate_html_negrilla <- function(variable) {
 }
 
 plot_donas_as <- function(x, col, titulo = "") {
-
+  
   col <- enquo(col)
   
   data <- x %>%
@@ -405,6 +405,7 @@ categorica_2var <- function(x, cat1, cat2, rename, title = NULL, label_width = N
   
   return(table)
 }
+
 
 
 

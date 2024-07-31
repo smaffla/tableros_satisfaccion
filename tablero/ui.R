@@ -389,7 +389,7 @@ dashboardPage(
         ),
         
         
-
+        
         
         br(),
         
@@ -464,12 +464,12 @@ dashboardPage(
             width = 6,
             plotOutput("plot_meses_transporte") %>% withSpinner(type = 8, size = 0.5)
           )
-
+          
         ),
         
         br(),
         br(),
-
+        
         fluidRow(
           align = "center",
           HTML("<h2 style = 'color: #00609d'><strong>Tipo de servicio calificado por mes</strong></h2>"),
@@ -486,7 +486,7 @@ dashboardPage(
         ),
         
         br(), 
-
+        
         fluidRow(
           column(
             width = 6,
@@ -497,7 +497,7 @@ dashboardPage(
             width = 6,
             plotOutput("plot_tipo_servicio_trans") %>% withSpinner(type = 8, size = 0.5)
           )
-
+          
         ),
         
         br(),
@@ -588,7 +588,7 @@ dashboardPage(
           div(
             style = "max-width: 900px; margin: 0 auto;",
             uiOutput("html_text_encuestado_trans")
-            )
+          )
         ),
         
         fluidRow(
@@ -730,7 +730,7 @@ dashboardPage(
           div(
             style = "max-width: 900px; margin: 0 auto;",
             uiOutput("html_text_aspecto"),
-            )
+          )
         ),
         
         fluidRow(
@@ -770,8 +770,8 @@ dashboardPage(
         
         
       )
-        
-      ),# Cierra dashboardTransporte
+      
+    ),# Cierra dashboardTransporte
     
     ### Dashboard aseo y cafetería -------------------------------------------------------
     
@@ -840,7 +840,7 @@ dashboardPage(
                                                                                       background-image: url('https://raw.githubusercontent.com/rstudio/shiny-examples/main/081-widgets-gallery/www/texturebg.png');
                                                                                       padding: 20px")
             )),        
-            column(
+          column(
             width = 2,
             #offset = 1,
             h4("Botones para descargar el informe: "),
@@ -850,7 +850,7 @@ dashboardPage(
               downloadButton('download_HTML_aseocafe', "Descargar HTML")
             )),
         ),
-  
+        
         
         #### 🔡 Texto introducción -------------------------------------------------------------
         
@@ -920,15 +920,15 @@ dashboardPage(
             plotOutput("plot_califi_gene_aseocafe") %>% withSpinner(type = 8, size = 0.5)
           )
         ),
-
+        
         br(),
         br(),
         
         fluidRow(
           align = "center",
-          HTML("<h2 style = 'color: #00609d'><strong>Calificación por categoría</strong></h2>"),
+          HTML("<h2 style = 'color: #00609d'><strong>Calificación por aspecto del servicio</strong></h2>"),
         ),
-
+        
         br(),
         
         fluidRow(
@@ -982,19 +982,19 @@ dashboardPage(
           align = "center",
           uiOutput("html_output"),
         ),
-
+        
         br(),
         
         fluidRow(
-            column(
-              width = 6,
-              DTOutput("dt_califi_categoria") %>% withSpinner(type = 8, size = 0.5)
-            ),
-            column(
-              width = 6,
-              plotOutput("plot_califi_categoria") %>% withSpinner(type = 8, size = 0.5)
-            )
+          column(
+            width = 6,
+            DTOutput("dt_califi_categoria") %>% withSpinner(type = 8, size = 0.5)
           ),
+          column(
+            width = 6,
+            plotOutput("plot_califi_categoria") %>% withSpinner(type = 8, size = 0.5)
+          )
+        ),
         
         br(),
         br(),
@@ -1024,13 +1024,13 @@ dashboardPage(
         fluidRow(
           column(
             width = 6,
-
+            
             DTOutput("dt_califi_genero_ac") %>% withSpinner(type = 8, size = 0.5)
           ),
           
           column(
             width = 6,
-
+            
             plotOutput("plot_califi_genero_ac") %>% withSpinner(type = 8, size = 0.5)
           )
           
