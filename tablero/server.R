@@ -710,7 +710,7 @@ server <- function(input, output, session) {
       if (input$select_categoria_trans == "Tipo de vinculación"){
         "Se muestra el promedio de calificación dada al servicio, categorizando a los encuestados por el tipo de vinculación que tienen con la UPN. "
       } else if (input$select_categoria_trans == "Edad"){
-        "Se muestra el promedio de calificación dada al servicio, categorizando a los encuestados por el rango de edad el que están ubicados."
+        "Se muestra el promedio de calificación dada al servicio, categorizando a los encuestados por el rango de edad en el que están ubicados."
       } else if (input$select_categoria_trans == "Identidad de género") {
         "Se muestra el promedio de calificación dada al servicio, categorizando a los encuestados por el género con el que se identifican."
         
@@ -981,7 +981,7 @@ server <- function(input, output, session) {
       if (input$select_categoria_ind_trans == "Estado mecánico del vehículo"){
         "Se muestra el promedio de calificación dada al estado mecánico del vehículo en el que se brindó el servicio de transporte. "
       } else if (input$select_categoria_ind_trans == "Limpieza y presentación del vehículo"){
-        "Se muestra el promedio de calificación dada al apartado de limpieza y presentación del vehículo en el que se brindó el servicio de transporte."
+        "Se muestra el promedio de calificación dada a la limpieza y presentación - categoría servicio."
       } else if (input$select_categoria_ind_trans == "Amabilidad y cortesía"){
         "Se muestra el promedio de calificación dada a la amabilidad y cortesía mostrada por parte del conductor responsable del servicio de transporte."
       } else if (input$select_categoria_ind_trans == "Nivel de concentración mientras conduce") {
@@ -1029,20 +1029,20 @@ server <- function(input, output, session) {
     texto_aspecto <- reactive({
       if (input$select_aspecto == "Cumplimiento de itinerarios solicitados") {
         
-        'Se ilustra a través de una gráfica general la distribución porcentual de las respuestas (Sí/No) de los encuestados respecto a la pregunta. Se muestra también una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si a percepción del encuestado el conductor cumplió o no con este aspecto de evaluación.'
+        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si, a percepción del encuestado, el conductor cumplió o no con este aspecto de evaluación.'
         
       } else if (input$select_aspecto == "Cumplimiento de horarios solicitados") {
         
-        'Se ilustra a través de una gráfica general la distribución porcentual de las respuestas (Sí/No) de los encuestados respecto a la pregunta. Se muestra también una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si a percepción del encuestado el conductor cumplió o no con este aspecto de evaluación.'
+        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si, a percepción del encuestado, el conductor cumplió o no con este aspecto de evaluación.'
       } else if (input$select_aspecto == "Cumplimiento de normas de tránsito") {
         
-        'Se ilustra a través de una gráfica general la distribución porcentual de las respuestas (Sí/No) de los encuestados respecto a la pregunta. Se muestra también una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si a percepción del encuestado el conductor cumplió o no con este aspecto de evaluación.'
+        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si, a percepción del encuestado, el conductor cumplió o no con este aspecto de evaluación.'
       } else if (input$select_aspecto == "¿Se presentó algún incidente o accidente?"){
         
-        'Se ilustra a través de una gráfica general la distribución porcentual de las respuestas (Sí/No) de los encuestados respecto a la pregunta. Se muestra también una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si a percepción del encuestado el conductor cumplió o no con este aspecto de evaluación.'
+        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si, a percepción del encuestado, el conductor cumplió o no con este aspecto de evaluación.'
       } else { 
         
-        'Se ilustra a través de una gráfica general la distribución porcentual de las respuestas (Sí/No) de los encuestados respecto a la pregunta. Se muestra también una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si a percepción del encuestado el conductor cumplió o no con este aspecto de evaluación.'
+        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si, a percepción del encuestado, el conductor cumplió o no con este aspecto de evaluación.'
       }
     })
     

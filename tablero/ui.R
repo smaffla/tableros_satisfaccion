@@ -610,7 +610,7 @@ dashboardPage(
         
         fluidRow(
           align = "center",
-          HTML("<h2 style = 'color: #00609d'><strong>Calificación por categoría (del servicio)</strong></h2>"),
+          HTML("<h2 style = 'color: #00609d'><strong>Calificación por aspecto del servicio</strong></h2>"),
         ),
         
         br(),
