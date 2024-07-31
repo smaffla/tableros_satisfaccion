@@ -451,8 +451,10 @@ transporte <- transporte %>%
          mesdili = str_to_title(mesdili)) %>% 
   mutate(anodili = year(hora_de_finalizacion))
 
+
 # transporte <- transporte %>% 
 #   filter(mesdili %in% params$mes)
+
 
 ```
 
@@ -481,14 +483,6 @@ transporte <- transporte %>%
   mutate(nivel_de_atencion_mientras_conduce = as.numeric(nivel_de_atencion_mientras_conduce)) %>% 
   mutate(capacidad_de_comunicacion = as.numeric(capacidad_de_comunicacion))
 
-datos <- data.frame(
-categorias = c("Estado mecánico de los vehículo", "Limpieza y presentación general de los vehículos",
-                "Amabilidad y cortesía", "Nivel de atención mientras conduce", 
-                "Capacidad de comunicación"),
-promedios = transporte %>% 
-  select(estado_mecanico_de_los_vehiculo, limpieza_y_presentacion_general_de_los_vehiculos, amabilidad_y_cortesia, nivel_de_atencion_mientras_conduce, capacidad_de_comunicacion) %>% 
-  colMeans())
-
 trans <- transporte %>% 
     rename(valor1 = estado_mecanico_de_los_vehiculo, 
     valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
@@ -496,8 +490,10 @@ trans <- transporte %>%
     valor4 = nivel_de_atencion_mientras_conduce,
     valor5 = capacidad_de_comunicacion)
 
+
 transporte <- transporte %>% 
   mutate(mes = factor(mes, levels = c("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"), ordered = TRUE))
+
 ```
 
 # Cantidad de encuestados
@@ -1021,56 +1017,6 @@ transporte %>%
   bold(i = nrow_part(.), bold = FALSE)
 
 ```
-
-
-## ⚠️ Gráfico general
-
-```{r}
-
-#Pendiente revisar con Juli
-
-# datos %>%
-#   ggplot(aes(x = categorias, y = promedios)) +
-#   geom_polygon(fill = "skyblue", color = "blue", size = 1, alpha = 0.5) +
-#   geom_path(color = "blue", size = 1) +
-#   geom_point(color = "blue", size = 3) +
-#   coord_polar(start = 0) +  # Configurar coordenadas polares
-#   theme_minimal() +  # Estilo del tema
-#   labs(title = "Gráfico general de calificaciones", x = NULL, y = NULL) +  # Títulos de ejes y gráfico
-#   ylim(0, 5) 
-
-
-
-# Convertir categorías a factor para mantener el orden en el gráfico
-datos$categorias <- factor(datos$categorias, levels = datos$categorias)
-
-# Crear el gráfico de araña
-datos %>%
-  ggplot(aes(x = categorias, y = promedios)) +
-  geom_polygon(aes(group = 1), fill = "skyblue", color = "blue", size = 1.2, alpha = 0.5) +
-  geom_path(aes(group = 1), color = "blue", size = 1.2) +
-  geom_point(color = "blue", size = 4) +
-  geom_text(aes(label = round(promedios, 1)), vjust = -0.5, color = "black", size = 4) +
-  coord_polar() +
-  theme_minimal() +
-  labs(title = "Gráfico general de calificaciones", x = NULL, y = NULL) +
-  ylim(0, 5) +
-  scale_x_discrete(labels = function(x) str_wrap(x, width = 20)) +
-  theme(
-    axis.text.y = element_blank(),
-    axis.ticks = element_blank(),
-    panel.grid.major.y = element_line(color = "grey", size = 0.5, linetype = "dotted"),
-    panel.grid.major.x = element_line(color = "grey", size = 0.5, linetype = "dotted"),
-    axis.text.x = element_text(size = 10, angle = 0, hjust = 1)
-  ) +
-  annotate("text", x = seq_along(unique(datos$categorias)), y = rep(5, length(unique(datos$categorias))), 
-           label = unique(datos$categorias), size = 3, hjust = 1)
-
-
-
-
-```
-
 
 # ¿Se dio cumplimiento de los itinerarios solicitados?
 
