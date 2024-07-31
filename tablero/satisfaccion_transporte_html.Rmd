@@ -456,8 +456,8 @@ transporte <- transporte %>%
          mesdili = str_to_title(mesdili)) %>% 
   mutate(anodili = year(hora_de_finalizacion))
 
-transporte <- transporte %>% 
-  filter(mesdili %in% params$mes)
+# transporte <- transporte %>% 
+#   filter(mesdili %in% params$mes)
 
 ```
 
@@ -494,12 +494,15 @@ promedios = transporte %>%
   select(estado_mecanico_de_los_vehiculo, limpieza_y_presentacion_general_de_los_vehiculos, amabilidad_y_cortesia, nivel_de_atencion_mientras_conduce, capacidad_de_comunicacion) %>% 
   colMeans())
 
-trans <- transporte %>% 
+trans <- transporte %>%
     rename(valor1 = estado_mecanico_de_los_vehiculo, 
     valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
     valor3 = amabilidad_y_cortesia,
     valor4 = nivel_de_atencion_mientras_conduce,
     valor5 = capacidad_de_comunicacion)
+
+transporte <- transporte %>% 
+  mutate(mes = factor(mes, levels = c("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"), ordered = TRUE)) 
 
 ```
 
@@ -685,6 +688,7 @@ transporte %>%
 ```{r}
 
 transporte %>%
+    mutate(mes = factor(mes, levels = c("Diciembre", "Noviembre", "Octubre", "Septiembre", "Agosto", "Julio", "Junio", "Mayo", "Abril", "Marzo", "Febrero", "Enero"), ordered = TRUE)) %>% 
   plot_barras(mes, "", "", titulo = "Meses en los que se utilizo el servicio de transporte")
 
 ```
@@ -708,6 +712,7 @@ transporte %>%
 ```{r}
 
 transporte %>%
+    mutate(mes = factor(mes, levels = c("Diciembre", "Noviembre", "Octubre", "Septiembre", "Agosto", "Julio", "Junio", "Mayo", "Abril", "Marzo", "Febrero", "Enero"), ordered = TRUE)) %>% 
   plot_barras_agrupado(mes, tipo_de_servicio_prestado, "", "", leyenda = "", 
                        titulo = "Tipo de servicio utilizado cada mes")
 
