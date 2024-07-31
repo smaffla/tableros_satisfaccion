@@ -186,7 +186,7 @@ server <- function(input, output, session) {
           filter(anodili %in% input$select_anio, 
                  mesdili %in% input$select_mes) %>%
           plot_donas(cual_es_su_identidad_de_genero, 
-                      titulo = "Identidad de género de los encuestados")
+                     titulo = "Identidad de género de los encuestados")
         
       } else if (input$select_encuesta == "Servicio de aseo y cafetería") {
         
@@ -196,13 +196,13 @@ server <- function(input, output, session) {
           plot_donas(cual_es_su_identidad_de_genero,
                      titulo = "Identidad de género de los encuestados")
         
-        } else {
+      } else {
         
         transporte %>%
           filter(anodili %in% input$select_anio, 
                  mesdili %in% input$select_mes) %>%
-            plot_donas(cual_es_su_identidad_de_genero,  
-                       titulo = "Identidad de género de los encuestados")
+          plot_donas(cual_es_su_identidad_de_genero,  
+                     titulo = "Identidad de género de los encuestados")
       }
       
     })
@@ -498,14 +498,14 @@ server <- function(input, output, session) {
     
     ## 🚗🚗 Servicio de transporte ---------------------------------------------------------------
     
-  observe({
-    # Verificar si no hay ningún mes seleccionado
-    if (is.null(input$select_mes_trans) || length(input$select_mes_trans) == 0) {
-      # Establecer un valor predeterminado si no hay ningún mes seleccionado
-      updatePickerInput(session, "select_mes_trans", selected = "Mayo")
-    }
-  })
-
+    observe({
+      # Verificar si no hay ningún mes seleccionado
+      if (is.null(input$select_mes_trans) || length(input$select_mes_trans) == 0) {
+        # Establecer un valor predeterminado si no hay ningún mes seleccionado
+        updatePickerInput(session, "select_mes_trans", selected = "Mayo")
+      }
+    })
+    
     #### Texto de introducción ------------------
     output$texto_introduccion_transporte <- renderText({
       paste("En esta página se encuentra el análisis descriptivo de datos correspondiente a la encuesta de satisfacción
@@ -546,7 +546,7 @@ server <- function(input, output, session) {
         )
       )
     })
-
+    
     ##### Actitudinal --------------------------------------------------------------
     output$value_box_promedio_actitudinal_trans <- renderUI({
       
@@ -624,8 +624,8 @@ server <- function(input, output, session) {
         mutate(mes = factor(mes, levels = c("Diciembre", "Noviembre", "Octubre", "Septiembre", "Agosto", "Junio", "Mayo", 
                                             "Abril", "Marzo", "Febrero", "Enero"))) %>% 
         plot_barras(mes, "", "", titulo = "Meses en los que se calificó el servicio de transporte")
-    
-      })
+      
+    })
     
     #### Tipo de servicio utilizado cada mes ----------------------------------------------
     
@@ -674,19 +674,19 @@ server <- function(input, output, session) {
     
     ##### 📊 --------------------------------------------------------------
     output$plot_calificacion_conductor <- renderPlot({
-        
-        transporte %>%
-          filter(anodili %in% input$select_anio_trans, 
-                 mesdili %in% input$select_mes_trans) %>%
-          rename(
-            valor1 = estado_mecanico_de_los_vehiculo, 
-            valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
-            valor3 = amabilidad_y_cortesia,
-            valor4 = nivel_de_atencion_mientras_conduce,
-            valor5 = capacidad_de_comunicacion
-          ) %>%
-          plot_barras_prom(nombre_del_conductor_que_presto_el_servicio, "", "", titulo = "Calificación general por conductor")
-       })
+      
+      transporte %>%
+        filter(anodili %in% input$select_anio_trans, 
+               mesdili %in% input$select_mes_trans) %>%
+        rename(
+          valor1 = estado_mecanico_de_los_vehiculo, 
+          valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
+          valor3 = amabilidad_y_cortesia,
+          valor4 = nivel_de_atencion_mientras_conduce,
+          valor5 = capacidad_de_comunicacion
+        ) %>%
+        plot_barras_prom(nombre_del_conductor_que_presto_el_servicio, "", "", titulo = "Calificación general por conductor")
+    })
     
     #### Calificacion por categoria -----------------------------------------------------
     
@@ -731,7 +731,7 @@ server <- function(input, output, session) {
     
     output$dt_calificacion_categoria_trans <- renderDataTable({
       
-    if (input$select_categoria_trans == "Tipo de vinculación"){
+      if (input$select_categoria_trans == "Tipo de vinculación"){
         
         transporte %>% 
           filter(anodili %in% input$select_anio_trans, 
@@ -754,7 +754,7 @@ server <- function(input, output, session) {
                  valor4 = nivel_de_atencion_mientras_conduce,
                  valor5 = capacidad_de_comunicacion) %>%
           mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, levels = c("18 a 28 años", "28 a 40 años",	
-            "40 a 60 años", "Mayor de 60 años"))) %>% 
+                                                                                        "40 a 60 años", "Mayor de 60 años"))) %>% 
           tabla_prom(cual_es_su_rango_de_edad, "Rango de edad", titulo = "Calificación promedio por rango de edad" )
         
       } else if (input$select_categoria_trans == "Identidad de género") {
@@ -778,13 +778,13 @@ server <- function(input, output, session) {
                  valor5 = capacidad_de_comunicacion) %>%
           tabla_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, "Encabezado", titulo = "titulo")     
       }
-        })
+    })
     
     ##### 📊 -----------------------------------------
     
     output$plot_calificacion_categoria_trans <- renderPlot({
       
-     if (input$select_categoria_trans == "Tipo de vinculación"){
+      if (input$select_categoria_trans == "Tipo de vinculación"){
         transporte %>%
           filter(anodili %in% input$select_anio_trans, 
                  mesdili %in% input$select_mes_trans) %>% 
@@ -796,7 +796,7 @@ server <- function(input, output, session) {
             valor5 = capacidad_de_comunicacion
           ) %>%
           plot_barras_prom(tipo_de_vinculacion, "", "", titulo = "Calificación promedio por tipo de vinculación")
-    
+        
       } else if (input$select_categoria_trans == "Edad"){
         transporte %>%
           filter(anodili %in% input$select_anio_trans, 
@@ -810,7 +810,7 @@ server <- function(input, output, session) {
           mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, levels = c("Mayor de 60 años","40 a 60 años",
                                                                                         "28 a 40 años","18 a 28 años"))) %>% 
           plot_barras_prom(cual_es_su_rango_de_edad, "", "", titulo = "Calificación promedio por categoría de edad")
-
+        
       } else if (input$select_categoria_trans == "Identidad de género") {
         
         transporte %>%
@@ -839,7 +839,7 @@ server <- function(input, output, session) {
       
     })
     
-
+    
     
     #### Calificación general por categoria del servicio --------------------
     
@@ -957,7 +957,7 @@ server <- function(input, output, session) {
           plot_barras(capacidad_de_comunicacion, "", "", 
                       titulo = "") }
     })
-  
+    
     categoria_servicio <- reactive({
       if (input$select_categoria_ind_trans == "Estado mecánico del vehículo"){
         "Estado mecánico del vehículo"
@@ -1029,20 +1029,20 @@ server <- function(input, output, session) {
     texto_aspecto <- reactive({
       if (input$select_aspecto == "Cumplimiento de itinerarios solicitados") {
         
-        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si, a percepción del encuestado, el conductor cumplió o no con este aspecto de evaluación.'
+        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por conductor, donde se refleja la percepción del encuestado de acuerdo al conductor que lo transportó'
         
       } else if (input$select_aspecto == "Cumplimiento de horarios solicitados") {
         
-        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si, a percepción del encuestado, el conductor cumplió o no con este aspecto de evaluación.'
+        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por conductor, donde se refleja la percepción del encuestado de acuerdo al conductor que lo transportó'
       } else if (input$select_aspecto == "Cumplimiento de normas de tránsito") {
         
-        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si, a percepción del encuestado, el conductor cumplió o no con este aspecto de evaluación.'
+        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por conductor, donde se refleja la percepción del encuestado de acuerdo al conductor que lo transportó'
       } else if (input$select_aspecto == "¿Se presentó algún incidente o accidente?"){
         
-        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si, a percepción del encuestado, el conductor cumplió o no con este aspecto de evaluación.'
+        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por conductor, donde se refleja la percepción del encuestado de acuerdo al conductor que lo transportó'
       } else { 
         
-        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si, a percepción del encuestado, el conductor cumplió o no con este aspecto de evaluación.'
+        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por conductor, donde se refleja la percepción del encuestado de acuerdo al conductor que lo transportó'
       }
     })
     
@@ -1143,7 +1143,7 @@ server <- function(input, output, session) {
       
       
     })
-  
+    
     
     ## 🧻🥪Servicio de aseo y cafeteria ----------------------------------------------------
     
@@ -1236,7 +1236,7 @@ server <- function(input, output, session) {
         left_join(promedios, by = "Categoria") %>%
         styled_dt(title =  "Tabla general")
       
-       })
+    })
     
     ##### 📊 -----------------------------------------
     
@@ -1300,7 +1300,7 @@ server <- function(input, output, session) {
                      names_to = "Categoria", 
                      values_to = "Calificacion") %>% 
         mutate(Calificacion = factor(Calificacion, levels = c("Excelente", "Bueno","Aceptable", 
-                                                               "Deficiente", "Muy deficiente"))) %>% 
+                                                              "Deficiente", "Muy deficiente"))) %>% 
         count(Categoria, Calificacion) 
       
       aseocafe %>% 
@@ -1332,26 +1332,26 @@ server <- function(input, output, session) {
     #### Valuebox promedio general ----------------------------------------
     
     output$value_box_promedio_general <- renderUI({
-        
-        promedio <- aseo_cafeteria %>% 
-          filter(anodili %in% input$select_anio_ac, 
+      
+      promedio <- aseo_cafeteria %>% 
+        filter(anodili %in% input$select_anio_ac, 
                mesdili %in% input$select_mes_ac,
                autoriza_datos == "Si") %>% 
-          summarise(
-            "Calidad del tinto y aromatica ofrecida" = round(mean(calidad_de_tinto_y_aromatica_ofrecida, na.rm = TRUE), 1),
-            "Oportunidad en el servicio de preparación" = round(mean(oportunidad_en_el_servicio_de_preparacion, na.rm = TRUE), 1),
-            "Amabilidad y actitud del personal" = round(mean(amabilidad_y_actitud_del_personal, na.rm = TRUE), 1),
-            "Limpieza de las oficinas, salones, auditorios y laboratorios" = round(mean(limpieza_general, na.rm = TRUE), 1),
-            "Limpieza general de las áreas comunes" = round(mean(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios, 
-                                                                 na.rm = TRUE), 1),
-            "Limpieza general" = round(mean(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante, 
-                                            na.rm = TRUE), 1),
-            "Limpieza de baños" = round(mean(limpieza_de_banos, na.rm = TRUE), 1),
-            "Labores de jardinería" = round(mean(labores_de_jardineria, na.rm = TRUE), 1),
-            "Frecuencia y labores de descanecado" = round(mean(frecuencia_y_labores_de_descanecado, na.rm = TRUE), 1),
-            "Atención y actitud de los funcionarios" = round(mean(atencion_y_actitud_de_los_funcionarios, na.rm = TRUE), 1)
-          ) %>%
-          pivot_longer(cols = everything(), names_to = "Categoria", values_to = "Promedio") %>% 
+        summarise(
+          "Calidad del tinto y aromatica ofrecida" = round(mean(calidad_de_tinto_y_aromatica_ofrecida, na.rm = TRUE), 1),
+          "Oportunidad en el servicio de preparación" = round(mean(oportunidad_en_el_servicio_de_preparacion, na.rm = TRUE), 1),
+          "Amabilidad y actitud del personal" = round(mean(amabilidad_y_actitud_del_personal, na.rm = TRUE), 1),
+          "Limpieza de las oficinas, salones, auditorios y laboratorios" = round(mean(limpieza_general, na.rm = TRUE), 1),
+          "Limpieza general de las áreas comunes" = round(mean(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios, 
+                                                               na.rm = TRUE), 1),
+          "Limpieza general" = round(mean(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante, 
+                                          na.rm = TRUE), 1),
+          "Limpieza de baños" = round(mean(limpieza_de_banos, na.rm = TRUE), 1),
+          "Labores de jardinería" = round(mean(labores_de_jardineria, na.rm = TRUE), 1),
+          "Frecuencia y labores de descanecado" = round(mean(frecuencia_y_labores_de_descanecado, na.rm = TRUE), 1),
+          "Atención y actitud de los funcionarios" = round(mean(atencion_y_actitud_de_los_funcionarios, na.rm = TRUE), 1)
+        ) %>%
+        pivot_longer(cols = everything(), names_to = "Categoria", values_to = "Promedio") %>% 
         summarise(promedio = mean(Promedio, na.rm = TRUE)) %>% 
         pull(promedio)
       
@@ -1411,7 +1411,7 @@ server <- function(input, output, session) {
                  mesdili %in% input$select_mes_ac) %>%
           transformar_calificacion_dt(calidad_de_tinto_y_aromatica_ofrecida) %>% 
           categorica_1var(calidad_de_tinto_y_aromatica_ofrecida, "Calificación")
-          
+        
       } else if (input$select_categoria == "Oportunidad en el servicio de preparación") {
         
         aseo_cafeteria %>% 
