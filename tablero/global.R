@@ -151,7 +151,7 @@ generate_html_text <- function(variable) {
   
 }
 
-transformar_calificacion <- function(x, col) {
+transformar_calificacion_plot <- function(x, col) {
  
   col <- enquo(col)
   
@@ -163,22 +163,42 @@ transformar_calificacion <- function(x, col) {
              !!col == "3" ~ "Aceptable",
              !!col == "4" ~ "Bueno",
              !!col == "5" ~ "Excelente",
-             TRUE ~ !!col))
+             TRUE ~ !!col)) %>% 
+    mutate(!!col := factor(!!col, levels = c("Muy deficiente", "Deficiente", "Aceptable", "Bueno", "Excelente")))
+
+   }
+
+transformar_calificacion_dt <- function(x, col) {
+  
+  col <- enquo(col)
+  
+  x %>% 
+    mutate(!!col := as.character(!!col)) %>% 
+    mutate(!!col := case_when(
+      !!col == "1" ~ "Muy deficiente",
+      !!col == "2" ~ "Deficiente",
+      !!col == "3" ~ "Aceptable",
+      !!col == "4" ~ "Bueno",
+      !!col == "5" ~ "Excelente",
+      TRUE ~ !!col)) %>% 
+    mutate(!!col := factor(!!col, levels = c("Excelente", "Bueno", "Aceptable", "Deficiente", "Muy deficiente")))
+  
 }
+
 
 generate_html_negrilla <- function(variable) {
   HTML(glue("<h3 style = 'color: #00609d'><strong>{variable()}</strong></h3>"))
   
 }
 
-plot_donas <- function(x, col, group, titulo = "") {
-  
-  group <- enquo(group)
+plot_donas_as <- function(x, col, titulo = "") {
+
   col <- enquo(col)
   
   data <- x %>%
     filter(autoriza_datos == "Si") %>% 
-    count(!!group, !!col) %>% 
+    mutate(!!col := factor(!!col, levels = c("Si", "No"))) %>% 
+    count(!!col) %>% 
     mutate(porcentaje = n / sum(n),
            ymax = cumsum(porcentaje),
            ymin = c(0, head(ymax, n = -1)),
@@ -186,7 +206,35 @@ plot_donas <- function(x, col, group, titulo = "") {
            labelname = paste(n,"\n",percent(porcentaje, 0.1)))
   #filter(porcentaje >= 0.005)
   
-  ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 10, xmin = 1, fill = !!group)) +
+  ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 10, xmin = 1, fill = !!col)) +
+    geom_rect() +
+    geom_text(aes(x = -1.5, y = labelpos, label = labelname), size = 5, color = "black", fontface = "bold") +
+    labs(title = str_wrap(titulo, width = 30)) +
+    scale_fill_manual(values = c("#0fc809","#da3d02")) +
+    coord_polar(theta = "y") +
+    xlim(c(20, -10)) +
+    theme_void() +
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 16, face = 'bold', color = "#525252")) +
+    guides(fill = guide_legend(title = "", label.position = "right",
+                               label.theme = element_text(size = 12)))
+}
+
+plot_donas <- function(x, col, titulo = "") {
+  
+  col <- enquo(col)
+  
+  data <- x %>%
+    filter(autoriza_datos == "Si") %>% 
+    count(!!col) %>% 
+    mutate(porcentaje = n / sum(n),
+           ymax = cumsum(porcentaje),
+           ymin = c(0, head(ymax, n = -1)),
+           labelpos = (ymax + ymin) / 2,
+           labelname = paste(n,"\n",percent(porcentaje, 0.1)))
+  #filter(porcentaje >= 0.005)
+  
+  ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 10, xmin = 1, fill = !!col)) +
     geom_rect() +
     geom_text(aes(x = -1.5, y = labelpos, label = labelname), size = 5, color = "black", fontface = "bold") +
     labs(title = str_wrap(titulo, width = 30)) +
@@ -485,7 +533,6 @@ tabla_prom <- function(x, col, rename, titulo = NULL, wrap_width = NULL) {
     group_by(!!col) %>%
     summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
     ungroup() %>% 
-    arrange(desc(promedio_general)) %>% 
     rename("{rename}" := !!col,
            "Promedio" = promedio_general) %>% 
     as.data.frame()  
@@ -523,7 +570,3 @@ styled_dt <- function(x, title = NULL) {
     )
   return(table)
 }
-
-
-
-
