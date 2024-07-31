@@ -58,9 +58,8 @@ server <- function(input, output, session) {
 
     #### Encuestas ----------------------------------------------
     
-    ### - 📊️ Gráfico de barra por tipo de vinculacion --------------------------------
+    ### 📊 Tipo de vinculacion --------------------------------
     
-    ## Gráfica
     output$plot_general_vinculacion <- renderPlot({
 
       if (input$select_encuesta == "General"){
@@ -88,7 +87,7 @@ server <- function(input, output, session) {
 
     })
     
-    ### - Tabla📝  ---------------------------------------------
+    ### 📝 Tipo de vinculación---------------------------------------------
     output$dt_general_vinculacion <- renderDataTable({
       
       if (input$select_encuesta == "General"){
@@ -117,7 +116,7 @@ server <- function(input, output, session) {
         
        })
     
-    ### - 📊️ Gráfico de barra por lugar de trabajo  ---------------------------------
+    ### 📊 Lugar de trabajo  ---------------------------------
     output$plot_general_instalaciones <- renderPlot({
       
       if (input$select_encuesta == "General"){
@@ -147,7 +146,7 @@ server <- function(input, output, session) {
       
     })
     
-    ### - 📝  ---------------------------------------------
+    ### - 📝 Lugar de trabajo---------------------------------------------
     output$dt_general_intalaciones <- renderDataTable({
       
       if (input$select_encuesta == "General"){
@@ -178,7 +177,7 @@ server <- function(input, output, session) {
       
     })
     
-    ### - 📊️ Gráfico de barra por identidad de género ---------------------------------
+    ### - 📊 Identidad de género ---------------------------------
     output$plot_general_genero <- renderPlot({
       
       if (input$select_encuesta == "General"){
@@ -186,29 +185,29 @@ server <- function(input, output, session) {
         general %>% 
           filter(anodili %in% input$select_anio, 
                  mesdili %in% input$select_mes) %>%
-          plot_donas(cual_es_su_identidad_de_genero, cual_es_su_identidad_de_genero, 
-                      titulo = "Identidad de género de los encuestados")
+          plot_donas(cual_es_su_identidad_de_genero, 
+                     titulo = "Identidad de género de los encuestados")
         
       } else if (input$select_encuesta == "Servicio de aseo y cafetería") {
         
         aseo_cafeteria %>%
           filter(anodili %in% input$select_anio, 
                  mesdili %in% input$select_mes) %>%
-          plot_donas(cual_es_su_identidad_de_genero, cual_es_su_identidad_de_genero, 
+          plot_donas(cual_es_su_identidad_de_genero,
                      titulo = "Identidad de género de los encuestados")
         
-        } else {
+      } else {
         
         transporte %>%
           filter(anodili %in% input$select_anio, 
                  mesdili %in% input$select_mes) %>%
-            plot_donas(cual_es_su_identidad_de_genero, cual_es_su_identidad_de_genero, 
-                       titulo = "Identidad de género de los encuestados")
+          plot_donas(cual_es_su_identidad_de_genero,  
+                     titulo = "Identidad de género de los encuestados")
       }
       
     })
     
-    ### - 📝  ---------------------------------------------
+    ### - 📝 Identidad de género ---------------------------------------------
     output$dt_general_genero <- renderDataTable({
       
       if (input$select_encuesta == "General"){
@@ -236,7 +235,7 @@ server <- function(input, output, session) {
       
     })
     
-    ### - 📊️ Gráfico de barra por rango de edad ---------------------------------
+    ### - 📊 Rango de edad ---------------------------------
     output$plot_general_edad <- renderPlot({
       
       if (input$select_encuesta == "General"){
@@ -244,6 +243,8 @@ server <- function(input, output, session) {
         general %>% 
           filter(anodili %in% input$select_anio, 
                  mesdili %in% input$select_mes) %>%
+          mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, levels = c("Mayor de 60 años","40 a 60 años",
+                                                                                        "28 a 40 años","18 a 28 años"))) %>% 
           plot_barras(cual_es_su_rango_de_edad, "", "", titulo = "Rango de edad de los encuestados")
         
       } else if (input$select_encuesta == "Servicio de aseo y cafetería") {
@@ -251,19 +252,23 @@ server <- function(input, output, session) {
         aseo_cafeteria %>%
           filter(anodili %in% input$select_anio, 
                  mesdili %in% input$select_mes) %>%
+          mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, levels = c("Mayor de 60 años","40 a 60 años",
+                                                                                        "28 a 40 años","18 a 28 años"))) %>% 
           plot_barras(cual_es_su_rango_de_edad, "", "", titulo = "Rango de edad de los encuestados")
       } else {
         
         transporte %>%
           filter(anodili %in% input$select_anio, 
                  mesdili %in% input$select_mes) %>%
+          mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, levels = c("Mayor de 60 años","40 a 60 años",
+                                                                                        "28 a 40 años","18 a 28 años"))) %>% 
           plot_barras(cual_es_su_rango_de_edad, "", "", titulo = "Rango de edad de los encuestados")
         
       }
       
     })
     
-    ### - 📝  ---------------------------------------------
+    ### - 📝  Rango de edad---------------------------------------------
     output$dt_general_edad <- renderDataTable({
       
       if (input$select_encuesta == "General"){
@@ -271,6 +276,8 @@ server <- function(input, output, session) {
         general %>% 
           filter(anodili %in% input$select_anio, 
                  mesdili %in% input$select_mes) %>%
+          mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, levels = c("18 a 28 años", "28 a 40 años",	
+                                                                                        "40 a 60 años", "Mayor de 60 años"))) %>% 
           categorica_1var(cual_es_su_rango_de_edad, "Rango de edad")
         
       } else if (input$select_encuesta == "Servicio de aseo y cafetería") {
@@ -278,6 +285,8 @@ server <- function(input, output, session) {
         aseo_cafeteria %>%
           filter(anodili %in% input$select_anio, 
                  mesdili %in% input$select_mes) %>%
+          mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, levels = c("18 a 28 años", "28 a 40 años",	
+                                                                                        "40 a 60 años", "Mayor de 60 años"))) %>% 
           categorica_1var(cual_es_su_rango_de_edad, "Rango de edad")
         
       } else {
@@ -285,6 +294,8 @@ server <- function(input, output, session) {
         transporte %>%
           filter(anodili %in% input$select_anio, 
                  mesdili %in% input$select_mes) %>%
+          mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, levels = c("18 a 28 años", "28 a 40 años",	
+                                                                                        "40 a 60 años", "Mayor de 60 años"))) %>% 
           categorica_1var(cual_es_su_rango_de_edad, "Rango de edad")
         
       }
@@ -292,7 +303,7 @@ server <- function(input, output, session) {
       
     })
     
-    ### - 📊️ Gráfico de barra por grupo poblacional ---------------------------------
+    ### - 📊️ Grupo poblacional ---------------------------------
     output$plot_general_grupo_problacional <- renderPlot({
       
       if (input$select_encuesta == "General"){
@@ -328,7 +339,7 @@ server <- function(input, output, session) {
       
     })
     
-    ### - 📝  ---------------------------------------------
+    ### - 📝 Grupo poblacional ---------------------------------------------
     output$dt_general_grupo_poblacional <- renderDataTable({
       
       if (input$select_encuesta == "General"){
@@ -363,7 +374,7 @@ server <- function(input, output, session) {
       
     })
     
-    ### - 📊️ Gráfico de barra por étnia ---------------------------------
+    ### - 📊 Étnia ---------------------------------
     output$plot_general_etnias <- renderPlot({
       
       if (input$select_encuesta == "General"){
@@ -393,7 +404,7 @@ server <- function(input, output, session) {
       
     })
     
-    ### - 📝  ---------------------------------------------
+    ### - 📝  Étnia ---------------------------------------------
     output$dt_general_etnias <- renderDataTable({
       
       if (input$select_encuesta == "General"){
@@ -422,7 +433,7 @@ server <- function(input, output, session) {
       
     })
     
-    ### - 📊️ Gráfico de barra por unidad o dependencia ---------------------------------
+    ### - 📊️ Unidad o dependencia ---------------------------------
     output$plot_general_unidad_dependencia <- renderPlot({
       
       if (input$select_encuesta == "General"){
@@ -452,7 +463,7 @@ server <- function(input, output, session) {
       
     })
     
-    ### - 📝  ---------------------------------------------
+    ### - 📝 Unidad o dependencia ---------------------------------------------
     output$dt_general_unidad_dependencia <- renderDataTable({
       
       if (input$select_encuesta == "General"){
@@ -485,19 +496,17 @@ server <- function(input, output, session) {
     })
     
     
-    ### Servicio de transporte ---------------------------------------------------------------
+    ## 🚗🚗 Servicio de transporte ---------------------------------------------------------------
     
-  observe({
-    # Verificar si no hay ningún mes seleccionado
-    if (is.null(input$select_mes_trans) || length(input$select_mes_trans) == 0) {
-      # Establecer un valor predeterminado si no hay ningún mes seleccionado
-      updatePickerInput(session, "select_mes_trans", selected = "Mayo")
-    }
-  })
-
+    observe({
+      # Verificar si no hay ningún mes seleccionado
+      if (is.null(input$select_mes_trans) || length(input$select_mes_trans) == 0) {
+        # Establecer un valor predeterminado si no hay ningún mes seleccionado
+        updatePickerInput(session, "select_mes_trans", selected = "Mayo")
+      }
+    })
     
-  
-  
+    #### Texto de introducción ------------------
     output$texto_introduccion_transporte <- renderText({
       paste("En esta página se encuentra el análisis descriptivo de datos correspondiente a la encuesta de satisfacción
             del servicio de transporte que se realizó en la Universidad Pedagógica Nacional",
@@ -506,7 +515,9 @@ server <- function(input, output, session) {
             ").", sep = "")
     })
     
+    #### Valuebox de promedio -----------------------------------------------------
     
+    ##### General -----------------------------------------
     output$value_box_promedio_general_trans <- renderUI({
       
       promedio <- transporte %>% 
@@ -535,7 +546,8 @@ server <- function(input, output, session) {
         )
       )
     })
-
+    
+    ##### Actitudinal --------------------------------------------------------------
     output$value_box_promedio_actitudinal_trans <- renderUI({
       
       promedio <- transporte %>% 
@@ -563,6 +575,7 @@ server <- function(input, output, session) {
       )
     })
     
+    ##### Vehicular -------------------------------------------
     output$value_box_promedio_vehiculo_trans <- renderUI({
       
       promedio <- transporte %>% 
@@ -588,46 +601,60 @@ server <- function(input, output, session) {
         )
       )
     })
-    ##  Meses en los que se calificó el servicio de transporte
+    
+    #### 📝 Meses en los que se calificó el servicio de transporte ------------------------------
     
     output$dt_meses_transporte <- renderDataTable({
       
       transporte %>%
         filter(anodili %in% input$select_anio_trans, 
                mesdili %in% input$select_mes_trans) %>% 
+        mutate(mes = factor(mes, levels = c("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Agosto", "Septiembre",
+                                            "Octubre", "Noviembre", "Diciembre"))) %>% 
         categorica_1var(mes, "Mes")
     })
+    
+    #### 📊 Meses en los que se calificó el servicio de transporte ------------------------------
     
     output$plot_meses_transporte <- renderPlot({
       
       transporte %>%
         filter(anodili %in% input$select_anio_trans, 
                mesdili %in% input$select_mes_trans) %>% 
+        mutate(mes = factor(mes, levels = c("Diciembre", "Noviembre", "Octubre", "Septiembre", "Agosto", "Junio", "Mayo", 
+                                            "Abril", "Marzo", "Febrero", "Enero"))) %>% 
         plot_barras(mes, "", "", titulo = "Meses en los que se calificó el servicio de transporte")
+      
+    })
     
-      })
-    
-    ## Tipo de servicio utilizado cada mes
+    #### Tipo de servicio utilizado cada mes ----------------------------------------------
     
     ###Se examinan los tipos de servicios de transporte utilizados por los encuestados en cada mes.
     
+    ##### 📝-------------------------
     output$dt_tipo_servicio_trans <- renderDataTable({
       transporte %>%
         filter(anodili %in% input$select_anio_trans, 
                mesdili %in% input$select_mes_trans) %>%
+        mutate(mes = factor(mes, levels = c("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Agosto", "Septiembre",
+                                            "Octubre", "Noviembre", "Diciembre"))) %>% 
         categorica_2var(mes, tipo_de_servicio_prestado, "Tipo de servicio", label_width = 20)
     })
     
+    ##### 📊 ---------------------------
     output$plot_tipo_servicio_trans <- renderPlot({
       transporte %>% 
         filter(anodili %in% input$select_anio_trans, 
                mesdili %in% input$select_mes_trans) %>% 
+        mutate(mes = factor(mes, levels = c("Diciembre", "Noviembre", "Octubre", "Septiembre", "Agosto", "Junio", "Mayo", 
+                                            "Abril", "Marzo", "Febrero", "Enero"))) %>% 
         plot_barras_agrupado(mes, tipo_de_servicio_prestado, "", "", leyenda = "", 
                              titulo = "Tipo de servicio utilizado cada mes")
     })
     
+    #### Calificación general por conductor ----------------------------------------
     
-    
+    ##### 📝-----------------------------
     output$dt_calificacion_conductor <- renderDataTable({
       
       transporte %>% 
@@ -645,22 +672,23 @@ server <- function(input, output, session) {
       
     })
     
+    ##### 📊 --------------------------------------------------------------
     output$plot_calificacion_conductor <- renderPlot({
-        
-        transporte %>%
-          filter(anodili %in% input$select_anio_trans, 
-                 mesdili %in% input$select_mes_trans) %>%
-          rename(
-            valor1 = estado_mecanico_de_los_vehiculo, 
-            valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
-            valor3 = amabilidad_y_cortesia,
-            valor4 = nivel_de_atencion_mientras_conduce,
-            valor5 = capacidad_de_comunicacion
-          ) %>%
-          plot_barras_prom(nombre_del_conductor_que_presto_el_servicio, "", "", titulo = "Calificación general por conductor")
-       })
+      
+      transporte %>%
+        filter(anodili %in% input$select_anio_trans, 
+               mesdili %in% input$select_mes_trans) %>%
+        rename(
+          valor1 = estado_mecanico_de_los_vehiculo, 
+          valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
+          valor3 = amabilidad_y_cortesia,
+          valor4 = nivel_de_atencion_mientras_conduce,
+          valor5 = capacidad_de_comunicacion
+        ) %>%
+        plot_barras_prom(nombre_del_conductor_que_presto_el_servicio, "", "", titulo = "Calificación general por conductor")
+    })
     
-    #Calificacion por categoria
+    #### Calificacion por categoria -----------------------------------------------------
     
     ###Se recopila y analiza la calificación general del servicio de transporte proporcionada por los encuestados por conductor.
     
@@ -699,9 +727,11 @@ server <- function(input, output, session) {
       generate_html_text(texto_categoria_encuestado)
     })
     
+    ##### 📝 ---------------------------------------------------
+    
     output$dt_calificacion_categoria_trans <- renderDataTable({
       
-    if (input$select_categoria_trans == "Tipo de vinculación"){
+      if (input$select_categoria_trans == "Tipo de vinculación"){
         
         transporte %>% 
           filter(anodili %in% input$select_anio_trans, 
@@ -723,8 +753,9 @@ server <- function(input, output, session) {
                  valor3 = amabilidad_y_cortesia,
                  valor4 = nivel_de_atencion_mientras_conduce,
                  valor5 = capacidad_de_comunicacion) %>%
+          mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, levels = c("18 a 28 años", "28 a 40 años",	
+                                                                                        "40 a 60 años", "Mayor de 60 años"))) %>% 
           tabla_prom(cual_es_su_rango_de_edad, "Rango de edad", titulo = "Calificación promedio por rango de edad" )
-        
         
       } else if (input$select_categoria_trans == "Identidad de género") {
         transporte %>%
@@ -745,13 +776,15 @@ server <- function(input, output, session) {
                  valor3 = amabilidad_y_cortesia,
                  valor4 = nivel_de_atencion_mientras_conduce,
                  valor5 = capacidad_de_comunicacion) %>%
-          tabla_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, "Encabezado", titulo = "titulo")     
+          tabla_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, "Unidad o dependencia", titulo = "Calificación promedio por unidad o dependencia de la UPN")     
       }
-        })
+    })
+    
+    ##### 📊 -----------------------------------------
     
     output$plot_calificacion_categoria_trans <- renderPlot({
       
-     if (input$select_categoria_trans == "Tipo de vinculación"){
+      if (input$select_categoria_trans == "Tipo de vinculación"){
         transporte %>%
           filter(anodili %in% input$select_anio_trans, 
                  mesdili %in% input$select_mes_trans) %>% 
@@ -763,7 +796,7 @@ server <- function(input, output, session) {
             valor5 = capacidad_de_comunicacion
           ) %>%
           plot_barras_prom(tipo_de_vinculacion, "", "", titulo = "Calificación promedio por tipo de vinculación")
-    
+        
       } else if (input$select_categoria_trans == "Edad"){
         transporte %>%
           filter(anodili %in% input$select_anio_trans, 
@@ -774,8 +807,10 @@ server <- function(input, output, session) {
                  valor3 = amabilidad_y_cortesia,
                  valor4 = nivel_de_atencion_mientras_conduce,
                  valor5 = capacidad_de_comunicacion) %>%
+          mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, levels = c("Mayor de 60 años","40 a 60 años",
+                                                                                        "28 a 40 años","18 a 28 años"))) %>% 
           plot_barras_prom(cual_es_su_rango_de_edad, "", "", titulo = "Calificación promedio por categoría de edad")
-
+        
       } else if (input$select_categoria_trans == "Identidad de género") {
         
         transporte %>%
@@ -804,9 +839,11 @@ server <- function(input, output, session) {
       
     })
     
-
     
-    ##Calificación general
+    
+    #### Calificación general por categoria del servicio --------------------
+    
+    ##### 📝 -----------------------------
     output$dt_calificacion_categoria_ind_trans <- renderDataTable({
       
       if (input$select_categoria_ind_trans == "Estado mecánico del vehículo"){
@@ -870,48 +907,57 @@ server <- function(input, output, session) {
       }
     })
     
+    ##### 📊 --------------------------------------
+    
     output$plot_calificacion_categoria_ind_trans <- renderPlot({
       
       if (input$select_categoria_ind_trans == "Estado mecánico del vehículo"){
+        
         transporte %>%
           filter(anodili %in% input$select_anio_trans, 
                  mesdili %in% input$select_mes_trans) %>% 
-          filter(!is.na(estado_mecanico_de_los_vehiculo)) %>% 
-          transformar_calificacion(estado_mecanico_de_los_vehiculo) %>%
+          filter(!is.na(estado_mecanico_de_los_vehiculo)) %>%
+          transformar_calificacion_plot(estado_mecanico_de_los_vehiculo) %>%
           plot_barras(estado_mecanico_de_los_vehiculo, "", "", 
-                      titulo = "")
+                      titulo ="")
         
       } else if (input$select_categoria_ind_trans == "Limpieza y presentación del vehículo"){
+        
         transporte %>%
           filter(anodili %in% input$select_anio_trans, 
                  mesdili %in% input$select_mes_trans) %>% 
-          transformar_calificacion(limpieza_y_presentacion_general_de_los_vehiculos) %>% 
+          transformar_calificacion_plot(limpieza_y_presentacion_general_de_los_vehiculos) %>% 
           plot_barras(limpieza_y_presentacion_general_de_los_vehiculos, "", "", 
                       titulo = "")
+        
       } else if (input$select_categoria_ind_trans == "Amabilidad y cortesía"){
+        
         transporte %>%
           filter(anodili %in% input$select_anio_trans, 
                  mesdili %in% input$select_mes_trans) %>% 
-          transformar_calificacion(amabilidad_y_cortesia)%>% 
+          transformar_calificacion_plot(amabilidad_y_cortesia)%>% 
           plot_barras(amabilidad_y_cortesia, "", "", 
                       titulo = "")
         
       } else if (input$select_categoria_ind_trans == "Nivel de concentración mientras conduce") {
+        
         transporte %>%
           filter(anodili %in% input$select_anio_trans, 
                  mesdili %in% input$select_mes_trans) %>% 
-          transformar_calificacion(nivel_de_atencion_mientras_conduce)%>% 
+          transformar_calificacion_plot(nivel_de_atencion_mientras_conduce)%>% 
           plot_barras(nivel_de_atencion_mientras_conduce, "", "", 
                       titulo = "")
-      } else if (input$select_categoria_ind_trans == "Capacidad de comuncación"){}
+        
+      } else if (input$select_categoria_ind_trans == "Capacidad de comuncación"){
+        
         transporte %>%
           filter(anodili %in% input$select_anio_trans, 
                  mesdili %in% input$select_mes_trans) %>% 
-          transformar_calificacion(capacidad_de_comunicacion)%>% 
+          transformar_calificacion_plot(capacidad_de_comunicacion)%>% 
           plot_barras(capacidad_de_comunicacion, "", "", 
-                      titulo = "")
+                      titulo = "") }
     })
-  
+    
     categoria_servicio <- reactive({
       if (input$select_categoria_ind_trans == "Estado mecánico del vehículo"){
         "Estado mecánico del vehículo"
@@ -950,6 +996,7 @@ server <- function(input, output, session) {
       generate_html_text(texto_categoria_servicio)
     })
     
+    #### Aspectos del servicio ------------------------------------
     
     aspecto <- reactive({
       if (input$select_aspecto == "Cumplimiento de itinerarios solicitados") {
@@ -1003,6 +1050,8 @@ server <- function(input, output, session) {
       generate_html_text(texto_aspecto)
     })
     
+    ##### 📝 ------------------------------------
+    
     output$dt_aspecto_trans_cantidad <- renderDT({
       
       if (input$select_aspecto == "Cumplimiento de itinerarios solicitados") {
@@ -1051,6 +1100,8 @@ server <- function(input, output, session) {
       
     })
     
+    ##### 📊 -----------------------------------------------------
+    
     output$plot_aspecto_transporte <- renderPlot({
       
       if (input$select_aspecto == "Cumplimiento de itinerarios solicitados") {
@@ -1058,40 +1109,35 @@ server <- function(input, output, session) {
         transporte %>% 
           filter(anodili %in% input$select_anio_trans, 
                  mesdili %in% input$select_mes_trans) %>% 
-          plot_donas(se_dio_cumplimiento_de_los_itinerarios_solicitados,
-                     se_dio_cumplimiento_de_los_itinerarios_solicitados)
+          plot_donas_as(se_dio_cumplimiento_de_los_itinerarios_solicitados)
         
       } else if (input$select_aspecto == "Cumplimiento de horarios solicitados") {
         
         transporte %>% 
           filter(anodili %in% input$select_anio_trans, 
                  mesdili %in% input$select_mes_trans) %>% 
-          plot_donas(se_dio_cumplimiento_de_los_horarios_solicitados,
-                     se_dio_cumplimiento_de_los_horarios_solicitados)
+          plot_donas_as(se_dio_cumplimiento_de_los_horarios_solicitados)
         
       } else if (input$select_aspecto == "Cumplimiento de normas de tránsito") {
         
         transporte %>%
           filter(anodili %in% input$select_anio_trans, 
                  mesdili %in% input$select_mes_trans) %>% 
-          plot_donas(durante_el_recorrido_se_acataron_las_normas_de_transito,
-                     durante_el_recorrido_se_acataron_las_normas_de_transito)
+          plot_donas_as(durante_el_recorrido_se_acataron_las_normas_de_transito)
         
-      } else if (input$select_aspecto == "Se presento algun incidente o accidente"){
+      } else if (input$select_aspecto == "¿Se presentó algún incidente o accidente?"){
         
         transporte %>% 
           filter(anodili %in% input$select_anio_trans, 
                  mesdili %in% input$select_mes_trans) %>% 
-          plot_donas(durante_el_recorrido_se_presento_algun_incidente_o_accidente,
-                     durante_el_recorrido_se_presento_algun_incidente_o_accidente)
+          plot_donas_as(durante_el_recorrido_se_presento_algun_incidente_o_accidente)
         
       } else { 
         
         transporte %>%
           filter(anodili %in% input$select_anio_trans, 
                  mesdili %in% input$select_mes_trans) %>% 
-          plot_donas(recomendaria_los_servicios_del_area_de_transportes_a_mas_miembros_de_la_comunidad_de_universitaria, 
-                     recomendaria_los_servicios_del_area_de_transportes_a_mas_miembros_de_la_comunidad_de_universitaria)
+          plot_donas_as(recomendaria_los_servicios_del_area_de_transportes_a_mas_miembros_de_la_comunidad_de_universitaria)
         
       }
       
@@ -1099,13 +1145,7 @@ server <- function(input, output, session) {
     })
     
     
-    
-    
-    
-    
-    
-    
-    ### Servicio de aseo y cafeteria ----------------------------------------------------
+    ## 🧻🥪Servicio de aseo y cafeteria ----------------------------------------------------
     
     observe({
       # Verificar si no hay ningún mes seleccionado
@@ -1115,11 +1155,15 @@ server <- function(input, output, session) {
       }
     })
     
+    #### Calificación general ---------------------------
+    
+    ##### 📝 --------------------------------
+    
     output$dt_califi_gene_aseocafe <- renderDataTable({
-      promedios <- aseo_cafeteria %>% 
+      promedios <- aseo_cafeteria %>%
         filter(anodili %in% input$select_anio_ac, 
                mesdili %in% input$select_mes_ac,
-               autoriza_datos == "Si") %>% 
+               autoriza_datos == "Si") %>%
         summarise(
           "Calidad del tinto y aromatica ofrecida" = round(mean(calidad_de_tinto_y_aromatica_ofrecida, na.rm = TRUE), 1),
           "Oportunidad en el servicio de preparación" = round(mean(oportunidad_en_el_servicio_de_preparacion, na.rm = TRUE), 1),
@@ -1140,7 +1184,7 @@ server <- function(input, output, session) {
       aseocafe <- aseo_cafeteria %>%
         filter(anodili %in% input$select_anio_ac, 
                mesdili %in% input$select_mes_ac,
-               autoriza_datos == "Si") %>% 
+               autoriza_datos == "Si") %>%
         mutate(
           calidad_de_tinto_y_aromatica_ofrecida = recode(calidad_de_tinto_y_aromatica_ofrecida,
                                                          "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
@@ -1179,24 +1223,26 @@ server <- function(input, output, session) {
         pivot_longer(cols = everything(), 
                      names_to = "Categoria", 
                      values_to = "Calificacion") %>% 
+        mutate(Calificacion = factor(Calificacion, levels = c("Excelente", "Bueno","Aceptable", 
+                                                              "Deficiente", "Muy deficiente"))) %>% 
         count(Categoria, Calificacion) 
       
       
       aseocafe %>% 
         pivot_wider(names_from = Calificacion, values_from = n, values_fill = list(n = 0)) %>% 
-        relocate(Excelente, .after = 1) %>% 
-        relocate(Bueno, .after = 2) %>% 
-        relocate(Aceptable, .after = 3) %>% 
-        # relocate(Deficiente, .after = 4) %>% 
-        # relocate("Muy deficiente", .after = 5)
         left_join(promedios, by = "Categoria") %>%
         styled_dt(title =  "Tabla general")
       
-       })
+    })
+    
+    ##### 📊 -----------------------------------------
     
     output$plot_califi_gene_aseocafe <- renderPlot({
       
-      promedios <- aseo_cafeteria %>% 
+      promedios <- aseo_cafeteria %>%
+        filter(anodili %in% input$select_anio_ac, 
+               mesdili %in% input$select_mes_ac,
+               autoriza_datos == "Si") %>%
         summarise(
           "Calidad del tinto y aromatica ofrecida" = round(mean(calidad_de_tinto_y_aromatica_ofrecida, na.rm = TRUE), 1),
           "Oportunidad en el servicio de preparación" = round(mean(oportunidad_en_el_servicio_de_preparacion, na.rm = TRUE), 1),
@@ -1215,6 +1261,9 @@ server <- function(input, output, session) {
       
       
       aseocafe <- aseo_cafeteria %>%
+        filter(anodili %in% input$select_anio_ac, 
+               mesdili %in% input$select_mes_ac,
+               autoriza_datos == "Si") %>%
         mutate(
           calidad_de_tinto_y_aromatica_ofrecida = recode(calidad_de_tinto_y_aromatica_ofrecida,
                                                          "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
@@ -1253,6 +1302,8 @@ server <- function(input, output, session) {
         pivot_longer(cols = everything(), 
                      names_to = "Categoria", 
                      values_to = "Calificacion") %>% 
+        mutate(Calificacion = factor(Calificacion, levels = c("Excelente", "Bueno","Aceptable", 
+                                                              "Deficiente", "Muy deficiente"))) %>% 
         count(Categoria, Calificacion) 
       
       aseocafe %>% 
@@ -1266,8 +1317,8 @@ server <- function(input, output, session) {
         labs(x = "", y = "", title = str_wrap("Calificación por categoría", width = 30))+ 
         theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
         theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
-        guides(fill = guide_legend(title = "", label.position = "right"
-                                   , nrow = 1, label.theme = element_text(size = 12)))+
+        guides(fill = guide_legend(title = "", label.position = "right",
+                                   nrow = 1, label.theme = element_text(size = 12)))+
         theme(legend.position = "bottom",
               axis.text.y = element_text(size = 13),
               axis.text.x = element_text(size = 13)) +
@@ -1276,32 +1327,34 @@ server <- function(input, output, session) {
         theme(plot.title.position = "plot",
               plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
         scale_x_discrete(labels = function(x) str_wrap(x, width = 30))+
-        scale_fill_manual(values = colores_plot)+
+        scale_fill_manual(values = c("#388E3C","#7CB342","#FBC02D","#FFA000", "#D32F2F"))+
         coord_flip()
       
     })
     
+    #### Valuebox promedio general ----------------------------------------
+    
     output$value_box_promedio_general <- renderUI({
-        
-        promedio <- aseo_cafeteria %>% 
-          filter(anodili %in% input$select_anio_ac, 
+      
+      promedio <- aseo_cafeteria %>% 
+        filter(anodili %in% input$select_anio_ac, 
                mesdili %in% input$select_mes_ac,
                autoriza_datos == "Si") %>% 
-          summarise(
-            "Calidad del tinto y aromatica ofrecida" = round(mean(calidad_de_tinto_y_aromatica_ofrecida, na.rm = TRUE), 1),
-            "Oportunidad en el servicio de preparación" = round(mean(oportunidad_en_el_servicio_de_preparacion, na.rm = TRUE), 1),
-            "Amabilidad y actitud del personal" = round(mean(amabilidad_y_actitud_del_personal, na.rm = TRUE), 1),
-            "Limpieza de las oficinas, salones, auditorios y laboratorios" = round(mean(limpieza_general, na.rm = TRUE), 1),
-            "Limpieza general de las áreas comunes" = round(mean(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios, 
-                                                                 na.rm = TRUE), 1),
-            "Limpieza general" = round(mean(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante, 
-                                            na.rm = TRUE), 1),
-            "Limpieza de baños" = round(mean(limpieza_de_banos, na.rm = TRUE), 1),
-            "Labores de jardinería" = round(mean(labores_de_jardineria, na.rm = TRUE), 1),
-            "Frecuencia y labores de descanecado" = round(mean(frecuencia_y_labores_de_descanecado, na.rm = TRUE), 1),
-            "Atención y actitud de los funcionarios" = round(mean(atencion_y_actitud_de_los_funcionarios, na.rm = TRUE), 1)
-          ) %>%
-          pivot_longer(cols = everything(), names_to = "Categoria", values_to = "Promedio") %>% 
+        summarise(
+          "Calidad del tinto y aromatica ofrecida" = round(mean(calidad_de_tinto_y_aromatica_ofrecida, na.rm = TRUE), 1),
+          "Oportunidad en el servicio de preparación" = round(mean(oportunidad_en_el_servicio_de_preparacion, na.rm = TRUE), 1),
+          "Amabilidad y actitud del personal" = round(mean(amabilidad_y_actitud_del_personal, na.rm = TRUE), 1),
+          "Limpieza de las oficinas, salones, auditorios y laboratorios" = round(mean(limpieza_general, na.rm = TRUE), 1),
+          "Limpieza general de las áreas comunes" = round(mean(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios, 
+                                                               na.rm = TRUE), 1),
+          "Limpieza general" = round(mean(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante, 
+                                          na.rm = TRUE), 1),
+          "Limpieza de baños" = round(mean(limpieza_de_banos, na.rm = TRUE), 1),
+          "Labores de jardinería" = round(mean(labores_de_jardineria, na.rm = TRUE), 1),
+          "Frecuencia y labores de descanecado" = round(mean(frecuencia_y_labores_de_descanecado, na.rm = TRUE), 1),
+          "Atención y actitud de los funcionarios" = round(mean(atencion_y_actitud_de_los_funcionarios, na.rm = TRUE), 1)
+        ) %>%
+        pivot_longer(cols = everything(), names_to = "Categoria", values_to = "Promedio") %>% 
         summarise(promedio = mean(Promedio, na.rm = TRUE)) %>% 
         pull(promedio)
       
@@ -1317,6 +1370,8 @@ server <- function(input, output, session) {
         )
       )
     })
+    
+    #### Calificación por categoría -----------------------------------------
     
     categoria <- reactive({
       if (input$select_categoria == "Calidad de tinto y aromática ofrecida") { 
@@ -1348,6 +1403,8 @@ server <- function(input, output, session) {
       generate_html(categoria)
     })
     
+    ##### 📝 -----------------------------------------------------
+    
     output$dt_califi_categoria <- renderDataTable({
       
       if (input$select_categoria == "Calidad de tinto y aromática ofrecida") {
@@ -1355,15 +1412,15 @@ server <- function(input, output, session) {
         aseo_cafeteria %>% 
           filter(anodili %in% input$select_anio_ac, 
                  mesdili %in% input$select_mes_ac) %>%
-          transformar_calificacion(calidad_de_tinto_y_aromatica_ofrecida) %>% 
+          transformar_calificacion_dt(calidad_de_tinto_y_aromatica_ofrecida) %>% 
           categorica_1var(calidad_de_tinto_y_aromatica_ofrecida, "Calificación")
-          
+        
       } else if (input$select_categoria == "Oportunidad en el servicio de preparación") {
         
         aseo_cafeteria %>% 
           filter(anodili %in% input$select_anio_ac, 
                  mesdili %in% input$select_mes_ac) %>%
-          transformar_calificacion(oportunidad_en_el_servicio_de_preparacion) %>% 
+          transformar_calificacion_dt(oportunidad_en_el_servicio_de_preparacion) %>% 
           categorica_1var(oportunidad_en_el_servicio_de_preparacion, "Calificación")
         
       } else if (input$select_categoria == "Amabilidad y actitud del personal") {
@@ -1371,7 +1428,7 @@ server <- function(input, output, session) {
         aseo_cafeteria %>% 
           filter(anodili %in% input$select_anio_ac, 
                  mesdili %in% input$select_mes_ac) %>%
-          transformar_calificacion(amabilidad_y_actitud_del_personal) %>% 
+          transformar_calificacion_dt(amabilidad_y_actitud_del_personal) %>% 
           categorica_1var(amabilidad_y_actitud_del_personal, "Calificación")
         
       } else if (input$select_categoria == "Limpieza de las oficinas, salones, auditorios y laboratorios") {
@@ -1379,7 +1436,7 @@ server <- function(input, output, session) {
         aseo_cafeteria %>% 
           filter(anodili %in% input$select_anio_ac, 
                  mesdili %in% input$select_mes_ac) %>%
-          transformar_calificacion(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios) %>% 
+          transformar_calificacion_dt(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios) %>% 
           categorica_1var(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios, "Calificación")
         
       } else if (input$select_categoria == "Limpieza general de las áreas comunes") {
@@ -1387,7 +1444,7 @@ server <- function(input, output, session) {
         aseo_cafeteria %>% 
           filter(anodili %in% input$select_anio_ac, 
                  mesdili %in% input$select_mes_ac) %>%
-          transformar_calificacion(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante) %>% 
+          transformar_calificacion_dt(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante) %>% 
           categorica_1var(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante, "Calificación")
         
       } else if (input$select_categoria == "Limpieza general") {
@@ -1395,7 +1452,7 @@ server <- function(input, output, session) {
         aseo_cafeteria %>% 
           filter(anodili %in% input$select_anio_ac, 
                  mesdili %in% input$select_mes_ac) %>%
-          transformar_calificacion(limpieza_general) %>% 
+          transformar_calificacion_dt(limpieza_general) %>% 
           categorica_1var(limpieza_general, "Calificación")
         
       } else if (input$select_categoria == "Limpieza de baños") {
@@ -1403,7 +1460,7 @@ server <- function(input, output, session) {
         aseo_cafeteria %>% 
           filter(anodili %in% input$select_anio_ac, 
                  mesdili %in% input$select_mes_ac) %>%
-          transformar_calificacion(limpieza_de_banos) %>% 
+          transformar_calificacion_dt(limpieza_de_banos) %>% 
           categorica_1var(limpieza_de_banos, "Calificación")
         
       } else if (input$select_categoria == "Labores de jardinería") {
@@ -1411,7 +1468,7 @@ server <- function(input, output, session) {
         aseo_cafeteria %>% 
           filter(anodili %in% input$select_anio_ac, 
                  mesdili %in% input$select_mes_ac) %>%
-          transformar_calificacion(labores_de_jardineria) %>% 
+          transformar_calificacion_dt(labores_de_jardineria) %>% 
           categorica_1var(labores_de_jardineria, "Calificación")
         
       } else if (input$select_categoria == "Frecuencia y labores de descanecado") {
@@ -1419,7 +1476,7 @@ server <- function(input, output, session) {
         aseo_cafeteria %>% 
           filter(anodili %in% input$select_anio_ac, 
                  mesdili %in% input$select_mes_ac) %>%
-          transformar_calificacion(frecuencia_y_labores_de_descanecado) %>% 
+          transformar_calificacion_dt(frecuencia_y_labores_de_descanecado) %>% 
           categorica_1var(frecuencia_y_labores_de_descanecado, "Calificación")
         
       } else if (input$select_categoria == "Atención y actitud de los funcionarios") {
@@ -1427,12 +1484,14 @@ server <- function(input, output, session) {
         aseo_cafeteria %>% 
           filter(anodili %in% input$select_anio_ac, 
                  mesdili %in% input$select_mes_ac) %>%
-          transformar_calificacion(atencion_y_actitud_de_los_funcionarios) %>% 
+          transformar_calificacion_dt(atencion_y_actitud_de_los_funcionarios) %>% 
           categorica_1var(atencion_y_actitud_de_los_funcionarios, "Calificación")
         
       }
       
        })
+    
+    ##### 📊 ------------------------------------------------------- 
     
     output$plot_califi_categoria <- renderPlot({
       
@@ -1441,14 +1500,14 @@ server <- function(input, output, session) {
         aseo_cafeteria %>% 
           filter(anodili %in% input$select_anio_ac, 
                  mesdili %in% input$select_mes_ac) %>%
-          transformar_calificacion(calidad_de_tinto_y_aromatica_ofrecida) %>% 
+          transformar_calificacion_plot(calidad_de_tinto_y_aromatica_ofrecida) %>% 
           plot_barras(calidad_de_tinto_y_aromatica_ofrecida, " ", " ")
         
       } else if (input$select_categoria == "Oportunidad en el servicio de preparación") {
         aseo_cafeteria %>% 
         filter(anodili %in% input$select_anio_ac, 
                mesdili %in% input$select_mes_ac) %>%
-          transformar_calificacion(oportunidad_en_el_servicio_de_preparacion) %>% 
+          transformar_calificacion_plot(oportunidad_en_el_servicio_de_preparacion) %>% 
           plot_barras(oportunidad_en_el_servicio_de_preparacion, " ", " ")
         
       } else if (input$select_categoria == "Amabilidad y actitud del personal") {
@@ -1456,7 +1515,7 @@ server <- function(input, output, session) {
         aseo_cafeteria %>% 
           filter(anodili %in% input$select_anio_ac, 
                  mesdili %in% input$select_mes_ac) %>%
-          transformar_calificacion(amabilidad_y_actitud_del_personal) %>% 
+          transformar_calificacion_plot(amabilidad_y_actitud_del_personal) %>% 
           plot_barras(amabilidad_y_actitud_del_personal, " ", " ")
         
       } else if (input$select_categoria == "Limpieza de las oficinas, salones, auditorios y laboratorios") {
@@ -1464,7 +1523,7 @@ server <- function(input, output, session) {
         aseo_cafeteria %>% 
           filter(anodili %in% input$select_anio_ac, 
                  mesdili %in% input$select_mes_ac) %>%
-          transformar_calificacion(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios) %>% 
+          transformar_calificacion_plot(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios) %>% 
           plot_barras(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios, " ", " ")
         
       } else if (input$select_categoria == "Limpieza general de las áreas comunes") {
@@ -1472,7 +1531,7 @@ server <- function(input, output, session) {
         aseo_cafeteria %>% 
           filter(anodili %in% input$select_anio_ac, 
                  mesdili %in% input$select_mes_ac) %>%
-          transformar_calificacion(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante) %>% 
+          transformar_calificacion_plot(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante) %>% 
           plot_barras(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante, " ", " ")
         
       } else if (input$select_categoria == "Limpieza general") {
@@ -1480,7 +1539,7 @@ server <- function(input, output, session) {
         aseo_cafeteria %>% 
           filter(anodili %in% input$select_anio_ac, 
                  mesdili %in% input$select_mes_ac) %>%
-          transformar_calificacion(limpieza_general) %>% 
+          transformar_calificacion_plot(limpieza_general) %>% 
           plot_barras(limpieza_general, " ", " ")
         
       } else if (input$select_categoria == "Limpieza de baños") {
@@ -1488,7 +1547,7 @@ server <- function(input, output, session) {
         aseo_cafeteria %>% 
           filter(anodili %in% input$select_anio_ac, 
                  mesdili %in% input$select_mes_ac) %>%
-          transformar_calificacion(limpieza_de_banos) %>% 
+          transformar_calificacion_plot(limpieza_de_banos) %>% 
           plot_barras(limpieza_de_banos, " ", " ")
         
       } else if (input$select_categoria == "Labores de jardinería") {
@@ -1496,7 +1555,7 @@ server <- function(input, output, session) {
         aseo_cafeteria %>% 
           filter(anodili %in% input$select_anio_ac, 
                  mesdili %in% input$select_mes_ac) %>%
-          transformar_calificacion(labores_de_jardineria) %>% 
+          transformar_calificacion_plot(labores_de_jardineria) %>% 
           plot_barras(labores_de_jardineria, " ", " ")
         
       } else if (input$select_categoria == "Frecuencia y labores de descanecado") {
@@ -1504,7 +1563,7 @@ server <- function(input, output, session) {
         aseo_cafeteria %>% 
           filter(anodili %in% input$select_anio_ac, 
                  mesdili %in% input$select_mes_ac) %>%
-          transformar_calificacion(frecuencia_y_labores_de_descanecado) %>% 
+          transformar_calificacion_plot(frecuencia_y_labores_de_descanecado) %>% 
           plot_barras(frecuencia_y_labores_de_descanecado, " ", " ")
         
       } else if (input$select_categoria == "Atención y actitud de los funcionarios") {
@@ -1512,11 +1571,13 @@ server <- function(input, output, session) {
         aseo_cafeteria %>% 
           filter(anodili %in% input$select_anio_ac, 
                  mesdili %in% input$select_mes_ac) %>%
-          transformar_calificacion(atencion_y_actitud_de_los_funcionarios) %>% 
+          transformar_calificacion_plot(atencion_y_actitud_de_los_funcionarios) %>% 
           plot_barras(atencion_y_actitud_de_los_funcionarios, " ", " ")
         
       }
     })
+    
+    #### 📝 Género --------------------------------------------------------
     
     output$dt_califi_genero_ac <- renderDataTable({
       
@@ -1527,6 +1588,8 @@ server <- function(input, output, session) {
       
     })
     
+    #### 📊 Género ---------------------------------
+    
     output$plot_califi_genero_ac <- renderPlot({
       
       aseo_cafe %>% 
@@ -1536,23 +1599,33 @@ server <- function(input, output, session) {
       
     })
     
+    #### 📝 Edad ------------------------------------
+    
     output$plot_califi_edad_ac <- renderPlot({
       
       aseo_cafe %>% 
         filter(anodili %in% input$select_anio_ac, 
                mesdili %in% input$select_mes_ac) %>%
+        mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, levels = c("Mayor de 60 años","40 a 60 años",
+                                                                                      "28 a 40 años","18 a 28 años"))) %>% 
         plot_barras_prom(cual_es_su_rango_de_edad, "", "")
       
     })
+    
+    #### 📊 Edad ----------------------------------------
     
     output$dt_califi_edad_ac <- renderDataTable({
       
       aseo_cafe %>% 
         filter(anodili %in% input$select_anio_ac, 
                mesdili %in% input$select_mes_ac) %>% 
+        mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, levels = c("18 a 28 años", "28 a 40 años",	
+                                                                                      "40 a 60 años", "Mayor de 60 años"))) %>% 
         tabla_prom(cual_es_su_rango_de_edad, "Rango de edad")
       
     })
+    
+    #### 📝 Dependencia -----------------------------
     
     output$dt_califi_dependencia_ac <- renderDataTable({
       
@@ -1564,6 +1637,8 @@ server <- function(input, output, session) {
       
     })
     
+    #### 📊 Dependencia ----------------------------
+    
     output$plot_califi_dependencia_ac <- renderPlot({
       
       aseo_cafe %>% 
@@ -1573,6 +1648,8 @@ server <- function(input, output, session) {
                          "", "")
       
     })
+    
+    #### 📝 Tipo de vinculacion --------------------------------------
     
     output$dt_califi_vinculacion_ac <- renderDataTable({
       
@@ -1584,6 +1661,8 @@ server <- function(input, output, session) {
       
     })
     
+    #### 📊 Tipo de vinculacion ----------------------------------------
+    
     output$plot_califi_vinculacion_ac <- renderPlot({
       
       aseo_cafe %>% 
@@ -1593,6 +1672,8 @@ server <- function(input, output, session) {
                          "", "")
       
     })
+    
+    ## Download html trans -----------------------------------------
     
     output$download_HTML_trans <- downloadHandler(
       filename = "Transporte.html",
@@ -1611,7 +1692,7 @@ server <- function(input, output, session) {
       }
     )
     
-    
+    ## Download word trans -----------------------------------------
     
     output$download_doc_trans <- downloadHandler(
       filename = "Transporte.docx",
@@ -1630,6 +1711,8 @@ server <- function(input, output, session) {
       }
     )
     
+    ## Download html ac -----------------------------------------
+    
     output$download_HTML_aseocafe <- downloadHandler(
       filename = "Aseo y cafetería.html",
       content = function(file) {
@@ -1647,6 +1730,8 @@ server <- function(input, output, session) {
         })
       }
     )
+    
+    ## Download word ac -----------------------------------------
     
     output$download_doc_aseocafe <- downloadHandler(
       filename = "Aseo y cafetería.docx",
@@ -1668,10 +1753,3 @@ server <- function(input, output, session) {
     }
     
   
-      
-      
-    
-  
-
-
-     
