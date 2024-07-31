@@ -682,7 +682,7 @@ server <- function(input, output, session) {
       if (input$select_categoria_trans == "Tipo de vinculación"){
         "Se muestra el promedio de calificación dada al servicio, categorizando a los encuestados por el tipo de vinculación que tienen con la UPN. "
       } else if (input$select_categoria_trans == "Edad"){
-        "Se muestra el promedio de calificación dada al servicio, categorizando a los encuestados por el rango de edad el que están ubicados."
+        "Se muestra el promedio de calificación dada al servicio, categorizando a los encuestados por el rango de edad en el que están ubicados."
       } else if (input$select_categoria_trans == "Identidad de género") {
         "Se muestra el promedio de calificación dada al servicio, categorizando a los encuestados por el género con el que se identifican."
         
@@ -935,7 +935,7 @@ server <- function(input, output, session) {
       if (input$select_categoria_ind_trans == "Estado mecánico del vehículo"){
         "Se muestra el promedio de calificación dada al estado mecánico del vehículo en el que se brindó el servicio de transporte. "
       } else if (input$select_categoria_ind_trans == "Limpieza y presentación del vehículo"){
-        "Se muestra el promedio de calificación dada al apartado de limpieza y presentación del vehículo en el que se brindó el servicio de transporte."
+        "Se muestra el promedio de calificación dada a la limpieza y presentación - categoría servicio."
       } else if (input$select_categoria_ind_trans == "Amabilidad y cortesía"){
         "Se muestra el promedio de calificación dada a la amabilidad y cortesía mostrada por parte del conductor responsable del servicio de transporte."
       } else if (input$select_categoria_ind_trans == "Nivel de concentración mientras conduce") {
@@ -982,20 +982,20 @@ server <- function(input, output, session) {
     texto_aspecto <- reactive({
       if (input$select_aspecto == "Cumplimiento de itinerarios solicitados") {
         
-        'Se ilustra a través de una gráfica general la distribución porcentual de las respuestas (Sí/No) de los encuestados respecto a la pregunta. Se muestra también una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si a percepción del encuestado el conductor cumplió o no con este aspecto de evaluación.'
+        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si, a percepción del encuestado, el conductor cumplió o no con este aspecto de evaluación.'
         
       } else if (input$select_aspecto == "Cumplimiento de horarios solicitados") {
         
-        'Se ilustra a través de una gráfica general la distribución porcentual de las respuestas (Sí/No) de los encuestados respecto a la pregunta. Se muestra también una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si a percepción del encuestado el conductor cumplió o no con este aspecto de evaluación.'
+        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si, a percepción del encuestado, el conductor cumplió o no con este aspecto de evaluación.'
       } else if (input$select_aspecto == "Cumplimiento de normas de tránsito") {
         
-        'Se ilustra a través de una gráfica general la distribución porcentual de las respuestas (Sí/No) de los encuestados respecto a la pregunta. Se muestra también una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si a percepción del encuestado el conductor cumplió o no con este aspecto de evaluación.'
+        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si, a percepción del encuestado, el conductor cumplió o no con este aspecto de evaluación.'
       } else if (input$select_aspecto == "¿Se presentó algún incidente o accidente?"){
         
-        'Se ilustra a través de una gráfica general la distribución porcentual de las respuestas (Sí/No) de los encuestados respecto a la pregunta. Se muestra también una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si a percepción del encuestado el conductor cumplió o no con este aspecto de evaluación.'
+        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si, a percepción del encuestado, el conductor cumplió o no con este aspecto de evaluación.'
       } else { 
         
-        'Se ilustra a través de una gráfica general la distribución porcentual de las respuestas (Sí/No) de los encuestados respecto a la pregunta. Se muestra también una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si a percepción del encuestado el conductor cumplió o no con este aspecto de evaluación.'
+        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si, a percepción del encuestado, el conductor cumplió o no con este aspecto de evaluación.'
       }
     })
     
@@ -1275,7 +1275,7 @@ server <- function(input, output, session) {
         theme(axis.text.x = element_text(size = 8))+
         theme(plot.title.position = "plot",
               plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
-        scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
+        scale_x_discrete(labels = function(x) str_wrap(x, width = 30))+
         scale_fill_manual(values = colores_plot)+
         coord_flip()
       
@@ -1311,7 +1311,7 @@ server <- function(input, output, session) {
           summaryBox2(
             title = "Promedio general",
             value = round(promedio, 2),
-            style = "danger",
+            style = "success",
             width = 12
           )
         )
@@ -1593,6 +1593,77 @@ server <- function(input, output, session) {
                          "", "")
       
     })
+    
+    output$download_HTML_trans <- downloadHandler(
+      filename = "Transporte.html",
+      content = function(file) {
+        withProgress(message = 'Descargando informe HTML', {
+          # Pasamos los parámetros para el reporte
+          params <- list(mes = input$select_mes_trans, rendered_by_shiny = TRUE)
+          
+          # Renderizamos el archivo pasando la lista de parámetros e aislando el código del reporte en un 
+          # entorno global
+          rmarkdown::render("satisfaccion_transporte_html.Rmd", output_file = file,
+                            params = params,
+                            envir = new.env(parent = globalenv())
+          )
+        })
+      }
+    )
+    
+    
+    
+    output$download_doc_trans <- downloadHandler(
+      filename = "Transporte.docx",
+      content = function(file) {
+        withProgress(message = 'Descargando informe word', {
+          # Pasamos los parámetros para el reporte
+          params <- list(mes = input$select_mes_trans, rendered_by_shiny = TRUE)
+          
+          # Renderizamos el archivo pasando la lista de parámetros e aislando el código del reporte en un
+          # entorno global
+          rmarkdown::render("satisfaccion_transporte_word.Rmd", output_file = file,
+                            params = params,
+                            envir = new.env(parent = globalenv())
+          )
+        })
+      }
+    )
+    
+    output$download_HTML_aseocafe <- downloadHandler(
+      filename = "Aseo y cafetería.html",
+      content = function(file) {
+        withProgress(message = 'Descargando informe html', {
+          # Pasamos los parámetros para el reporte
+          params <- list(mes = input$select_mes_ac, rendered_by_shiny = TRUE)
+          
+          # Renderizamos el archivo pasando la lista de parámetros e aislando el código del reporte en un 
+          # entorno global
+          rmarkdown::render("satisfaccion_aseocafeteria_html.Rmd", output_file = file,
+                            # rmarkdown::render("prueba.Rmd", output_file = file,
+                            params = params,
+                            envir = new.env(parent = globalenv())
+          )
+        })
+      }
+    )
+    
+    output$download_doc_aseocafe <- downloadHandler(
+      filename = "Aseo y cafetería.docx",
+      content = function(file) {
+        withProgress(message = 'Descargando informe word', {
+          # Pasamos los parámetros para el reporte
+          params <- list(mes = input$select_mes_ac, rendered_by_shiny = TRUE)
+          
+          # Renderizamos el archivo pasando la lista de parámetros e aislando el código del reporte en un 
+          # entorno global
+          rmarkdown::render("satisfaccion_aseocafeteria_word.Rmd", output_file = file,
+                            params = params,
+                            envir = new.env(parent = globalenv())
+          )
+        })
+      }
+    )
     
     }
     
