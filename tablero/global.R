@@ -284,36 +284,6 @@ plot_barras <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
   
 }
 
-
-## Función gráfico de columnas para df caracterizacion
-plot_cols <- function(x, col, xlab, ylab, titulo = "") {
-  col <- enquo(col)
-  
-  data <- x %>%
-    filter(autoriza_datos == "Si") %>% 
-    count(!!col) %>% 
-    mutate(perc = percent(n/sum(n), 0.1))
-  
-  data %>% 
-    ggplot(aes(x = !!col, 
-               y= n, 
-               fill = !!col, 
-               label = paste(perc,"\n",n," "))) + 
-    geom_col()+
-    geom_text(vjust = 0.5, size = 4,position = position_dodge(width = 1))+
-    scale_y_continuous(limits = c(0, max(data$n)*1.1))+
-    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30))+ 
-    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
-    theme(legend.position="none")+
-    theme(axis.text.y = element_text(size = 12))+
-    theme(axis.text.x = element_text(size = 8))+
-    theme(plot.title.position = "plot",
-          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
-    scale_fill_manual(values = colores_plot)
-  
-}
-
 ## Función gráfico de barras AGRUPADO para df caracterizacion
 plot_barras_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo = "") {
   col <- enquo(col)
@@ -346,41 +316,6 @@ plot_barras_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo
     scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
     scale_fill_manual(values = colores_plot)+
     coord_flip()
-  
-}
-
-
-## Función gráfico de columnas AGRUPADO para df caracterizacion
-plot_cols_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo = "") {
-  col <- enquo(col)
-  group <- enquo(group)
-  
-  data <- x %>%
-    filter(autoriza_datos == "Si") %>% 
-    count(!!group, !!col) %>% 
-    mutate(perc = percent(n/sum(n), 0.1))
-  
-  data %>% 
-    ggplot(aes(x = !!col, 
-               y= n, 
-               fill = !!group, 
-               label = paste(perc,"\n",n," "))) + 
-    geom_col(position = "dodge")+
-    geom_text(vjust = 0.5,hjust = -0.5 , size = 4,position = position_dodge(width = 1))+
-    scale_y_continuous(limits = c(0, max(data$n)*1.1))+
-    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30))+ 
-    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
-    guides(fill = guide_legend(title = leyenda, label.position = "right"
-                               , nrow = 2, label.theme = element_text(size = 12)))+
-    theme(legend.position = "bottom",
-          axis.text.y = element_text(size = 13),
-          axis.text.x = element_text(size = 13)) +
-    theme(axis.text.y = element_text(size = 12))+
-    theme(axis.text.x = element_text(size = 8))+
-    theme(plot.title.position = "plot",
-          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
-    scale_fill_manual(values = colores_plot)
   
 }
 
@@ -419,18 +354,6 @@ plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
     scale_fill_manual(values = colores_plot)+
     coord_flip()
   
-}
-
-# Separar respuestas preguntas MRQ
-MRQ <- function(x, col) {
-  col <- enquo(col)
-  
-  x %>% 
-    separate_rows(!!col,sep = " , ", convert = FALSE) %>%
-    mutate(!!col := gsub("(^[[:space:]]+|[[:space:]]+$)", 
-                         "",
-                         !!col)) %>% 
-    count(!!col)
 }
 
 categorica_1var <- function(x, col, rename, title = NULL, wrap_width = NULL) {
@@ -483,39 +406,6 @@ categorica_2var <- function(x, cat1, cat2, rename, title = NULL, label_width = N
   return(table)
 }
 
-categorica_2varp <- function(x, cat1, cat2, rename,  title = NULL, label_width = NULL) {
-  cat1 <- enquo(cat1)
-  cat2 <- enquo(cat2)
-  
-  table <- x %>% 
-    filter(autoriza_datos == "Si") %>% 
-    count(!!cat1, !!cat2) %>% 
-    rbind(
-      x %>% 
-        filter(!is.na(!!cat2)) %>% 
-        count(!!cat2) %>% 
-        mutate(!!cat1 := "Total General")
-    ) %>% 
-    group_by(!!cat1) %>% 
-    mutate(p = n/sum(n)) %>% 
-    select(-n) %>% 
-    pivot_wider(names_from = !!cat2, values_from = p, values_fill = 0) %>% 
-    adorn_totals(where = "col", name = "Total General") %>%
-    mutate(across(where(is.numeric), ~ percent(.x, 0.1, decimal.mark = ","))) %>% 
-    rename("{rename}" := !!cat1)
-  
-  if (is.null(label_width)) {
-    label_width <- 10
-    
-  }
-  
-  # Personalizar el tamaño de las etiquetas de columna
-  colnames(table) <- str_wrap(colnames(table), width = label_width)
-  
-  table <- table %>%  styled_dt(title)
-  
-  return(table)
-}
 
 
 tabla_prom <- function(x, col, rename, titulo = NULL, wrap_width = NULL) {
