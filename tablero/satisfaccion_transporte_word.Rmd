@@ -545,6 +545,12 @@ transporte %>%
 
 ```
 
+```{r}
+# Este chunk es solo para aumentar el progreso de descarga en el shiny
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.25)  # set progress to 25%
+```
+
 # Rango de edad de los encuestados
 
 Se analiza la distribución de los encuestados en diferentes rangos de edad.
@@ -709,6 +715,11 @@ trans %>%
 
 ```
 
+```{r}
+# Este chunk es solo para aumentar el progreso de descarga en el shiny
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.50)  # set progress to 25%
+```
 ## Por tipo de vinculación
 
 Se analiza la calificación del servicio según el tipo de vinculación de los encuestados con la institución, teniendo en cuenta que se hace con el promedio de las calificaciones por categoría.
@@ -1043,6 +1054,11 @@ transporte %>%
 
 ```
 
+```{r}
+# Este chunk es solo para aumentar el progreso de descarga en el shiny
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.75)  # set progress to 25%
+```
 ## Tabla por conductor
 
 ### Por cantidad
@@ -1176,6 +1192,10 @@ transporte %>%
 
 ```
 
-
+```{r}
+# Este chunk es solo para aumentar el progreso de descarga en el shiny
+if (params$rendered_by_shiny)
+  shiny::setProgress(1)  # set progress to 25%
+```
 
 

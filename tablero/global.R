@@ -210,7 +210,7 @@ plot_donas_as <- function(x, col, titulo = "") {
     geom_rect() +
     geom_text(aes(x = -1.5, y = labelpos, label = labelname), size = 5, color = "black", fontface = "bold") +
     labs(title = str_wrap(titulo, width = 30)) +
-    scale_fill_manual(values = c("#0fc809","#da3d02")) +
+    scale_fill_manual(values = c("#3690c0", "#fc9272")) +
     coord_polar(theta = "y") +
     xlim(c(20, -10)) +
     theme_void() +

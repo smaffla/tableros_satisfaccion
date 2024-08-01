@@ -1130,7 +1130,8 @@ server <- function(input, output, session) {
         transporte %>% 
           filter(anodili %in% input$select_anio_trans, 
                  mesdili %in% input$select_mes_trans) %>% 
-          plot_donas_as(durante_el_recorrido_se_presento_algun_incidente_o_accidente)
+          plot_donas_as(durante_el_recorrido_se_presento_algun_incidente_o_accidente) +
+          scale_fill_manual(values = c("#fc9272", "#3690c0"))
         
       } else { 
         
