@@ -667,7 +667,7 @@ server <- function(input, output, session) {
           valor3 = amabilidad_y_cortesia,
           valor4 = nivel_de_atencion_mientras_conduce,
           valor5 = capacidad_de_comunicacion) %>%
-        tabla_prom(nombre_del_conductor_que_presto_el_servicio, "Nombre del conductor", titulo = "Calificación general por conductor")
+        tabla_prom(nombre_del_conductor_que_presto_el_servicio, "Nombre del conductor")
       
       
     })
@@ -741,7 +741,7 @@ server <- function(input, output, session) {
                  valor3 = amabilidad_y_cortesia,
                  valor4 = nivel_de_atencion_mientras_conduce,
                  valor5 = capacidad_de_comunicacion) %>%
-          tabla_prom(tipo_de_vinculacion, "Tipo de vinculacion", titulo = "Calificación promedio por tipo de vinculación")
+          tabla_prom(tipo_de_vinculacion, "Tipo de vinculacion")
         
       } else if (input$select_categoria_trans == "Edad"){
         transporte %>%
@@ -755,7 +755,7 @@ server <- function(input, output, session) {
                  valor5 = capacidad_de_comunicacion) %>%
           mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, levels = c("18 a 28 años", "28 a 40 años",	
                                                                                         "40 a 60 años", "Mayor de 60 años"))) %>% 
-          tabla_prom(cual_es_su_rango_de_edad, "Rango de edad", titulo = "Calificación promedio por rango de edad" )
+          tabla_prom(cual_es_su_rango_de_edad, "Rango de edad")
         
       } else if (input$select_categoria_trans == "Identidad de género") {
         transporte %>%
@@ -767,7 +767,7 @@ server <- function(input, output, session) {
                  valor3 = amabilidad_y_cortesia,
                  valor4 = nivel_de_atencion_mientras_conduce,
                  valor5 = capacidad_de_comunicacion) %>%
-          tabla_prom(cual_es_su_identidad_de_genero, "Género", titulo = "Calificación promedio por identidad de género")
+          tabla_prom(cual_es_su_identidad_de_genero, "Género")
         
       } else if (input$select_categoria_trans == "Unidad o dependencia de la UPN"){
         transporte %>% 
@@ -776,7 +776,7 @@ server <- function(input, output, session) {
                  valor3 = amabilidad_y_cortesia,
                  valor4 = nivel_de_atencion_mientras_conduce,
                  valor5 = capacidad_de_comunicacion) %>%
-          tabla_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, "Unidad o dependencia", titulo = "Calificación promedio por unidad o dependencia de la UPN")     
+          tabla_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, "Unidad o dependencia")     
       }
     })
     
@@ -834,7 +834,9 @@ server <- function(input, output, session) {
                  valor3 = amabilidad_y_cortesia,
                  valor4 = nivel_de_atencion_mientras_conduce,
                  valor5 = capacidad_de_comunicacion) %>%
-          plot_barras_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, "", "", titulo = "Calificación promedio por dependencia de la UPN", top = 10)
+          plot_barras_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces,
+                           "", "", titulo = "Calificación promedio por dependencia de la UPN", top = 10)+
+          labs(caption = "Se muestran las 10 dependencias con mejores promedios")
       }
       
     })

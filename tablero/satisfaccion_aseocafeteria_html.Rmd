@@ -117,35 +117,6 @@ transformar_calificacion_ft <- function(x, col) {
   
 }
 
-plot_donas_as <- function(x, col, titulo = "") {
-  
-  col <- enquo(col)
-  
-  data <- x %>%
-    filter(autoriza_datos == "Si") %>% 
-    mutate(!!col := factor(!!col, levels = c("Si", "No"))) %>% 
-    count(!!col) %>% 
-    mutate(porcentaje = n / sum(n),
-           ymax = cumsum(porcentaje),
-           ymin = c(0, head(ymax, n = -1)),
-           labelpos = (ymax + ymin) / 2,
-           labelname = paste(n,"\n",percent(porcentaje, 0.1)))
-  #filter(porcentaje >= 0.005)
-  
-  ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 10, xmin = 1, fill = !!col)) +
-    geom_rect() +
-    geom_text(aes(x = -1.5, y = labelpos, label = labelname), size = 5, color = "black", fontface = "bold") +
-    labs(title = str_wrap(titulo, width = 30)) +
-    scale_fill_manual(values = c("#0fc809","#da3d02")) +
-    coord_polar(theta = "y") +
-    xlim(c(20, -10)) +
-    theme_void() +
-    theme(plot.title.position = "plot",
-          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
-    guides(fill = guide_legend(title = "", label.position = "right",
-                               label.theme = element_text(size = 18)))
-}
-
 plot_donas <- function(x, col, titulo = "") {
   
   col <- enquo(col)
@@ -391,7 +362,7 @@ tabla_prom <- function(x, col, rename, encabezado = NULL, title = NULL, wrap_wid
   group_by(!!col) %>%
   summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
   ungroup() %>% 
-  arrange(desc(promedio_general)) %>% 
+  #arrange(desc(promedio_general)) %>% 
   rename("{rename}" := !!col,
          "Promedio" = promedio_general) %>% 
   as.data.frame()  
@@ -428,8 +399,6 @@ aseo_cafeteria <- aseo_cafeteria %>%
 
 aseo_cafeteria <- aseo_cafeteria %>%
   filter(mesdili %in% params$mes)
-
-
 
 ```
 
@@ -475,16 +444,16 @@ total <- aseo_cafeteria %>% filter(autoriza_datos == "Si") %>% count() %>% pull(
 
 La encuesta de satisfacción del servicio de aseo y cafetería fue respondida por **`r total`** personas.
 
-# Tipo de vinculacion de los encuestados
+# Tipo de vinculación de los encuestados
 
-Esta parte describe las diferentes formas de vinculación que tienen los encuestados con la institución, como estudiantes, empleados, o contratistas.
+Esta parte describe las diferentes formas de vinculación que tienen los encuestados con la institución, como estudiantes, empleados o contratistas.
 
 ## Tabla
 
 ```{r}
 
 aseo_cafeteria %>% 
-  categorica_1var(cual_es_el_tipo_de_vinculacion_o_relacion_que_tiene_con_la_upn_universidad_pedagogica_nacional, "Tipo de vinculacion")
+  categorica_1var(cual_es_el_tipo_de_vinculacion_o_relacion_que_tiene_con_la_upn_universidad_pedagogica_nacional, "Tipo de vinculación")
 
 ```
 
@@ -517,7 +486,7 @@ aseo_cafeteria %>%
 
 aseo_cafeteria %>% 
   plot_barras(en_que_instalaciones_de_la_upn_universidad_pedagogica_nacional_desarrolla_sus_actividades_y_o_labores,
-              "", "", titulo = "Instalaciones en donde trabaja los encuestados")
+              "", "", titulo = "Instalaciones donde trabajan los encuestados")
 
 ```
 
@@ -544,6 +513,13 @@ aseo_cafeteria %>%
 
 ```
 
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.25)
+
+```
+
 # Rango de edad de los encuestados
 
 Se analiza la distribución de los encuestados en diferentes rangos de edad.
@@ -553,8 +529,9 @@ Se analiza la distribución de los encuestados en diferentes rangos de edad.
 ```{r}
 
 aseo_cafeteria %>% 
-  mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, levels = c("18 a 28 años", "28 a 40 años",	
-                                       "40 a 60 años", "Mayor de 60 años"))) %>% 
+  mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, 
+  levels = c("Menor de 18 años", "18 a 28 años", "28 a 40 años",	
+  "40 a 60 años", "Mayor de 60 años"))) %>% 
   categorica_1var(cual_es_su_rango_de_edad, "Rango de edad")
 
 ```
@@ -564,13 +541,15 @@ aseo_cafeteria %>%
 ```{r}
 
 aseo_cafeteria %>% 
-  mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, levels = c("Mayor de 60 años","40 a 60 años",
-                                                    "28 a 40 años","18 a 28 años"))) %>% 
+  mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, 
+         levels = c("Mayor de 60 años","40 a 60 años",
+         "28 a 40 años","18 a 28 años", "Menor de 18 años"))) %>% 
   plot_barras(cual_es_su_rango_de_edad, "", "", "Rango de edad de los encuestados")
 
 ```
 
 # Grupo poblacional o sector social al que pertenece los encuestados
+
 
 ```{r}
 
@@ -584,11 +563,11 @@ grupo_poblacional <- aseo_cafeteria %>%
 
 ```
 
-El grupo poblaciona o sector social al que la mayoria de los encuestados pertenecen es **`r grupo_poblacional`**
+El grupo poblacional o sector social al que la mayoria de los encuestados pertenecen es **`r grupo_poblacional`**
 
 # Étnias a la que pertenecen los encuestados
 
-Se analizan los datos sobre las diversas etnias representadas entre los encuestados.
+Se analizan los datos sobre las diversas etnias representadas por los encuestados.
 
 ## Tabla
 
@@ -634,6 +613,13 @@ aseo_cafeteria %>%
 
 ```
 
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.5)
+
+```
+
 # Calificación por categoría
 
 ## Tabla general
@@ -655,7 +641,7 @@ promedios <- aseo_cafeteria %>%
     "Frecuencia y labores de descanecado" = round(mean(frecuencia_y_labores_de_descanecado, na.rm = TRUE), 1),
     "Atención y actitud de los funcionarios" = round(mean(atencion_y_actitud_de_los_funcionarios, na.rm = TRUE), 1)
   ) %>%
-  pivot_longer(cols = everything(), names_to = "Categoria", values_to = "Promedio")
+  pivot_longer(cols = everything(), names_to = "Categoría", values_to = "Promedio")
   
 
 aseocafe <- aseo_cafeteria %>%
@@ -697,14 +683,15 @@ aseocafe <- aseo_cafeteria %>%
   pivot_longer(cols = everything(), 
                names_to = "Categoria", 
                values_to = "Calificacion") %>% 
-  mutate(Calificacion = factor(Calificacion, levels = c("Excelente", "Bueno","Aceptable", 
-                                                               "Deficiente", "Muy deficiente"))) %>%
+  mutate(Calificacion = factor(Calificacion, levels = c("Excelente", "Bueno","Aceptable",                            "Deficiente", "Muy deficiente"))) %>%
   count(Categoria, Calificacion) 
 
 
 aseocafe %>% 
-  pivot_wider(names_from = Calificacion, values_from = n, values_fill = list(n = 0)) %>% 
-  left_join(promedios, by = "Categoria") %>% 
+  rename("Calificación" = Calificacion, "Categoría" = Categoria) %>% 
+  pivot_wider(names_from = "Calificación", values_from = n, 
+              values_fill = list(n = 0)) %>%
+  left_join(promedios, by = "Categoría") %>% 
   ftable(encabezado = "Calificación por categoría") %>%
   bg(i = nrow_part(.), bg = "white") %>%
   bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
@@ -746,6 +733,8 @@ aseocafe %>%
 
 ```
 
+
+
 ## Calidad de tinto y aromática ofrecida
 
 ### Tabla
@@ -767,6 +756,8 @@ aseo_cafeteria %>%
   plot_barras(calidad_de_tinto_y_aromatica_ofrecida, "", "",titulo  = "Calidad de tinto y arómatica ofrecida")
 
 ```
+
+
 
 ## Oportunidad en el servicio de preparación
 
@@ -790,6 +781,8 @@ aseo_cafeteria %>%
 
 ```
 
+
+
 ## Amabilidad y actitud del personal
 
 ### Tabla
@@ -812,6 +805,8 @@ aseo_cafeteria %>%
 
 ```
 
+
+
 ## Limpieza general
 
 ### Tabla
@@ -833,6 +828,8 @@ aseo_cafeteria %>%
   plot_barras(limpieza_general, " "," ", titulo = "Limpieza general")
 
 ```
+
+
 
 ### Limpieza de las oficinas, salones, auditorios y laboratorios
 
@@ -858,6 +855,8 @@ aseo_cafeteria %>%
 
 ```
 
+
+
 ### Limpieza general de las áreas comunes (pasillos, escaleras, plazoletas, restaurante)
 
 #### Tabla
@@ -881,6 +880,8 @@ aseo_cafeteria %>%
                   titulo = "Limpieza general de las áreas comunes")
 
 ```
+
+
 
 ### Limpieza de baños
 
@@ -906,6 +907,15 @@ aseo_cafeteria %>%
 
 ```
 
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.75)
+
+```
+
+
+
 ## Labores de jardinería
 
 ### Tabla
@@ -929,6 +939,8 @@ aseo_cafeteria %>%
                   titulo  = "Labores de jardinería")
 
 ```
+
+
 
 ## Frecuencia y labores de descanecado
 
@@ -954,6 +966,8 @@ aseo_cafeteria %>%
 
 ```
 
+
+
 ## Atención y actitud de los funcionarios
 
 ### Tabla
@@ -963,7 +977,7 @@ aseo_cafeteria %>%
 aseo_cafeteria %>% 
   transformar_calificacion_ft(atencion_y_actitud_de_los_funcionarios) %>% 
   categorica_1var(atencion_y_actitud_de_los_funcionarios, "Calificación", 
-                  encabezado = "Limpieza general de las áreas comunes")
+                  encabezado = "Atención y actitud de los funcionarios")
 
 ```
 
@@ -974,13 +988,15 @@ aseo_cafeteria %>%
 aseo_cafeteria %>% 
   transformar_calificacion_plot(atencion_y_actitud_de_los_funcionarios) %>% 
   plot_barras(atencion_y_actitud_de_los_funcionarios, " "," ", 
-                  titulo = "Limpieza general de las áreas comunes")
+                  titulo = "Atención y actitud de los funcionarios")
 
 ```
 
 # Calificación general 
 
 ## Por identidad de género
+
+Se muestra el promedio de calificación dada al servicio de aseo y cafetería, categorizando a los encuestados por su identidad de género
 
 ### Tabla
 
@@ -1002,6 +1018,8 @@ aseo_cafe %>%
 
 ## Por rango de edad
 
+Se muestra el promedio de calificación dada al servicio de aseo y cafetería, categorizando a los encuestados por el rango de edad en el que están ubicados
+
 ### Tabla
 
 ```{r}
@@ -1021,6 +1039,8 @@ aseo_cafe %>%
 ```
 
 ## Por unidad o dependencia
+
+Se muestra el promedio de calificación dada al servicio de aseo y cafetería, categorizando a los encuestados por la unidad o dependencia en la que pertenecen en la UPN
 
 ### Tabla
 
@@ -1044,6 +1064,8 @@ aseo_cafe %>%
 
 ## Por tipo de vinculación
 
+Se muestra el promedio de calificación dada al servicio de aseo y cafetería, categorizando a los encuestados por el tipo de vinculación con la UPN
+
 ### Tabla
 
 ```{r}
@@ -1064,4 +1086,10 @@ aseo_cafe %>%
 
 ```
 
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(1)
+
+```
 

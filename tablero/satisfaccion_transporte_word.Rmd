@@ -134,7 +134,7 @@ plot_donas_as <- function(x, col, titulo = "") {
     geom_rect() +
     geom_text(aes(x = -1.5, y = labelpos, label = labelname), size = 5, color = "black", fontface = "bold") +
     labs(title = str_wrap(titulo, width = 30)) +
-    scale_fill_manual(values = c("#0fc809","#da3d02")) +
+    scale_fill_manual(values = c("#3690c0", "#fc9272")) +
     coord_polar(theta = "y") +
     xlim(c(20, -10)) +
     theme_void() +
@@ -389,7 +389,7 @@ tabla_prom <- function(x, col, rename, encabezado = NULL, title = NULL, wrap_wid
   group_by(!!col) %>%
   summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
   ungroup() %>% 
-  arrange(desc(promedio_general)) %>% 
+  #arrange(desc(promedio_general)) %>% 
   rename("{rename}" := !!col,
          "Promedio" = promedio_general) %>% 
   as.data.frame()  
@@ -518,7 +518,7 @@ transporte %>%
 
 transporte %>% 
   plot_barras(en_que_instalaciones_de_la_upn_universidad_pedagogica_nacional_desarrolla_sus_actividades_y_o_labores,
-              "", "", titulo = "Instalaciones en donde trabaja los encuestados")
+              "", "", titulo = "Instalaciones donde trabajan los encuestados")
 
 ```
 
@@ -590,11 +590,11 @@ grupo_poblacional <- transporte %>%
 
 ```
 
-El grupo poblaciona o sector social al que la mayoria de los encuestados pertenecen es **`r grupo_poblacional`**
+El grupo poblacional o sector social al que la mayoria de los encuestados pertenecen es **`r grupo_poblacional`**
 
 # Étnias a la que pertenecen los encuestados
 
-Se analizan los datos sobre las diversas etnias representadas entre los encuestados.
+Se analizan los datos sobre las diversas etnias representadas por los encuestados.
 
 ## Tabla
 
@@ -659,7 +659,7 @@ transporte %>%
 
 transporte %>%
       mutate(mes = factor(mes, levels = c("Diciembre", "Noviembre", "Octubre", "Septiembre", "Agosto", "Julio", "Junio", "Mayo", "Abril", "Marzo", "Febrero", "Enero"), ordered = TRUE)) %>% 
-  plot_barras(mes, "", "", titulo = "Meses en los que se utilizo el servicio de transporte")
+  plot_barras(mes, "", "", titulo = "Meses en los que se calificó el servicio de transporte")
 
 ```
 
@@ -688,13 +688,13 @@ transporte %>%
 
 ```
 
-# Calificacion general
+# CALIFICACIÓN GENERAL
 
 Se recopila y analiza la calificación general del servicio de transporte proporcionada por los encuestados.
 
 ## Por conductor
 
-Se examinan las calificaciones generales otorgadas a cada conductor. Teniendo en cuenta que se hace un promedio primero por cada categoría de calificación y luego se hace un promedio general por cada conductor. 
+Se examinan las calificaciones generales otorgadas a cada conductor, teniendo en cuenta que se hace un promedio primero por cada categoría de calificación y luego se hace un promedio general por cada conductor. 
 
 ### Tabla
 
@@ -807,19 +807,15 @@ trans %>%
 
 ```
 
-
-### Gráfico
-
 ```{r}
 
-trans %>% 
-  plot_barras_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, " ", "", 
-             titulo = "Calificación promedio por unidad o dependencia")
+# trans %>% 
+#   plot_barras_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, " ", "", 
+#              titulo = "Calificación promedio por unidad o dependencia")
 
 ```
 
-
-# Calificacion por categoría
+# CALIFICACIÓN POR CATEGORÍA
 
 Se ofrece una visión global de la calificación del servicio de transporte por categoría evaluada
 
@@ -834,7 +830,7 @@ Se analiza el estado mecánico de los vehículos utilizados en el servicio de tr
 transporte %>%
   transformar_calificacion_plot(estado_mecanico_de_los_vehiculo) %>%
   plot_barras(estado_mecanico_de_los_vehiculo, "", "", 
-              titulo = "Calificación del estado mecánico de los vehículo")
+              titulo = "Calificación del estado mecánico de los vehículos")
 
 ```
 
@@ -943,7 +939,7 @@ Se examina el nivel de atención de los conductores mientras prestan el servicio
 transporte %>% 
   transformar_calificacion_plot(nivel_de_atencion_mientras_conduce) %>%  
   plot_barras(nivel_de_atencion_mientras_conduce, "", "", 
-              titulo = "Calificación del nivel de atención mientras conduce")
+              titulo = "Calificación del nivel de atención de los conductores")
 
 ```
 
@@ -959,7 +955,7 @@ transporte %>%
   rename(
     "Promedio" = prom, 
     "Nombre del conductor" = nombre_del_conductor_que_presto_el_servicio) %>% 
-  ftable(encabezado = "Calificación del nivel de atención mientras conduce de los conductores") %>%
+  ftable(encabezado = "Calificación del nivel de atención de los conductores") %>%
   bg(i = nrow_part(.), bg = "white") %>%
   bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
   color(i = nrow_part(.), color = "black") %>%
@@ -1019,7 +1015,7 @@ transporte %>%
 
 ## Tabla por conductor
 
-### Por cantidad
+### Cantidad
 
 ```{r}
 
@@ -1029,7 +1025,7 @@ transporte %>%
 
 ```
 
-### Por porcentaje
+### Porcentaje
 
 ```{r}
 
@@ -1061,7 +1057,7 @@ if (params$rendered_by_shiny)
 ```
 ## Tabla por conductor
 
-### Por cantidad
+### Cantidad
 
 ```{r}
 
@@ -1071,7 +1067,7 @@ transporte %>%
 
 ```
 
-### Por porcentaje
+### Porcentaje
 
 ```{r}
 
@@ -1097,7 +1093,7 @@ transporte %>%
 
 ## Tabla por conductor
 
-### Por cantidad
+### Cantidad
 
 ```{r}
 
@@ -1107,7 +1103,7 @@ transporte %>%
 
 ```
 
-### Por porcentaje
+### Porcentaje
 
 ```{r}
 
@@ -1117,7 +1113,7 @@ transporte %>%
 
 ```
 
-# ¿Durante el recorrido se presento algún incidente o accidente?
+# ¿Durante el recorrido se presentó algún incidente o accidente?
 
 Se examina si se presentaron incidentes o accidentes durante los recorridos.
 
@@ -1127,14 +1123,14 @@ Se examina si se presentaron incidentes o accidentes durante los recorridos.
 
 transporte %>% 
   plot_donas_as(durante_el_recorrido_se_presento_algun_incidente_o_accidente,
-             titulo = "¿Durante el recorrido se presento algún incidente o accidente?")
-
+             titulo = "¿Durante el recorrido se presento algún incidente o accidente?")+
+  scale_fill_manual(values = c("#fc9272","#3690c0"))
 
 ```
 
 ## Tabla por conductor
 
-### Por cantidad
+### Cantidad
 
 ```{r}
 
@@ -1144,7 +1140,7 @@ transporte %>%
 
 ```
 
-### Por porcentaje
+### Porcentaje
 
 ```{r}
 
@@ -1154,7 +1150,7 @@ transporte %>%
 
 ```
 
-# ¿Recomendaría los servicios del área de transportes a mas miembros de la comunidad de Universitaria?
+# ¿Recomendaría los servicios del área de transportes a más miembros de la comunidad de Universitaria?
 
 Se evalúa la disposición de los usuarios para recomendar los servicios de transporte a otros miembros de la comunidad universitaria.
 
@@ -1164,13 +1160,13 @@ Se evalúa la disposición de los usuarios para recomendar los servicios de tran
 
 transporte %>% 
   plot_donas_as(recomendaria_los_servicios_del_area_de_transportes_a_mas_miembros_de_la_comunidad_de_universitaria,
-titulo = "¿Recomendaría los servicios del área de transportes a mas miembros de la comunidad de Universitaria?")
+titulo = "¿Recomendaría los servicios del área de transportes a más miembros de la comunidad de Universitaria?")
 
 ```
 
 ## Tabla por conductor
 
-### Por cantidad
+### Cantidad
 
 ```{r}
 
@@ -1181,7 +1177,7 @@ transporte %>%
 
 ```
 
-### Por porcentaje
+### Porcentaje
 
 ```{r}
 

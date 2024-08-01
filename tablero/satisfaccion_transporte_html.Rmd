@@ -30,7 +30,6 @@ editor_options:
 <img src="https://estilos.upn.edu.co/userfiles/footer/footer.svg" alt="UPN" class="watermark">
 </div>
 
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
 	echo = FALSE,
@@ -57,6 +56,7 @@ transporte <- read.xlsx("Encuesta de satisfacción del servicio de transporte.xl
 ```
 
 ```{r}
+
 ## Función para crear flextable
 ftable <- function(x, encabezado = NULL, title = NULL) {
   
@@ -138,7 +138,7 @@ plot_donas_as <- function(x, col, titulo = "") {
     geom_rect() +
     geom_text(aes(x = -1.5, y = labelpos, label = labelname), size = 5, color = "black", fontface = "bold") +
     labs(title = str_wrap(titulo, width = 30)) +
-    scale_fill_manual(values = c("#0fc809","#da3d02")) +
+    scale_fill_manual(values = c("#3690c0", "#fc9272")) +
     coord_polar(theta = "y") +
     xlim(c(20, -10)) +
     theme_void() +
@@ -393,7 +393,7 @@ tabla_prom <- function(x, col, rename, encabezado = NULL, title = NULL, wrap_wid
   group_by(!!col) %>%
   summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
   ungroup() %>% 
-  arrange(desc(promedio_general)) %>% 
+  #arrange(desc(promedio_general)) %>% 
   rename("{rename}" := !!col,
          "Promedio" = promedio_general) %>% 
   as.data.frame()  
@@ -407,6 +407,7 @@ tabla_prom <- function(x, col, rename, encabezado = NULL, title = NULL, wrap_wid
   return(formatted_table)
   
 }
+
 
 ```
 
@@ -428,6 +429,7 @@ transporte <- transporte %>%
 
 transporte <- transporte %>%
   filter(mesdili %in% params$mes)
+
 
 ```
 
@@ -456,8 +458,7 @@ transporte <- transporte %>%
   mutate(nivel_de_atencion_mientras_conduce = as.numeric(nivel_de_atencion_mientras_conduce)) %>% 
   mutate(capacidad_de_comunicacion = as.numeric(capacidad_de_comunicacion))
 
-
-trans <- transporte %>%
+trans <- transporte %>% 
     rename(valor1 = estado_mecanico_de_los_vehiculo, 
     valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
     valor3 = amabilidad_y_cortesia,
@@ -465,7 +466,7 @@ trans <- transporte %>%
     valor5 = capacidad_de_comunicacion)
 
 transporte <- transporte %>% 
-  mutate(mes = factor(mes, levels = c("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"), ordered = TRUE)) 
+  mutate(mes = factor(mes, levels = c("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"), ordered = TRUE))
 
 ```
 
@@ -521,7 +522,7 @@ transporte %>%
 
 transporte %>% 
   plot_barras(en_que_instalaciones_de_la_upn_universidad_pedagogica_nacional_desarrolla_sus_actividades_y_o_labores,
-              "", "", titulo = "Instalaciones en donde trabaja los encuestados")
+              "", "", titulo = "Instalaciones donde trabajan los encuestados")
 
 ```
 
@@ -543,9 +544,15 @@ transporte %>%
 ```{r}
 
 transporte %>% 
-  plot_donas(cual_es_su_identidad_de_genero,
+  plot_donas(cual_es_su_identidad_de_genero, 
              titulo = "Identidad de género de los encuestados")
 
+```
+
+```{r}
+# Este chunk es solo para aumentar el progreso de descarga en el shiny
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.25)  # set progress to 25%
 ```
 
 # Rango de edad de los encuestados
@@ -558,7 +565,7 @@ Se analiza la distribución de los encuestados en diferentes rangos de edad.
 
 transporte %>% 
   mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, levels = c("18 a 28 años", "28 a 40 años",	
-                    "40 a 60 años", "Mayor de 60 años"))) %>% 
+              "40 a 60 años", "Mayor de 60 años"))) %>% 
   categorica_1var(cual_es_su_rango_de_edad, "Rango de edad")
 
 ```
@@ -569,7 +576,7 @@ transporte %>%
 
 transporte %>% 
   mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, levels = c("Mayor de 60 años","40 a 60 años",
-                                                "28 a 40 años","18 a 28 años"))) %>% 
+                                            "28 a 40 años","18 a 28 años"))) %>% 
   plot_barras(cual_es_su_rango_de_edad, "", "", "Rango de edad de los encuestados")
 
 ```
@@ -587,11 +594,11 @@ grupo_poblacional <- transporte %>%
 
 ```
 
-El grupo poblaciona o sector social al que la mayoria de los encuestados pertenecen es **`r grupo_poblacional`**
+El grupo poblacional o sector social al que la mayoria de los encuestados pertenecen es **`r grupo_poblacional`**
 
 # Étnias a la que pertenecen los encuestados
 
-Se analizan los datos sobre las diversas etnias representadas entre los encuestados.
+Se analizan los datos sobre las diversas etnias representadas por los encuestados.
 
 ## Tabla
 
@@ -655,8 +662,8 @@ transporte %>%
 ```{r}
 
 transporte %>%
-    mutate(mes = factor(mes, levels = c("Diciembre", "Noviembre", "Octubre", "Septiembre", "Agosto", "Julio", "Junio", "Mayo", "Abril", "Marzo", "Febrero", "Enero"), ordered = TRUE)) %>% 
-  plot_barras(mes, "", "", titulo = "Meses en los que se utilizo el servicio de transporte")
+      mutate(mes = factor(mes, levels = c("Diciembre", "Noviembre", "Octubre", "Septiembre", "Agosto", "Julio", "Junio", "Mayo", "Abril", "Marzo", "Febrero", "Enero"), ordered = TRUE)) %>% 
+  plot_barras(mes, "", "", titulo = "Meses en los que se calificó el servicio de transporte")
 
 ```
 
@@ -679,19 +686,19 @@ transporte %>%
 ```{r}
 
 transporte %>%
-    mutate(mes = factor(mes, levels = c("Diciembre", "Noviembre", "Octubre", "Septiembre", "Agosto", "Julio", "Junio", "Mayo", "Abril", "Marzo", "Febrero", "Enero"), ordered = TRUE)) %>% 
+  mutate(mes = factor(mes, levels = c("Diciembre", "Noviembre", "Octubre", "Septiembre", "Agosto", "Julio", "Junio", "Mayo", "Abril", "Marzo", "Febrero", "Enero"), ordered = TRUE)) %>% 
   plot_barras_agrupado(mes, tipo_de_servicio_prestado, "", "", leyenda = "", 
                        titulo = "Tipo de servicio utilizado cada mes")
 
 ```
 
-# Calificacion general
+# CALIFICACIÓN GENERAL
 
 Se recopila y analiza la calificación general del servicio de transporte proporcionada por los encuestados.
 
 ## Por conductor
 
-Se examinan las calificaciones generales otorgadas a cada conductor. Teniendo en cuenta que se hace un promedio primero por cada categoría de calificación y luego se hace un promedio general por cada conductor. 
+Se examinan las calificaciones generales otorgadas a cada conductor, teniendo en cuenta que se hace un promedio primero por cada categoría de calificación y luego se hace un promedio general por cada conductor. 
 
 ### Tabla
 
@@ -712,6 +719,11 @@ trans %>%
 
 ```
 
+```{r}
+# Este chunk es solo para aumentar el progreso de descarga en el shiny
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.50)  # set progress to 25%
+```
 ## Por tipo de vinculación
 
 Se analiza la calificación del servicio según el tipo de vinculación de los encuestados con la institución, teniendo en cuenta que se hace con el promedio de las calificaciones por categoría.
@@ -799,19 +811,15 @@ trans %>%
 
 ```
 
-
-### Gráfico
-
 ```{r}
 
-trans %>% 
-  plot_barras_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, " ", "", 
-             titulo = "Calificación promedio por unidad o dependencia")
+# trans %>% 
+#   plot_barras_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, " ", "", 
+#              titulo = "Calificación promedio por unidad o dependencia")
 
 ```
 
-
-# Calificacion por categoría
+# CALIFICACIÓN POR CATEGORÍA
 
 Se ofrece una visión global de la calificación del servicio de transporte por categoría evaluada
 
@@ -826,7 +834,7 @@ Se analiza el estado mecánico de los vehículos utilizados en el servicio de tr
 transporte %>%
   transformar_calificacion_plot(estado_mecanico_de_los_vehiculo) %>%
   plot_barras(estado_mecanico_de_los_vehiculo, "", "", 
-              titulo = "Calificación del estado mecánico de los vehículo")
+              titulo = "Calificación del estado mecánico de los vehículos")
 
 ```
 
@@ -935,7 +943,7 @@ Se examina el nivel de atención de los conductores mientras prestan el servicio
 transporte %>% 
   transformar_calificacion_plot(nivel_de_atencion_mientras_conduce) %>%  
   plot_barras(nivel_de_atencion_mientras_conduce, "", "", 
-              titulo = "Calificación del nivel de atención mientras conduce")
+              titulo = "Calificación del nivel de atención de los conductores")
 
 ```
 
@@ -951,7 +959,7 @@ transporte %>%
   rename(
     "Promedio" = prom, 
     "Nombre del conductor" = nombre_del_conductor_que_presto_el_servicio) %>% 
-  ftable(encabezado = "Calificación del nivel de atención mientras conduce de los conductores") %>%
+  ftable(encabezado = "Calificación del nivel de atención de los conductores") %>%
   bg(i = nrow_part(.), bg = "white") %>%
   bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
   color(i = nrow_part(.), color = "black") %>%
@@ -1004,14 +1012,14 @@ Se evalúa si los conductores cumplieron con los itinerarios solicitados por los
 ```{r}
 
 transporte %>% 
-  plot_donas_as(se_dio_cumplimiento_de_los_itinerarios_solicitados,
+  plot_donas_as(se_dio_cumplimiento_de_los_itinerarios_solicitados, 
              titulo = "¿Se dio cumplimiento de los itinerarios solicitados?")
 
 ```
 
 ## Tabla por conductor
 
-### Por cantidad
+### Cantidad
 
 ```{r}
 
@@ -1021,7 +1029,7 @@ transporte %>%
 
 ```
 
-### Por porcentaje
+### Porcentaje
 
 ```{r}
 
@@ -1046,9 +1054,14 @@ transporte %>%
 
 ```
 
+```{r}
+# Este chunk es solo para aumentar el progreso de descarga en el shiny
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.75)  # set progress to 25%
+```
 ## Tabla por conductor
 
-### Por cantidad
+### Cantidad
 
 ```{r}
 
@@ -1058,7 +1071,7 @@ transporte %>%
 
 ```
 
-### Por porcentaje
+### Porcentaje
 
 ```{r}
 
@@ -1084,7 +1097,7 @@ transporte %>%
 
 ## Tabla por conductor
 
-### Por cantidad
+### Cantidad
 
 ```{r}
 
@@ -1094,7 +1107,7 @@ transporte %>%
 
 ```
 
-### Por porcentaje
+### Porcentaje
 
 ```{r}
 
@@ -1104,7 +1117,7 @@ transporte %>%
 
 ```
 
-# ¿Durante el recorrido se presento algún incidente o accidente?
+# ¿Durante el recorrido se presentó algún incidente o accidente?
 
 Se examina si se presentaron incidentes o accidentes durante los recorridos.
 
@@ -1114,14 +1127,14 @@ Se examina si se presentaron incidentes o accidentes durante los recorridos.
 
 transporte %>% 
   plot_donas_as(durante_el_recorrido_se_presento_algun_incidente_o_accidente,
-             titulo = "¿Durante el recorrido se presento algún incidente o accidente?")
-
+             titulo = "¿Durante el recorrido se presento algún incidente o accidente?")+
+  scale_fill_manual(values = c("#fc9272","#3690c0"))
 
 ```
 
 ## Tabla por conductor
 
-### Por cantidad
+### Cantidad
 
 ```{r}
 
@@ -1131,7 +1144,7 @@ transporte %>%
 
 ```
 
-### Por porcentaje
+### Porcentaje
 
 ```{r}
 
@@ -1141,7 +1154,7 @@ transporte %>%
 
 ```
 
-# ¿Recomendaría los servicios del área de transportes a mas miembros de la comunidad de Universitaria?
+# ¿Recomendaría los servicios del área de transportes a más miembros de la comunidad de Universitaria?
 
 Se evalúa la disposición de los usuarios para recomendar los servicios de transporte a otros miembros de la comunidad universitaria.
 
@@ -1151,13 +1164,13 @@ Se evalúa la disposición de los usuarios para recomendar los servicios de tran
 
 transporte %>% 
   plot_donas_as(recomendaria_los_servicios_del_area_de_transportes_a_mas_miembros_de_la_comunidad_de_universitaria,
-titulo = "¿Recomendaría los servicios del área de transportes a mas miembros de la comunidad de Universitaria?")
+titulo = "¿Recomendaría los servicios del área de transportes a más miembros de la comunidad de Universitaria?")
 
 ```
 
 ## Tabla por conductor
 
-### Por cantidad
+### Cantidad
 
 ```{r}
 
@@ -1168,7 +1181,7 @@ transporte %>%
 
 ```
 
-### Por porcentaje
+### Porcentaje
 
 ```{r}
 
@@ -1179,6 +1192,10 @@ transporte %>%
 
 ```
 
-
+```{r}
+# Este chunk es solo para aumentar el progreso de descarga en el shiny
+if (params$rendered_by_shiny)
+  shiny::setProgress(1)  # set progress to 25%
+```
 
 
