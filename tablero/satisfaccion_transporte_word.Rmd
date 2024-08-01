@@ -476,7 +476,7 @@ total <- transporte %>% filter(autoriza_datos == "Si") %>% count() %>% pull()
 
 La encuesta de satisfacción del servicio de transporte fue respondida por **`r total`** personas.
 
-# Tipo de vinculacion de los encuestados
+# Tipo de vinculación de los encuestados
 
 Esta parte describe las diferentes formas de vinculación que tienen los encuestados con la institución, como estudiantes, empleados, o contratistas.
 
@@ -485,7 +485,7 @@ Esta parte describe las diferentes formas de vinculación que tienen los encuest
 ```{r}
 
 transporte %>% 
-  categorica_1var(tipo_de_vinculacion, "Tipo de vinculacion")
+  categorica_1var(tipo_de_vinculacion, "Tipo de vinculación")
 
 ```
 
