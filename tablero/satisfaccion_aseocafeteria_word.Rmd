@@ -730,7 +730,6 @@ aseocafe %>%
 ```
 
 \
-\
 
 ## Calidad de tinto y aromática ofrecida
 
@@ -753,7 +752,6 @@ aseo_cafeteria %>%
   plot_barras(calidad_de_tinto_y_aromatica_ofrecida, "", "",titulo  = "Calidad de tinto y arómatica ofrecida")
 
 ```
-\
 \
 
 ## Oportunidad en el servicio de preparación
@@ -778,7 +776,7 @@ aseo_cafeteria %>%
 
 ```
 
-
+\
 
 ## Amabilidad y actitud del personal
 
@@ -803,6 +801,7 @@ aseo_cafeteria %>%
 ```
 
 
+\
 
 ## Limpieza general
 
@@ -826,7 +825,7 @@ aseo_cafeteria %>%
 
 ```
 
-
+\
 
 ### Limpieza de las oficinas, salones, auditorios y laboratorios
 
@@ -852,7 +851,7 @@ aseo_cafeteria %>%
 
 ```
 
-
+\
 
 ### Limpieza general de las áreas comunes (pasillos, escaleras, plazoletas, restaurante)
 
@@ -879,6 +878,7 @@ aseo_cafeteria %>%
 ```
 
 
+\
 
 ### Limpieza de baños
 
@@ -911,7 +911,7 @@ if (params$rendered_by_shiny)
 
 ```
 
-
+\
 
 ## Labores de jardinería
 
@@ -937,7 +937,7 @@ aseo_cafeteria %>%
 
 ```
 
-
+\
 
 ## Frecuencia y labores de descanecado
 
@@ -963,7 +963,7 @@ aseo_cafeteria %>%
 
 ```
 
-
+\
 
 ## Atención y actitud de los funcionarios
 
@@ -988,6 +988,8 @@ aseo_cafeteria %>%
                   titulo = "Atención y actitud de los funcionarios")
 
 ```
+
+\
 
 # Calificación general 
 
