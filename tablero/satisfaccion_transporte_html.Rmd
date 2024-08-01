@@ -426,13 +426,8 @@ transporte <- transporte %>%
          mesdili = str_to_title(mesdili)) %>% 
   mutate(anodili = year(hora_de_finalizacion))
 
-<<<<<<< HEAD
-# transporte <- transporte %>% 
-#   filter(mesdili %in% params$mes)
-=======
 transporte <- transporte %>%
   filter(mesdili %in% params$mes)
->>>>>>> 19906a552f666c19f6809d464e5af104b314b332
 
 ```
 

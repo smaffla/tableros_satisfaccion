@@ -423,14 +423,9 @@ transporte <- transporte %>%
          mesdili = str_to_title(mesdili)) %>% 
   mutate(anodili = year(hora_de_finalizacion))
 
-<<<<<<< HEAD
-# transporte <- transporte %>% 
-#   filter(mesdili %in% params$mes)
-=======
-
 transporte <- transporte %>%
   filter(mesdili %in% params$mes)
->>>>>>> 19906a552f666c19f6809d464e5af104b314b332
+
 
 ```
 
@@ -466,15 +461,9 @@ trans <- transporte %>%
     valor4 = nivel_de_atencion_mientras_conduce,
     valor5 = capacidad_de_comunicacion)
 
-<<<<<<< HEAD
-transporte <- transporte %>% 
-  mutate(mes = factor(mes, levels = c("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"), ordered = TRUE))
-=======
-
 transporte <- transporte %>% 
   mutate(mes = factor(mes, levels = c("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"), ordered = TRUE))
 
->>>>>>> 19906a552f666c19f6809d464e5af104b314b332
 ```
 
 # Cantidad de encuestados
