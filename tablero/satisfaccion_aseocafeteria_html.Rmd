@@ -1,0 +1,1098 @@
+---
+title: "ANÁLISIS DESCRIPTIVO DE LA ENCUESTA DE SATISFACCIÓN DEL SERVICIO DE ASEO Y CAFETERÍA"
+author: "Oficina de Desarrollo y Planeación"
+output:
+  html_document:
+    fig_height: 7
+    fig_width: 10
+    highlight: tango
+    keep_md: no
+    number_sections: no
+    theme: cerulean
+    toc: yes
+    css: "corp-styles.css"
+    toc_depth: 4
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+  word_document:
+    toc: yes
+    toc_depth: '4'
+params:
+  mes: NA
+  rendered_by_shiny: no
+subtitle: Universidad Pedagógica Nacional
+editor_options:
+  chunk_output_type: inline
+---
+
+<div>
+<img src="https://estilos.upn.edu.co/userfiles/footer/footer.svg" alt="UPN" class="watermark">
+</div>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = FALSE,
+	message = FALSE,
+	warning = FALSE,
+	dpi = 300	)
+
+library(openxlsx)
+library(tidyverse)
+library(janitor)
+library(flextable)
+library(scales)
+library(lubridate)
+
+aseo_cafeteria <- read.xlsx("Encuesta de satisfacción del servicio de aseo y cafetería..xlsx")
+
+colores_plot <- c(#"#2171b5",
+                                              "#4292c6","#74a9cf",
+                                              "#41b6c4","#7fcdbb",#"#238b45","#41ab5d",
+                                              "#78c679","#c7e9b4","#edf8b1","#fee391","#fec44f",
+                                              "#fe9929","#ec7014")
+
+```
+
+```{r}
+## Función para crear flextable
+ftable <- function(x, encabezado = NULL, title = NULL) {
+  
+  table <- x %>% 
+    flextable() %>% 
+    set_caption(caption = title) %>%
+    align(part = "header", align = "center") %>% 
+    align(j = 2:ncol_keys(.), align = "center") %>% 
+    bg(part = "header", bg = "#2c7fb8") %>% 
+    color(part = "header", color = "white") %>% 
+    bg(j = 1, bg = "#D9D9D9") %>% 
+    bg(i = nrow_part(.), bg = "#2c7fb8") %>%
+    bold(part = "header") %>% 
+    bold(i = nrow_part(.)) %>%
+    color(i = nrow_part(.), color = "white") %>%
+    border(part = "all", border = fp_border_default(color="black", width = 1)) %>% 
+    autofit() %>%
+    fit_to_width(max_width = 8.5)
+  
+  if (!is.null(encabezado)) {
+    table <- table %>% 
+      add_header_row(colwidths = ncol_keys(.), values = encabezado)
+  }
+  
+  return(table)
+    
+}
+
+transformar_calificacion_plot <- function(x, col) {
+ 
+  col <- enquo(col)
+  
+   x %>% 
+    mutate(!!col := as.character(!!col)) %>% 
+    mutate(!!col := case_when(
+             !!col == "1" ~ "Muy deficiente",
+             !!col == "2" ~ "Deficiente",
+             !!col == "3" ~ "Aceptable",
+             !!col == "4" ~ "Bueno",
+             !!col == "5" ~ "Excelente",
+             TRUE ~ !!col)) %>% 
+    mutate(!!col := factor(!!col, levels = c("Muy deficiente", "Deficiente", "Aceptable", "Bueno", "Excelente")))
+
+   }
+
+transformar_calificacion_ft <- function(x, col) {
+  
+  col <- enquo(col)
+  
+  x %>% 
+    mutate(!!col := as.character(!!col)) %>% 
+    mutate(!!col := case_when(
+      !!col == "1" ~ "Muy deficiente",
+      !!col == "2" ~ "Deficiente",
+      !!col == "3" ~ "Aceptable",
+      !!col == "4" ~ "Bueno",
+      !!col == "5" ~ "Excelente",
+      TRUE ~ !!col)) %>% 
+    mutate(!!col := factor(!!col, levels = c("Excelente", "Bueno", "Aceptable", "Deficiente", "Muy deficiente")))
+  
+}
+
+plot_donas <- function(x, col, titulo = "") {
+  
+  col <- enquo(col)
+  
+  data <- x %>%
+    filter(autoriza_datos == "Si") %>% 
+    count(!!col) %>% 
+    mutate(porcentaje = n / sum(n),
+           ymax = cumsum(porcentaje),
+           ymin = c(0, head(ymax, n = -1)),
+           labelpos = (ymax + ymin) / 2,
+           labelname = paste(n,"\n",percent(porcentaje, 0.1)))
+  #filter(porcentaje >= 0.005)
+  
+  ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 10, xmin = 1, fill = !!col)) +
+    geom_rect() +
+    geom_text(aes(x = -1.5, y = labelpos, label = labelname), size = 5, color = "black", fontface = "bold") +
+    labs(title = str_wrap(titulo, width = 30)) +
+    scale_fill_manual(values = colores_plot) +
+    coord_polar(theta = "y") +
+    xlim(c(20, -10)) +
+    theme_void() +
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
+    guides(fill = guide_legend(title = "", label.position = "right",
+                               label.theme = element_text(size = 18)))
+}
+
+## Función gráfico de barras para df caracterizacion
+plot_barras <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
+  col <- enquo(col)
+  
+  data <- x %>%
+    filter(autoriza_datos == "Si") %>% 
+    count(!!col )%>% 
+    mutate(perc = percent(n/sum(n), 0.1))
+  
+  if (is.null(top)) {
+    top <- 11
+  }
+  
+  data %>% 
+    arrange(desc(n)) %>% 
+    slice(1:top) %>% 
+    ggplot(aes(x = !!col, 
+               y= n, 
+               fill = !!col, 
+               label = paste(perc,"\n",n," "))) + 
+    geom_col()+
+    geom_text(vjust = 0.5, hjust = -0.1, size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$n)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
+    theme(legend.position="none")+
+    theme(axis.text.y = element_text(size = 14))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
+    scale_fill_manual(values = colores_plot)+
+    coord_flip()
+  
+}
+
+## Función gráfico de barras AGRUPADO para df caracterizacion
+plot_barras_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo = "") {
+  col <- enquo(col)
+  group <- enquo(group)
+  
+  data <- x %>%
+    filter(autoriza_datos == "Si") %>% 
+    count(!!group, !!col) %>% 
+    mutate(perc = percent(n/sum(n), 0.1))
+  
+  data %>% 
+    ggplot(aes(x = !!col, 
+               y= n, 
+               fill = !!group, 
+               label = paste(perc,"\n",n," "))) + 
+    geom_col(position = "dodge")+
+    geom_text(vjust = 0.5, hjust = -0.2 ,size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$n)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30))+ 
+    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+    guides(fill = guide_legend(title = leyenda, label.position = "right"
+                               , nrow = 2, label.theme = element_text(size = 12)))+
+    theme(legend.position = "bottom",
+          axis.text.y = element_text(size = 13),
+          axis.text.x = element_text(size = 13)) +
+    theme(axis.text.y = element_text(size = 12))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
+    scale_fill_manual(values = colores_plot)+
+    coord_flip()
+  
+}
+
+
+plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
+  
+  col <- enquo(col)
+  
+  if (is.null(top)) {
+    top <- 11
+  }
+  
+  data <- x %>%  
+    filter(autoriza_datos == "Si") %>% 
+    group_by(!!col) %>%
+    summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
+    ungroup()
+  
+  data %>% 
+    arrange(desc(promedio_general)) %>% 
+    slice(1:top) %>% 
+    ggplot(aes(x = !!col, 
+               y= promedio_general, 
+               fill = !!col, 
+               label = promedio_general)) + 
+    geom_col()+
+    geom_text(vjust = 0.5, hjust = -0.5, size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$promedio_general)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
+    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+    theme(legend.position="none")+
+    theme(axis.text.y = element_text(size = 14))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
+    scale_fill_manual(values = colores_plot)+
+    coord_flip()
+  
+}
+
+
+categorica_1var <- function(x, cat1, rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
+  cat1 <- enquo(cat1)
+  
+    if (is.null(wrap_width)) {
+    wrap_width <- 100
+    }
+  
+  table <- x %>% 
+    filter(autoriza_datos == "Si") %>% 
+    count(!!cat1) %>% 
+    adorn_totals(where = "row", name = "Total General") %>%
+    rename('{rename}' := !!cat1, "Cantidad" = n) %>% 
+    mutate('{rename}' := str_wrap(!!sym(rename), width = wrap_width)) %>%
+    ftable(encabezado, title)
+  
+  return(table)
+    
+}
+
+categorica_2var <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
+  cat1 <- enquo(cat1)
+  cat2 <- enquo(cat2)
+  
+  table <- x %>% 
+    filter(autoriza_datos == "Si") %>% 
+    count(!!cat1, !!cat2) %>% 
+    rbind(
+      x %>% 
+        filter(!is.na(!!cat2)) %>% 
+        count(!!cat2) %>% 
+        mutate(!!cat1 := "Total General")
+    ) %>% 
+    group_by(!!cat1) %>% 
+    #mutate(p = n/sum(n)) %>% 
+    #filter (p >= 0.0005) %>% 
+    #select(-n) %>% 
+    pivot_wider(names_from = !!cat2, values_from = n, values_fill = 0) %>% 
+    adorn_totals(where = "col", name = "Total General") %>%
+    #mutate(across(where(is.numeric), ~ percent(.x, 0.01, decimal.mark = ","))) %>% 
+    rename("{rename}" := !!cat1)
+  
+      if (is.null(label_width)) {
+    label_width <- 10
+      
+  }
+  
+  # Personalizar el tamaño de las etiquetas de columna
+  colnames(table) <- str_wrap(colnames(table), width = label_width)
+  
+  table <- table %>%  ftable(encabezado, title)
+  
+  return(table)
+}
+
+categorica_2varp <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
+  cat1 <- enquo(cat1)
+  cat2 <- enquo(cat2)
+  
+  table <- x %>% 
+    filter(autoriza_datos == "Si") %>% 
+    count(!!cat1, !!cat2) %>% 
+    rbind(
+      x %>% 
+        filter(!is.na(!!cat2)) %>% 
+        count(!!cat2) %>% 
+        mutate(!!cat1 := "Total General")
+    ) %>% 
+    group_by(!!cat1) %>% 
+    mutate(p = n/sum(n)) %>% 
+    #filter (p >= 0.0005) %>% 
+    select(-n) %>% 
+    pivot_wider(names_from = !!cat2, values_from = p, values_fill = 0) %>% 
+    adorn_totals(where = "col", name = "Total General") %>%
+    mutate(across(where(is.numeric), ~ percent(.x, 0.1, decimal.mark = ","))) %>% 
+    rename("{rename}" := !!cat1)
+  
+      if (is.null(label_width)) {
+    label_width <- 10
+      
+  }
+  
+  # Personalizar el tamaño de las etiquetas de columna
+  colnames(table) <- str_wrap(colnames(table), width = label_width)
+  
+  table <- table %>%  ftable(encabezado, title)
+  
+  return(table)
+}
+
+wrap_text <- function(x, width) {
+  sapply(x, function(y) {
+    paste(strwrap(y, width = width), collapse = "\n")
+  })
+}
+
+tabla_prom <- function(x, col, rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
+  
+  col <- enquo(col)
+  
+  if (is.null(wrap_width)) {
+    wrap_width <- 100
+  }
+  
+  table <- x %>% 
+  filter(autoriza_datos == "Si") %>% 
+  group_by(!!col) %>%
+  summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
+  ungroup() %>% 
+  #arrange(desc(promedio_general)) %>% 
+  rename("{rename}" := !!col,
+         "Promedio" = promedio_general) %>% 
+  as.data.frame()  
+  
+  formatted_table <- ftable(table, encabezado, title) %>% 
+  bg(i = nrow_part(.), bg = "white") %>%
+  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+  color(i = nrow_part(.), color = "black") %>%
+  bold(i = nrow_part(.), bold = FALSE)
+  
+  return(formatted_table)
+  
+}
+
+```
+
+```{r}
+
+aseo_cafeteria <- aseo_cafeteria %>% 
+  distinct()
+
+aseo_cafeteria <- aseo_cafeteria %>% 
+  clean_names()
+
+aseo_cafeteria <- aseo_cafeteria %>% 
+  rename(autoriza_datos = autoriza_el_tratamiento_de_sus_datos_personales_consignados_en_este_formulario_de_asistencia_de_la_universidad_pedagogica_nacional_con_el_objetivo_de_demostrar_su_participacion_en_el_evento_o_reu)
+
+aseo_cafeteria <- aseo_cafeteria %>% 
+  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
+  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+         mesdili = str_to_title(mesdili)) %>% 
+  mutate(anodili = year(hora_de_finalizacion))
+
+
+aseo_cafeteria <- aseo_cafeteria %>%
+  filter(mesdili %in% params$mes)
+
+```
+
+```{r}
+
+aseo_cafeteria <- aseo_cafeteria %>% 
+  mutate(calidad_de_tinto_y_aromatica_ofrecida = as.numeric(calidad_de_tinto_y_aromatica_ofrecida)) %>% 
+  mutate(oportunidad_en_el_servicio_de_preparacion = as.numeric(
+    oportunidad_en_el_servicio_de_preparacion)) %>% 
+  mutate(amabilidad_y_actitud_del_personal = as.numeric(amabilidad_y_actitud_del_personal)) %>% 
+  mutate(limpieza_general = as.numeric(limpieza_general)) %>% 
+  mutate(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios =
+           as.numeric(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios)) %>% 
+  mutate(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante =
+           as.numeric(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante)) %>% 
+  mutate(limpieza_de_banos = as.numeric(limpieza_de_banos)) %>% 
+  mutate(labores_de_jardineria = as.numeric(labores_de_jardineria)) %>% 
+  mutate(frecuencia_y_labores_de_descanecado = as.numeric(frecuencia_y_labores_de_descanecado)) %>% 
+  mutate(atencion_y_actitud_de_los_funcionarios = as.numeric(atencion_y_actitud_de_los_funcionarios)) 
+
+aseo_cafe <- aseo_cafeteria %>% 
+  rename(valor1 = calidad_de_tinto_y_aromatica_ofrecida, 
+    valor2 = oportunidad_en_el_servicio_de_preparacion,
+    valor3 = amabilidad_y_actitud_del_personal,
+    valor4 = limpieza_general,
+    valor5 = limpieza_de_las_oficinas_salones_auditorios_y_laboratorios,
+    valor6 = limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante,
+    valor7 = limpieza_de_banos,
+    valor8 = labores_de_jardineria,
+    valor9 = frecuencia_y_labores_de_descanecado,
+    valor10 = atencion_y_actitud_de_los_funcionarios
+    ) 
+
+```
+
+# Cantidad de encuestados
+
+```{r}
+
+total <- aseo_cafeteria %>% filter(autoriza_datos == "Si") %>% count() %>% pull()
+
+```
+
+La encuesta de satisfacción del servicio de aseo y cafetería fue respondida por **`r total`** personas.
+
+# Tipo de vinculación de los encuestados
+
+Esta parte describe las diferentes formas de vinculación que tienen los encuestados con la institución, como estudiantes, empleados o contratistas.
+
+## Tabla
+
+```{r}
+
+aseo_cafeteria %>% 
+  categorica_1var(cual_es_el_tipo_de_vinculacion_o_relacion_que_tiene_con_la_upn_universidad_pedagogica_nacional, "Tipo de vinculación")
+
+```
+
+## Gráfico
+
+```{r}
+
+aseo_cafeteria %>%
+  plot_barras(cual_es_el_tipo_de_vinculacion_o_relacion_que_tiene_con_la_upn_universidad_pedagogica_nacional, "", "", titulo = "Tipo de vinculación de los encuestados")
+
+```
+
+# Instalaciones en donde trabajan los encuestados
+
+Se identifican y describen las instalaciones o dependencias donde los encuestados desempeñan sus labores.
+
+## Tabla
+
+```{r}
+
+aseo_cafeteria %>% 
+  categorica_1var(en_que_instalaciones_de_la_upn_universidad_pedagogica_nacional_desarrolla_sus_actividades_y_o_labores,
+                  "Instalaciones")
+
+```
+
+## Gráfico
+
+```{r}
+
+aseo_cafeteria %>% 
+  plot_barras(en_que_instalaciones_de_la_upn_universidad_pedagogica_nacional_desarrolla_sus_actividades_y_o_labores,
+              "", "", titulo = "Instalaciones donde trabajan los encuestados")
+
+```
+
+# Identidad de género
+
+Se recopilan y analizan los datos relacionados con la identidad de género de los encuestados.
+
+## Tabla
+
+```{r}
+
+aseo_cafeteria %>% 
+  categorica_1var(cual_es_su_identidad_de_genero, "Identidad de género")
+
+```
+
+## Gráfico
+
+```{r}
+
+aseo_cafeteria %>% 
+  plot_donas(cual_es_su_identidad_de_genero, 
+             titulo = "Identidad de género de los encuestados")
+
+```
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.25)
+
+```
+
+# Rango de edad de los encuestados
+
+Se analiza la distribución de los encuestados en diferentes rangos de edad.
+
+## Tabla
+
+```{r}
+
+aseo_cafeteria %>% 
+  mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, 
+  levels = c("Menor de 18 años", "18 a 28 años", "28 a 40 años",	
+  "40 a 60 años", "Mayor de 60 años"))) %>% 
+  categorica_1var(cual_es_su_rango_de_edad, "Rango de edad")
+
+```
+
+## Gráfico
+
+```{r}
+
+aseo_cafeteria %>% 
+  mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, 
+         levels = c("Mayor de 60 años","40 a 60 años",
+         "28 a 40 años","18 a 28 años", "Menor de 18 años"))) %>% 
+  plot_barras(cual_es_su_rango_de_edad, "", "", "Rango de edad de los encuestados")
+
+```
+
+# Grupo poblacional o sector social al que pertenece los encuestados
+
+
+```{r}
+
+grupo_poblacional <- aseo_cafeteria %>%
+  mutate(a_que_grupo_poblacional_o_sector_social_perteneces = trimws(a_que_grupo_poblacional_o_sector_social_perteneces)) %>% 
+  mutate(a_que_grupo_poblacional_o_sector_social_perteneces = ifelse(
+    a_que_grupo_poblacional_o_sector_social_perteneces== "Ninguna", "Ninguno", 
+    a_que_grupo_poblacional_o_sector_social_perteneces)) %>% 
+  count(a_que_grupo_poblacional_o_sector_social_perteneces) %>% 
+  arrange(desc(n)) %>% slice(1:1) %>% pull(a_que_grupo_poblacional_o_sector_social_perteneces)
+
+```
+
+El grupo poblacional o sector social al que la mayoria de los encuestados pertenecen es **`r grupo_poblacional`**
+
+# Étnias a la que pertenecen los encuestados
+
+Se analizan los datos sobre las diversas etnias representadas por los encuestados.
+
+## Tabla
+
+```{r}
+
+aseo_cafeteria %>% 
+  categorica_1var(a_que_grupo_de_pertenencia_etnica_pertenece, "Étnias")
+
+```
+
+## Gráfico 
+
+```{r}
+
+aseo_cafeteria %>% 
+  plot_barras(a_que_grupo_de_pertenencia_etnica_pertenece, "", "", 
+              titulo = "Étnias a las que pertenecen los encuestados")
+
+```
+
+# Unidad o dependencia de la UPN a la que pertenecen los encuestados
+
+Se detalla la distribución de los encuestados según la unidad o dependencia de la Universidad Pedagógica Nacional a la que pertenecen.
+
+## Tabla
+
+```{r}
+
+aseo_cafeteria %>% 
+  categorica_1var(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces,
+                  "Unidad o dependencia de la UPN")
+
+```
+
+## Gráfico
+
+```{r}
+
+aseo_cafeteria %>% 
+  plot_barras(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces,
+              "", "", titulo = "Unidad o dependencia de la UPN a la que pertenecen los encuestados", 
+              top = 5)
+
+```
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.5)
+
+```
+
+# Calificación por categoría
+
+## Tabla general
+
+```{r}
+
+promedios <- aseo_cafeteria %>% 
+  summarise(
+    "Calidad del tinto y aromatica ofrecida" = round(mean(calidad_de_tinto_y_aromatica_ofrecida, na.rm = TRUE), 1),
+    "Oportunidad en el servicio de preparación" = round(mean(oportunidad_en_el_servicio_de_preparacion, na.rm = TRUE), 1),
+    "Amabilidad y actitud del personal" = round(mean(amabilidad_y_actitud_del_personal, na.rm = TRUE), 1),
+    "Limpieza de las oficinas, salones, auditorios y laboratorios" = round(mean(limpieza_general, na.rm = TRUE), 1),
+    "Limpieza general de las áreas comunes" = round(mean(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios, 
+                                                         na.rm = TRUE), 1),
+    "Limpieza general" = round(mean(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante, 
+                                    na.rm = TRUE), 1),
+    "Limpieza de baños" = round(mean(limpieza_de_banos, na.rm = TRUE), 1),
+    "Labores de jardinería" = round(mean(labores_de_jardineria, na.rm = TRUE), 1),
+    "Frecuencia y labores de descanecado" = round(mean(frecuencia_y_labores_de_descanecado, na.rm = TRUE), 1),
+    "Atención y actitud de los funcionarios" = round(mean(atencion_y_actitud_de_los_funcionarios, na.rm = TRUE), 1)
+  ) %>%
+  pivot_longer(cols = everything(), names_to = "Categoría", values_to = "Promedio")
+  
+
+aseocafe <- aseo_cafeteria %>%
+    mutate(
+    calidad_de_tinto_y_aromatica_ofrecida = recode(calidad_de_tinto_y_aromatica_ofrecida,
+      "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
+    oportunidad_en_el_servicio_de_preparacion = recode(oportunidad_en_el_servicio_de_preparacion,
+      "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
+    amabilidad_y_actitud_del_personal = recode(amabilidad_y_actitud_del_personal,
+      "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
+    limpieza_general = recode(limpieza_general,
+      "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
+    limpieza_de_las_oficinas_salones_auditorios_y_laboratorios = recode(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios,
+      "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
+    limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante = recode(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante,
+      "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
+    limpieza_de_banos = recode(limpieza_de_banos,
+      "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
+    labores_de_jardineria = recode(labores_de_jardineria,
+      "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
+    frecuencia_y_labores_de_descanecado = recode(frecuencia_y_labores_de_descanecado,
+      "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
+    atencion_y_actitud_de_los_funcionarios = recode(atencion_y_actitud_de_los_funcionarios,
+      "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente")) %>% 
+  select(calidad_de_tinto_y_aromatica_ofrecida, oportunidad_en_el_servicio_de_preparacion, amabilidad_y_actitud_del_personal,
+        limpieza_general, limpieza_de_las_oficinas_salones_auditorios_y_laboratorios,
+        limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante,
+  limpieza_de_banos, labores_de_jardineria, frecuencia_y_labores_de_descanecado, atencion_y_actitud_de_los_funcionarios) %>%
+  rename("Calidad del tinto y aromatica ofrecida" = calidad_de_tinto_y_aromatica_ofrecida, 
+         "Oportunidad en el servicio de preparación" = oportunidad_en_el_servicio_de_preparacion, 
+         "Amabilidad y actitud del personal" = amabilidad_y_actitud_del_personal,
+        "Limpieza de las oficinas, salones, auditorios y laboratorios" = limpieza_general, 
+        "Limpieza general de las áreas comunes" = limpieza_de_las_oficinas_salones_auditorios_y_laboratorios,
+        "Limpieza general" = limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante,
+  "Limpieza de baños" = limpieza_de_banos, 
+  "Labores de jardinería" = labores_de_jardineria, 
+  "Frecuencia y labores de descanecado"  =frecuencia_y_labores_de_descanecado, 
+  "Atención y actitud de los funcionarios" = atencion_y_actitud_de_los_funcionarios) %>%
+  pivot_longer(cols = everything(), 
+               names_to = "Categoria", 
+               values_to = "Calificacion") %>% 
+  mutate(Calificacion = factor(Calificacion, levels = c("Excelente", "Bueno","Aceptable",                            "Deficiente", "Muy deficiente"))) %>%
+  count(Categoria, Calificacion) 
+
+
+aseocafe %>% 
+  rename("Calificación" = Calificacion, "Categoría" = Categoria) %>% 
+  pivot_wider(names_from = "Calificación", values_from = n, 
+              values_fill = list(n = 0)) %>%
+  left_join(promedios, by = "Categoría") %>% 
+  ftable(encabezado = "Calificación por categoría") %>%
+  bg(i = nrow_part(.), bg = "white") %>%
+  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+  color(i = nrow_part(.), color = "black") %>%
+  bold(i = nrow_part(.), bold = FALSE)
+
+
+```
+
+## Gráfico general
+
+```{r}
+
+aseocafe %>% 
+    ggplot(aes(x = Categoria, 
+               y= n, 
+               fill = Calificacion, 
+               label = n))+
+    geom_col(position = "dodge")+
+    geom_text(vjust = 0.5, hjust = -0.2 ,size = 2.5,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(aseocafe$n)*1.1))+
+    labs(x = "", y = "", title = str_wrap("Calificación por categoría", width = 30))+ 
+    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+     theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+        guides(fill = guide_legend(title = "", label.position = "right"
+                     , nrow = 1, label.theme = element_text(size = 12)))+
+        theme(legend.position = "bottom",
+          axis.text.y = element_text(size = 13),
+          axis.text.x = element_text(size = 13)) +
+    theme(axis.text.y = element_text(size = 12))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 20))+
+    scale_fill_manual(values = c("#388E3C","#7CB342","#FBC02D","#FFA000", "#D32F2F"))+
+    coord_flip()
+  
+
+
+```
+
+
+\
+
+## Calidad de tinto y aromática ofrecida
+
+### Tabla
+
+```{r}
+
+aseo_cafeteria %>% 
+  transformar_calificacion_ft(calidad_de_tinto_y_aromatica_ofrecida) %>% 
+  categorica_1var(calidad_de_tinto_y_aromatica_ofrecida, "Calificación", encabezado = "Calidad de tinto y arómatica ofrecida")
+
+```
+
+### Gráfico
+
+```{r}
+
+aseo_cafeteria %>% 
+  transformar_calificacion_plot(calidad_de_tinto_y_aromatica_ofrecida) %>% 
+  plot_barras(calidad_de_tinto_y_aromatica_ofrecida, "", "",titulo  = "Calidad de tinto y arómatica ofrecida")
+
+```
+
+\
+
+## Oportunidad en el servicio de preparación
+
+### Tabla
+
+```{r}
+
+aseo_cafeteria %>% 
+  transformar_calificacion_ft(oportunidad_en_el_servicio_de_preparacion) %>% 
+  categorica_1var(oportunidad_en_el_servicio_de_preparacion, "Calificación", encabezado = "Oportunidad en el servicio de preparación")
+
+```
+
+### Gráfico
+
+```{r}
+
+aseo_cafeteria %>% 
+  transformar_calificacion_plot(oportunidad_en_el_servicio_de_preparacion) %>% 
+  plot_barras(oportunidad_en_el_servicio_de_preparacion, " ", " ", titulo = "Oportunidad en el servicio de preparación")
+
+```
+
+\
+
+## Amabilidad y actitud del personal
+
+### Tabla
+
+```{r}
+
+aseo_cafeteria %>% 
+  transformar_calificacion_ft(amabilidad_y_actitud_del_personal) %>% 
+  categorica_1var(amabilidad_y_actitud_del_personal, "Calificación", encabezado = "Amabilidad y actitud del personal")
+
+```
+
+### Gráfico
+
+```{r}
+
+aseo_cafeteria %>% 
+  transformar_calificacion_plot(amabilidad_y_actitud_del_personal) %>% 
+  plot_barras(amabilidad_y_actitud_del_personal, " ","", titulo = "Amabilidad y actitud del personal")
+
+```
+
+\
+
+## Limpieza general
+
+### Tabla
+
+```{r}
+
+aseo_cafeteria %>% 
+  transformar_calificacion_ft(limpieza_general) %>%  
+  categorica_1var(limpieza_general, "Calificación", encabezado = "Limpieza general")
+
+```
+
+### Gráfico
+
+```{r}
+
+aseo_cafeteria %>% 
+  transformar_calificacion_plot(limpieza_general) %>% 
+  plot_barras(limpieza_general, " "," ", titulo = "Limpieza general")
+
+```
+
+
+\
+
+### Limpieza de las oficinas, salones, auditorios y laboratorios
+
+#### Tabla
+
+```{r}
+
+aseo_cafeteria %>% 
+  transformar_calificacion_ft(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios) %>% 
+  categorica_1var(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios, "Calificación", 
+                  encabezado = "Limpieza de las oficinas, salones, auditorios y laboratorios")
+
+```
+
+#### Gráfico
+
+```{r}
+
+aseo_cafeteria %>% 
+  transformar_calificacion_plot(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios) %>% 
+  plot_barras(limpieza_de_las_oficinas_salones_auditorios_y_laboratorios, "","", 
+                  titulo = "Limpieza de las oficinas, salones, auditorios y laboratorios")
+
+```
+
+\
+
+### Limpieza general de las áreas comunes (pasillos, escaleras, plazoletas, restaurante)
+
+#### Tabla
+
+```{r}
+
+aseo_cafeteria %>% 
+  transformar_calificacion_ft(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante) %>% 
+  categorica_1var(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante, "Calificación", 
+                  encabezado = "Limpieza general de las áreas comunes")
+
+```
+
+#### Gráfico
+
+```{r}
+
+aseo_cafeteria %>% 
+  transformar_calificacion_plot(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante) %>%
+  plot_barras(limpieza_general_de_las_areas_comunes_pasillos_escaleras_plazoletas_restaurante, " ", " ", 
+                  titulo = "Limpieza general de las áreas comunes")
+
+```
+
+\
+
+### Limpieza de baños
+
+#### Tabla
+
+```{r}
+
+aseo_cafeteria %>% 
+  transformar_calificacion_ft(limpieza_de_banos) %>% 
+  categorica_1var(limpieza_de_banos, "Calificación", 
+                  encabezado = "Limpieza de baños")
+
+```
+
+#### Gráfico
+
+```{r}
+
+aseo_cafeteria %>% 
+  transformar_calificacion_plot(limpieza_de_banos) %>% 
+  plot_barras(limpieza_de_banos, " ", " ", 
+                  titulo = "Limpieza de baños")
+
+```
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.75)
+
+```
+
+\
+
+## Labores de jardinería
+
+### Tabla
+
+```{r}
+
+aseo_cafeteria %>% 
+  transformar_calificacion_ft(labores_de_jardineria) %>% 
+  categorica_1var(labores_de_jardineria, "Calificación", 
+                  encabezado = "Labores de jardinería")
+
+```
+
+### Gráfico
+
+```{r}
+
+aseo_cafeteria %>% 
+  transformar_calificacion_plot(labores_de_jardineria) %>% 
+  plot_barras(labores_de_jardineria, " "," ", 
+                  titulo  = "Labores de jardinería")
+
+```
+
+\
+
+## Frecuencia y labores de descanecado
+
+### Tabla
+
+```{r}
+
+aseo_cafeteria %>% 
+  transformar_calificacion_ft(frecuencia_y_labores_de_descanecado) %>% 
+  categorica_1var(frecuencia_y_labores_de_descanecado, "Calificación", 
+                  encabezado = "Frecuencia y labores de descanecado")
+
+```
+
+### Gráfico
+
+```{r}
+
+aseo_cafeteria %>% 
+  transformar_calificacion_plot(frecuencia_y_labores_de_descanecado) %>% 
+  plot_barras(frecuencia_y_labores_de_descanecado, " "," ", 
+                  titulo  = "Frecuencia y labores de descanecado")
+
+```
+
+\
+
+## Atención y actitud de los funcionarios
+
+### Tabla
+
+```{r}
+
+aseo_cafeteria %>% 
+  transformar_calificacion_ft(atencion_y_actitud_de_los_funcionarios) %>% 
+  categorica_1var(atencion_y_actitud_de_los_funcionarios, "Calificación", 
+                  encabezado = "Atención y actitud de los funcionarios")
+
+```
+
+### Gráfico
+
+```{r}
+
+aseo_cafeteria %>% 
+  transformar_calificacion_plot(atencion_y_actitud_de_los_funcionarios) %>% 
+  plot_barras(atencion_y_actitud_de_los_funcionarios, " "," ", 
+                  titulo = "Atención y actitud de los funcionarios")
+
+```
+\
+
+# Calificación general 
+
+## Por identidad de género
+
+Se muestra el promedio de calificación dada al servicio de aseo y cafetería, categorizando a los encuestados por su identidad de género
+
+### Tabla
+
+```{r}
+
+aseo_cafe %>% 
+  tabla_prom(cual_es_su_identidad_de_genero, "Identidad de género", encabezado = "Calificación promedio")
+
+```
+
+### Gráfico
+
+```{r}
+
+aseo_cafe %>% 
+  plot_barras_prom(cual_es_su_identidad_de_genero, "", "", titulo = "Calificación promedio por identidad de género")
+
+```
+
+## Por rango de edad
+
+Se muestra el promedio de calificación dada al servicio de aseo y cafetería, categorizando a los encuestados por el rango de edad en el que están ubicados
+
+### Tabla
+
+```{r}
+
+aseo_cafe %>% 
+  tabla_prom(cual_es_su_rango_de_edad, "Rango de edad", encabezado = "Calificación promedio")
+
+```
+
+### Gráfico
+
+```{r}
+
+aseo_cafe %>% 
+  plot_barras_prom(cual_es_su_rango_de_edad, "", "", titulo = "Calificación promedio por rango de edad")
+
+```
+
+## Por unidad o dependencia
+
+Se muestra el promedio de calificación dada al servicio de aseo y cafetería, categorizando a los encuestados por la unidad o dependencia en la que pertenecen en la UPN
+
+### Tabla
+
+```{r}
+
+aseo_cafe %>% 
+  tabla_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, "Unidad o dependencia",
+             encabezado = "Calificación promedio")
+
+```
+
+### Gráfico
+
+```{r}
+
+aseo_cafe %>% 
+  plot_barras_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces,
+                   "", "", titulo = "Calificación promedio por unidad o dependencia")
+
+```
+
+## Por tipo de vinculación
+
+Se muestra el promedio de calificación dada al servicio de aseo y cafetería, categorizando a los encuestados por el tipo de vinculación con la UPN
+
+### Tabla
+
+```{r}
+
+aseo_cafe %>% 
+  tabla_prom(cual_es_el_tipo_de_vinculacion_o_relacion_que_tiene_con_la_upn_universidad_pedagogica_nacional,
+             "Tipo de vinculación", encabezado = "Calificación promedio")
+
+```
+
+### Gráfico
+
+```{r}
+
+aseo_cafe %>% 
+  plot_barras_prom(cual_es_el_tipo_de_vinculacion_o_relacion_que_tiene_con_la_upn_universidad_pedagogica_nacional,
+                       "", "", titulo = "Calificación promedio por tipo de vinculación")
+
+```
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(1)
+
+```
+
