@@ -1,0 +1,10 @@
+.watermark {
+  opacity: 0.15;
+  position: fixed;
+  align-items: center;
+  justify-content: center;
+  margin-left: 13%;
+  height: 50vh;
+  font-size: 500%;
+  color: #00407d;
+}
