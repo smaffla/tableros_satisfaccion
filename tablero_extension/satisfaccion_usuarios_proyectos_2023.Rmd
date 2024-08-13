@@ -462,6 +462,15 @@ beneficiarios <- beneficiarios %>%
 #   filter(mesdili %in% params$mes)
 ```
 
+<!-- Eliminamos duplicados -->
+
+```{r}
+
+beneficiarios <- beneficiarios[!duplicated(beneficiarios[c("nombre_del_encuestado_a", "fecha_diligenciamiento", "nombre_y_codigo_del_proyecto")]), ]
+
+```
+
+
 ```{r}
 total_autoriza <- beneficiarios %>% filter(autoriza_datos == "Acepto") %>% count() %>% pull()
 total <- beneficiarios %>% count() %>% pull() 
