@@ -153,6 +153,7 @@ server <- function(input, output, session) {
     
     #Asesoría administrativa
     
+    ##Gráfico
     output$plot_asesoria_operativa_sar <- renderPlot({
       
       if (input$select_asesoria_operativa_sar == "El apoyo para la formulación y ejecución de la propuesta"){
@@ -197,20 +198,22 @@ server <- function(input, output, session) {
       })
     
     
+    
+    ###Tabla
     output$dt_asesoria_operativa_sar <- renderUI({
       
       if (input$select_asesoria_operativa_sar == "El apoyo para la formulación y ejecución de la propuesta"){
         table <- sar_filtrado() %>%
           categorica_2var_escala(categoria_de_participacion_en_el_proyecto_sar, el_apoyo_para_la_formulacion, "Tipo de vinculación")
         
-        # Convertir el flextable a HTML
+
         flextable::htmltools_value(table)
   
       } else if (input$select_asesoria_operativa_sar == "La claridad y calidad de la información presentada en los procedimientos y demás información recibida"){
         table <- sar_filtrado() %>%
           categorica_2var_escala(categoria_de_participacion_en_el_proyecto_sar, x2_la_claridad_y_calidad_de_la_informacion_presentada_en_los_procedimientos_y_demas_informacion_recibida_fue, "Tipo de vinculación")
         
-        # Convertir el flextable a HTML
+
         flextable::htmltools_value(table)
         
         
@@ -218,7 +221,7 @@ server <- function(input, output, session) {
         
         table <- sar_filtrado() %>%
           categorica_2var(categoria_de_participacion_en_el_proyecto_sar, x4_los_medios_de_comunicacion_establecidos_para_resolver_dudas_fueron, "Tipo de vinculación")
-        # Convertir el flextable a HTML
+
         flextable::htmltools_value(table)
         
       } else if (input$select_asesoria_operativa_sar == "El tiempo de respuesta a los trámites presentados a la SAE") {
@@ -252,6 +255,79 @@ server <- function(input, output, session) {
     })
     
     
+    
+    
+    #Asesoría finaniera
+    
+    #Gráfico
+    output$plot_asesoria_financiera_sar <- renderPlot({
+      
+      if (input$select_asesoria_financiera_sar == "La claridad en la información para la ejecución financiera"){
+        sar_filtrado() %>%
+          mutate(claridad_en_la_informacion = factor(claridad_en_la_informacion, levels = c("Por mejorar", "Aceptable", "Bueno", "Muy bueno", "Excelente"))) %>% 
+          plot_barras(claridad_en_la_informacion, "", "", "")
+        
+      } else if (input$select_asesoria_financiera_sar== "Los medios de comunicación establecidos para resolver dudas de tipo financiero"){
+        sar_filtrado() %>%
+          mutate(x10_los_medios_de_comunicacion_establecidos_para_resolver_dudas_de_tipo_financiero_fueron = factor(x10_los_medios_de_comunicacion_establecidos_para_resolver_dudas_de_tipo_financiero_fueron, levels = c("Suficientes", "Insuficientes"))) %>% 
+          plot_donas(x10_los_medios_de_comunicacion_establecidos_para_resolver_dudas_de_tipo_financiero_fueron)
+        
+        
+      } else if (input$select_asesoria_financiera_sar == "La calidad de las respuestas recibidas sobre las dudas presentadas de tipo financiero") {
+        sar_filtrado() %>% 
+          mutate(x11_la_calidad_de_las_respuestas_recibidas_sobre_las_dudas_presentadas_de_tipo_financiero_fueron = factor(x11_la_calidad_de_las_respuestas_recibidas_sobre_las_dudas_presentadas_de_tipo_financiero_fueron, levels = c("Por mejorar", "Aceptable", "Bueno", "Muy bueno", "Excelente"))) %>% 
+          plot_barras(x11_la_calidad_de_las_respuestas_recibidas_sobre_las_dudas_presentadas_de_tipo_financiero_fueron, "", "", "")
+        
+      } else if (input$select_asesoria_financiera_sar == "El tiempo de respuesta a las inquietudes de tipo financiero presentadas a la SAE") {
+        sar_filtrado() %>%
+          mutate(x12_el_tiempo_de_respuesta_a_las_inquietudes_de_tipo_financiero_presentadas_a_la_sae_fue = factor(x12_el_tiempo_de_respuesta_a_las_inquietudes_de_tipo_financiero_presentadas_a_la_sae_fue, levels = c("Oportuno", "Inoportuno"))) %>% 
+          plot_donas(x12_el_tiempo_de_respuesta_a_las_inquietudes_de_tipo_financiero_presentadas_a_la_sae_fue)
+        
+      } else if (input$select_asesoria_financiera_sar == "Calificación dada a el acompañamiento a los directores/coordinadores de proyectos"){
+        sar_filtrado() %>%
+          mutate(x13_en_terminos_generales_el_acompanamiento_a_los_directores_coordinadores_de_proyectos_fue = factor(x13_en_terminos_generales_el_acompanamiento_a_los_directores_coordinadores_de_proyectos_fue, levels = c("Por mejorar", "Aceptable", "Bueno", "Muy bueno", "Excelente"))) %>% 
+          plot_barras(x13_en_terminos_generales_el_acompanamiento_a_los_directores_coordinadores_de_proyectos_fue, "", "", "")
+        
+      }
+      
+    })
+    
+    #Tabla
+    
+    output$dt_asesoria_financiera_sar <- renderUI({
+      
+      if (input$select_asesoria_financiera_sar == "La claridad en la información para la ejecución financiera"){
+        table <- sar_filtrado() %>%
+          categorica_2var_escala(categoria_de_participacion_en_el_proyecto_sar, claridad_en_la_informacion, "Tipo de vinculación")
+        
+        flextable::htmltools_value(table)
+        
+      } else if (input$select_asesoria_financiera_sar== "Los medios de comunicación establecidos para resolver dudas de tipo financiero"){
+        table <- sar_filtrado() %>% 
+          categorica_2var(categoria_de_participacion_en_el_proyecto_sar, x10_los_medios_de_comunicacion_establecidos_para_resolver_dudas_de_tipo_financiero_fueron, "Tipo de vinculación")
+        flextable::htmltools_value(table)
+        
+      } else if (input$select_asesoria_financiera_sar == "La calidad de las respuestas recibidas sobre las dudas presentadas de tipo financiero") {
+        table <- sar_filtrado() %>%
+          categorica_2var_escala(categoria_de_participacion_en_el_proyecto_sar, x11_la_calidad_de_las_respuestas_recibidas_sobre_las_dudas_presentadas_de_tipo_financiero_fueron, "Tipo de vinculación")
+        
+        flextable::htmltools_value(table)
+        
+      } else if (input$select_asesoria_financiera_sar == "El tiempo de respuesta a las inquietudes de tipo financiero presentadas a la SAE") {
+        table <- sar_filtrado() %>%
+          categorica_2var(categoria_de_participacion_en_el_proyecto_sar, x12_el_tiempo_de_respuesta_a_las_inquietudes_de_tipo_financiero_presentadas_a_la_sae_fue, "Tipo de vinculación")
+        
+        flextable::htmltools_value(table)
+        
+      } else if (input$select_asesoria_financiera_sar == "Calificación dada a el acompañamiento a los directores/coordinadores de proyectos"){
+        table <- sar_filtrado() %>%
+          categorica_2var_escala(categoria_de_participacion_en_el_proyecto_sar, x13_en_terminos_generales_el_acompanamiento_a_los_directores_coordinadores_de_proyectos_fue, "Tipo de vinculación")
+        
+        flextable::htmltools_value(table)
+        
+      }
+      
+    })
     
     
     

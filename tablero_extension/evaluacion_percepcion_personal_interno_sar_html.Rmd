@@ -829,7 +829,7 @@ sar %>%
   plot_donas(x12_el_tiempo_de_respuesta_a_las_inquietudes_de_tipo_financiero_presentadas_a_la_sae_fue)
 ```
 
-## Califiación dada a el acompañamiento a los directores/coordinadores de proyectos
+## Calificación dada a el acompañamiento a los directores/coordinadores de proyectos
 
 ### Tabla
 ```{r}

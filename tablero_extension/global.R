@@ -248,9 +248,7 @@ plot_donas <- function(x, col, titulo = "") {
     xlim(c(20, -10)) +
     theme_void() +
     theme(plot.title.position = "plot",
-          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252"),
-          plot.background = element_rect(fill = fondo_color, color = "#ecf0f5"),  # Cambia el color del fondo del gráfico
-          panel.background = element_rect(fill = fondo_color, color = "#ecf0f5")) +
+          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
     guides(fill = guide_legend(title = "", label.position = "right",
                                label.theme = element_text(size = 18)))
 }
@@ -435,9 +433,16 @@ categorica_2var_escala <- function(x, cat1, cat2, rename, encabezado = NULL, tit
     ) %>% 
     group_by(!!cat1) %>% 
     pivot_wider(names_from = !!cat2, values_from = n, values_fill = 0) %>%
-    # Asegurar que todas las categorías estén presentes y en el orden correcto
-    mutate(across(all_of(orden_categorias), ~if_else(is.na(.), 0, .))) %>%
-    select(1, all_of(orden_categorias), everything()) %>%
+    # Obtener las categorías que realmente existen en los datos
+    categorias_existentes <- intersect(orden_categorias, colnames(table))
+  
+  # Reordenar columnas solo si existen las categorías
+  if (length(categorias_existentes) > 0) {
+    table <- table %>%
+      select(1, all_of(categorias_existentes), everything())
+  }
+  
+  table <- table %>%
     adorn_totals(where = "col", name = "Total General") %>%
     rename("{rename}" := !!cat1)
   

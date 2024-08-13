@@ -324,7 +324,7 @@ dashboardPage(
                                    size = 7),
                     multiple = F,
                     label = "Seleccione una criterio de evaluación",
-                    choices = c("La claridad en la información para la ejecución financiera", "Los medios de comunicación establecidos para resolver dudas de tipo financiero", "La calidad de las respuestas recibidas sobre las dudas presentadas de tipo financiero", "El tiempo de respuesta a las inquietudes de tipo financiero presentadas a la SAE", "Califiación dada a el acompañamiento a los directores/coordinadores de proyectos"),
+                    choices = c("La claridad en la información para la ejecución financiera", "Los medios de comunicación establecidos para resolver dudas de tipo financiero", "La calidad de las respuestas recibidas sobre las dudas presentadas de tipo financiero", "El tiempo de respuesta a las inquietudes de tipo financiero presentadas a la SAE", "Calificación dada a el acompañamiento a los directores/coordinadores de proyectos"),
                     selected = "La claridad en la información para la ejecución financiera"
                   )
                 )
