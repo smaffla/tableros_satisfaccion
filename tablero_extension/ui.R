@@ -41,7 +41,7 @@ dashboardPage(
                 selectInput(
                   inputId = "select_anio_sar",
                   label = "Seleccione un año",
-                  choices = c("Todos los años" = "all", 2021:2024),
+                  choices = c("Todos los años" = "all", 2022:2024),
                   selected = 2024
                 )
               ), 
@@ -173,15 +173,15 @@ dashboardPage(
         
         br(),
         
-        # fluidRow(
-        #   column(
-        #     width = 12,
-        #     DTOutput("dt_contratacionxvinculacion_sar") %>% withSpinner(type = 8, size = 0.5)
-        #   )
-        # ),
-        # 
-        # br(),
-        # br(),
+        fluidRow(
+          column(
+            width = 12,
+            uiOutput("ft_contratacionxvinculacion_sar") %>% withSpinner(type = 8, size = 0.5)
+          )
+        ),
+
+        br(),
+        br(),
         
         fluidRow(
           align = "center",
@@ -269,10 +269,82 @@ dashboardPage(
           ),
           column(
             width = 6,
-            DTOutput("dt_asesproa_operativa_sar") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("dt_asesoria_operativa_sar") %>% withSpinner(type = 8, size = 0.5)
           )
         ),
         
+        
+        
+        br(),
+        br(), 
+        
+        fluidRow(
+          align = "center",
+          HTML("<h2 style = 'color: #00609d'><strong>Asesoría financiera para la ejecución del proyecto</strong></h2>"),
+        ),
+        
+        br(),
+        
+        fluidRow(
+          align = "center",
+          HTML("<h4 style = 'color: #00609d'><strong>Calificación por criterio de evaluación</strong></h3>"),
+        ),
+        
+        br(),
+        
+        fluidRow(
+          column(
+            width = 8,
+            offset = 2,
+            align = "center",
+            HTML("<h5 style = 'color: #393939'><strong>A continuación se muestra cómo percibieron los encuestados la asesoría financiera para la ejecución del proyecto. Primero se establece el criterio de evaluación, se muestra una tabla que categoriza a los encuestados por su tipo de vinculación y su percepción respecto al criterio evaluado, y por último se ilustra a través de una gráfica la calificación dada por parte de los encuestados.</strong></h4>"),
+          )),
+        
+        
+        br(),
+        
+        div(
+          fluidRow(
+            column(
+              width = 10,
+              offset = 1,
+              box(
+                width = 12,
+                style = "margin-top: 2%",
+                background = "light-blue",
+                align = "center",
+                column(
+                  width = 12,
+                  pickerInput(
+                    inputId = "select_asesoria_financiera_sar",
+                    options = list(`actions-box` = TRUE,
+                                   `deselect-all-text` = "Deseleccionar todo",
+                                   `select-all-text` = "Seleccionar todo",
+                                   `none-selected-text` = "Nada seleccionado",
+                                   size = 7),
+                    multiple = F,
+                    label = "Seleccione una criterio de evaluación",
+                    choices = c("La claridad en la información para la ejecución financiera", "Los medios de comunicación establecidos para resolver dudas de tipo financiero", "La calidad de las respuestas recibidas sobre las dudas presentadas de tipo financiero", "El tiempo de respuesta a las inquietudes de tipo financiero presentadas a la SAE", "Califiación dada a el acompañamiento a los directores/coordinadores de proyectos"),
+                    selected = "La claridad en la información para la ejecución financiera"
+                  )
+                )
+              )
+            )
+          )
+        ),
+        
+        br(),
+        
+        fluidRow(
+          column(
+            width = 6,
+            plotOutput("plot_asesoria_financiera_sar") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          column(
+            width = 6,
+            uiOutput("dt_asesoria_financiera_sar") %>% withSpinner(type = 8, size = 0.5)
+          )
+        ),
         # #### 📊📋 Gráfico y tabla por encuesta ----------------------------------------------------
         # 
         # fluidRow(

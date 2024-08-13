@@ -729,56 +729,7 @@ server <- function(input, output, session) {
     
     ##### 📝 ---------------------------------------------------
     
-    output$dt_calificacion_categoria_trans <- renderDataTable({
       
-      if (input$select_categoria_trans == "Tipo de vinculación"){
-        
-        transporte %>% 
-          filter(anodili %in% input$select_anio_trans, 
-                 mesdili %in% input$select_mes_trans) %>%  
-          rename(valor1 = estado_mecanico_de_los_vehiculo, 
-                 valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
-                 valor3 = amabilidad_y_cortesia,
-                 valor4 = nivel_de_atencion_mientras_conduce,
-                 valor5 = capacidad_de_comunicacion) %>%
-          tabla_prom(tipo_de_vinculacion, "Tipo de vinculacion")
-        
-      } else if (input$select_categoria_trans == "Edad"){
-        transporte %>%
-          filter(anodili %in% input$select_anio_trans, 
-                 mesdili %in% input$select_mes_trans) %>% 
-          filter(!is.na(cual_es_su_rango_de_edad)) %>% 
-          rename(valor1 = estado_mecanico_de_los_vehiculo, 
-                 valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
-                 valor3 = amabilidad_y_cortesia,
-                 valor4 = nivel_de_atencion_mientras_conduce,
-                 valor5 = capacidad_de_comunicacion) %>%
-          mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, levels = c("18 a 28 años", "28 a 40 años",	
-                                                                                        "40 a 60 años", "Mayor de 60 años"))) %>% 
-          tabla_prom(cual_es_su_rango_de_edad, "Rango de edad")
-        
-      } else if (input$select_categoria_trans == "Identidad de género") {
-        transporte %>%
-          filter(anodili %in% input$select_anio_trans, 
-                 mesdili %in% input$select_mes_trans) %>% 
-          filter(!is.na(cual_es_su_identidad_de_genero)) %>% 
-          rename(valor1 = estado_mecanico_de_los_vehiculo, 
-                 valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
-                 valor3 = amabilidad_y_cortesia,
-                 valor4 = nivel_de_atencion_mientras_conduce,
-                 valor5 = capacidad_de_comunicacion) %>%
-          tabla_prom(cual_es_su_identidad_de_genero, "Género")
-        
-      } else if (input$select_categoria_trans == "Unidad o dependencia de la UPN"){
-        transporte %>% 
-          rename(valor1 = estado_mecanico_de_los_vehiculo, 
-                 valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
-                 valor3 = amabilidad_y_cortesia,
-                 valor4 = nivel_de_atencion_mientras_conduce,
-                 valor5 = capacidad_de_comunicacion) %>%
-          tabla_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, "Unidad o dependencia")     
-      }
-    })
     
     ##### 📊 -----------------------------------------
     

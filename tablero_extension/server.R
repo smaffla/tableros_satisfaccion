@@ -127,9 +127,11 @@ server <- function(input, output, session) {
       })
     
     #Relación contratación/vinculación
-    output$dt_contratacionxvinculacion_sar <- renderDataTable({
-      sar_filtrado() %>%
-        categorica_2var(categoria_de_participacion_en_el_proyecto_sar, modalidad_de_participacion_en_el_proyecto_sar, "Tipo de vinculación")
+    output$ft_contratacionxvinculacion_sar <- renderUI({
+      table <-  sar_filtrado() %>%
+        categorica_vinculacion_modalidad(categoria_de_participacion_en_el_proyecto_sar, modalidad_de_participacion_en_el_proyecto_sar, "Tipo de vinculación")
+      
+      flextable::htmltools_value(table)
     })
     
     
@@ -149,6 +151,7 @@ server <- function(input, output, session) {
     
     #Respuestas de la encuesta
     
+    #Asesoría administrativa
     
     output$plot_asesoria_operativa_sar <- renderPlot({
       
@@ -194,7 +197,59 @@ server <- function(input, output, session) {
       })
     
     
-    
+    output$dt_asesoria_operativa_sar <- renderUI({
+      
+      if (input$select_asesoria_operativa_sar == "El apoyo para la formulación y ejecución de la propuesta"){
+        table <- sar_filtrado() %>%
+          categorica_2var_escala(categoria_de_participacion_en_el_proyecto_sar, el_apoyo_para_la_formulacion, "Tipo de vinculación")
+        
+        # Convertir el flextable a HTML
+        flextable::htmltools_value(table)
+  
+      } else if (input$select_asesoria_operativa_sar == "La claridad y calidad de la información presentada en los procedimientos y demás información recibida"){
+        table <- sar_filtrado() %>%
+          categorica_2var_escala(categoria_de_participacion_en_el_proyecto_sar, x2_la_claridad_y_calidad_de_la_informacion_presentada_en_los_procedimientos_y_demas_informacion_recibida_fue, "Tipo de vinculación")
+        
+        # Convertir el flextable a HTML
+        flextable::htmltools_value(table)
+        
+        
+      } else if (input$select_asesoria_operativa_sar == "Los medios de comunicación establecidos para resolver dudas") {
+        
+        table <- sar_filtrado() %>%
+          categorica_2var(categoria_de_participacion_en_el_proyecto_sar, x4_los_medios_de_comunicacion_establecidos_para_resolver_dudas_fueron, "Tipo de vinculación")
+        # Convertir el flextable a HTML
+        flextable::htmltools_value(table)
+        
+      } else if (input$select_asesoria_operativa_sar == "El tiempo de respuesta a los trámites presentados a la SAE") {
+        
+        table <- sar_filtrado() %>% 
+          categorica_2var(categoria_de_participacion_en_el_proyecto_sar, x3_el_tiempo_de_respuesta_a_los_tramites_presentados_a_la_sae_fue, "Tipo de vinculación")
+        flextable::htmltools_value(table)
+        
+      } else if (input$select_asesoria_operativa_sar == "La efectividad de dichos medios de comunicación"){
+        table <- sar_filtrado() %>% 
+        categorica_2var(categoria_de_participacion_en_el_proyecto_sar, x5_la_efectividad_de_dichos_medios_de_comunicacion_fue, "Tipo de vinculación")
+        flextable::htmltools_value(table)
+      } else if(input$select_asesoria_operativa_sar == "El apoyo a la difusión y socialización de los aportes del proyecto"){
+        
+        table <- sar_filtrado() %>% 
+          categorica_2var_escala(categoria_de_participacion_en_el_proyecto_sar, x6_el_apoyo_a_la_difusion_y_socializacion_de_los_aportes_del_proyecto_fue, "Tipo de vinculación")
+        flextable::htmltools_value(table)
+        
+      } else if(input$select_asesoria_operativa_sar == "El apoyo recibido para la atención de contratiempos presentados"){
+        table <- sar_filtrado() %>% 
+          categorica_2var_escala(categoria_de_participacion_en_el_proyecto_sar, x7_el_apoyo_recibido_para_la_atencion_de_contratiempos_presentados_si_aplica_fue, "Tipo de vinculación") 
+        flextable::htmltools_value(table)
+      }  else if(input$select_asesoria_operativa_sar == "El seguimiento realizado por parte de la SAE al proyecto"){
+        table <- sar_filtrado() %>% 
+          categorica_2var_escala(categoria_de_participacion_en_el_proyecto_sar, x8_el_seguimiento_realizado_por_parte_de_la_sae_al_proyecto_fue, "Tipo de vinculación")
+        flextable::htmltools_value(table)
+          
+
+      }
+      
+    })
     
     
     

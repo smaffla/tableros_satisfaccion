@@ -16,6 +16,8 @@ library(tidyverse)
 library(ggrepel)
 library(lubridate)
 library(glue)
+library(flextable)
+library(htmltools)
 
 Sys.setlocale("LC_TIME", "es_ES.utf8")
 
@@ -246,7 +248,9 @@ plot_donas <- function(x, col, titulo = "") {
     xlim(c(20, -10)) +
     theme_void() +
     theme(plot.title.position = "plot",
-          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
+          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252"),
+          plot.background = element_rect(fill = fondo_color, color = "#ecf0f5"),  # Cambia el color del fondo del gráfico
+          panel.background = element_rect(fill = fondo_color, color = "#ecf0f5")) +
     guides(fill = guide_legend(title = "", label.position = "right",
                                label.theme = element_text(size = 18)))
 }
@@ -406,9 +410,9 @@ categorica_2var <- function(x, cat1, cat2, rename, encabezado = NULL, title = NU
   }
   
   # Personalizar el tamaño de las etiquetas de columna
-  colnames(table) <- str_wrap(colnames(table), width = label_width)
+  #colnames(table) <- str_wrap(colnames(table), width = label_width)
   
-  table <- table %>%  styled_dt(title)
+  table <- table %>%  ftable(encabezado, title)
   
   return(table)
 }
@@ -441,7 +445,7 @@ categorica_2var_escala <- function(x, cat1, cat2, rename, encabezado = NULL, tit
     label_width <- 10
   }
   
-  table <- table %>%  ftable(encabezado, title)
+  table <- table %>%  ftable(title)
   
   return(table)
 }
@@ -482,7 +486,7 @@ categorica_vinculacion_modalidad <- function(x, cat1, cat2, rename, encabezado =
     label_width <- 10
   }
   
-  table <- table %>% styled_dt(title)
+  table <- table %>% ftable(title)
   
   return(table)
 }
