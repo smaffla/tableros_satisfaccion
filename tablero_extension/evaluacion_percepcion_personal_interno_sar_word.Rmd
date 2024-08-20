@@ -624,6 +624,14 @@ sar %>%
   categorica_2var_escala(categoria_de_participacion_en_el_proyecto_sar, el_apoyo_para_la_formulacion, "Tipo de vinculación")
 ```
 
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.25)
+
+```
+
 ### Gráfico
 ```{r}
 
@@ -696,6 +704,13 @@ sar %>%
 ```{r}
 sar %>%
   plot_donas(x5_la_efectividad_de_dichos_medios_de_comunicacion_fue)
+```
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.50)
+
 ```
 
 ## El apoyo a la difusión y socialización de los aportes del proyecto
@@ -801,6 +816,13 @@ sar %>%
   categorica_2var_escala(categoria_de_participacion_en_el_proyecto_sar, x11_la_calidad_de_las_respuestas_recibidas_sobre_las_dudas_presentadas_de_tipo_financiero_fueron, "Tipo de vinculación")
 ```
 
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.75)
+
+```
+
 ### Gráfico
 ```{r}
 sar %>%
@@ -872,6 +894,12 @@ sar %>%
   categorica_2var_escala(categoria_de_participacion_en_el_proyecto_sar, x15_la_calidad_de_esos_espacios_fue, "Tipo de vinculación")
 ```
 
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(1)
+
+```
 ### Gráfico
 ```{r}
 sar %>%

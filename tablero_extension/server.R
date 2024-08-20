@@ -5,6 +5,7 @@ server <- function(input, output, session) {
   ## 👥👥 General -----------------------------------------------------------------
 
   todos_los_anios <- 2021:2024
+  todos_los_anios_bene <- 2021:2024
   
   sar_filtrado <- reactive({
     anios_seleccionados <- if (input$select_anio_sar == "all") {
@@ -14,6 +15,19 @@ server <- function(input, output, session) {
     }
     
     sar %>%
+      filter(anodili %in% anios_seleccionados, 
+             # mesdili %in% input$select_mes,
+             autoriza_datos == "Acepto")
+  })
+  
+  beneficiarios_filtrado <- reactive({
+    anios_seleccionados <- if (input$select_anio_bene == "all") {
+      todos_los_anios_bene
+    } else {
+      input$select_anio_bene
+    }
+    
+    beneficiarios %>%
       filter(anodili %in% anios_seleccionados, 
              # mesdili %in% input$select_mes,
              autoriza_datos == "Acepto")
@@ -36,8 +50,15 @@ server <- function(input, output, session) {
   ### Texto introduccion ------------------------------------------------------
   
   output$texto_introduccion_sar <- renderText({
-    paste("En esta página se encuentra el análisis descriptivo de datos, correspondiente a las encuesta de evaluación y percepción dirigida al personal interno del proyecto SAR que se realizó en la Universidad Pedagógica Nacional",
-          "(Cifras actualizadas a ", "27-06-2024",
+    paste("En este apartado se encuentra el análisis descriptivo de datos, correspondiente a las encuesta de evaluación y percepción dirigida al personal interno del proyecto SAR que se realizó en la Universidad Pedagógica Nacional",
+          " (Cifras actualizadas a ", "27-06-2024",
+          #Sys.Date()-1,
+          ").", sep = "")
+  })
+  
+  output$texto_introduccion_beneficiarios <- renderText({
+    paste("En este apartado se encuentra el análisis descriptivo de datos, correspondiente a las encuesta de satisfacción de usuarios que se realizó en la Universidad Pedagógica Nacional",
+          " (Cifras actualizadas a ", "27-06-2024",
           #Sys.Date()-1,
           ").", sep = "")
   })
@@ -50,7 +71,7 @@ server <- function(input, output, session) {
           width = 12,
           splitLayout(
             summaryBox2(
-              title = "Proyecto SAR",
+              title = "Personal interno",
               value = nrow(sar_filtrado() %>% 
                              distinct()),
               style = "info",
@@ -330,10 +351,43 @@ server <- function(input, output, session) {
     })
     
     
+    ##Aspecto Logístico
     
+    ##Gráfico
+    output$plot_aspecto_logistico_sar <- renderPlot({  
+    if (input$select_aspecto_logistico_sar == "La disponibilidad de espacios (físico o virtual) para la ejecución del proyecto"){
+      sar_filtrado() %>%
+        mutate(disponibilidad_de_espacios = factor(x10_los_medios_de_comunicacion_establecidos_para_resolver_dudas_de_tipo_financiero_fueron, levels = c("Suficientes", "Insuficientes"))) %>% 
+        plot_donas(disponibilidad_de_espacios)
+      
+    } else if (input$select_aspecto_logistico_sar == "La calidad de esos espacios"){
+      sar_filtrado() %>%
+        mutate(x15_la_calidad_de_esos_espacios_fue = factor(x15_la_calidad_de_esos_espacios_fue, levels = c("Por mejorar", "Aceptable", "Bueno", "Muy bueno", "Excelente"))) %>% 
+        plot_barras(x15_la_calidad_de_esos_espacios_fue, "", "", "")
+    }
     
+  })
+ 
+   
     
+    output$dt_aspecto_logistico_sar <- renderUI({  
+      if (input$select_aspecto_logistico_sar == "La disponibilidad de espacios (físico o virtual) para la ejecución del proyecto"){
+        table <- sar_filtrado() %>%
+          categorica_2var(categoria_de_participacion_en_el_proyecto_sar, disponibilidad_de_espacios, "Tipo de vinculación")
+        flextable::htmltools_value(table)
+        
+      } else if (input$select_aspecto_logistico_sar == "La calidad de esos espacios"){
+        
+        table <- sar_filtrado() %>%
+          categorica_2var_escala(categoria_de_participacion_en_el_proyecto_sar, x15_la_calidad_de_esos_espacios_fue, "Tipo de vinculación")
+        flextable::htmltools_value(table)
+        
+      }
+      
+    })
+  
     
+  
     ###Satisfacción usuarios proyectos 2023 
     
     output$value_box_beneficiarios <- renderUI({
@@ -342,11 +396,8 @@ server <- function(input, output, session) {
           width = 12,
           splitLayout(
             summaryBox2(
-              title = "Proyectos 2023",
-              value = nrow(beneficiarios %>% 
-                             filter(anodili %in% input$select_anio, 
-                                    #mesdili %in% input$select_mes,
-                                    autoriza_datos == "Acepto") %>%  
+              title = "Beneficiarios",
+              value = nrow(beneficiarios_filtrado() %>%  
                              distinct()),
               style = "success",
               width = 12
@@ -356,12 +407,98 @@ server <- function(input, output, session) {
       )
     })
     
-    #
     
-  
-
+    output$download_doc_beneficiarios <- downloadHandler(
+      filename = "Satisfacción de los beneficiarios de proyectos.docx",
+      content = function(file) {
+        withProgress(message = 'Descargando informe word', {
+          
+          todos_anios <- 2021:2024
+          if (input$select_anio_bene == "all"){
+            params <- list(anio = todos_anios, rendered_by_shiny = TRUE)
+          } else { params <- list(anio = input$select_anio_bene, rendered_by_shiny = TRUE)}
+          
+          
+          rmarkdown::render("satisfaccion_usuarios_proyectos_2023_word.Rmd", output_file = file,
+                            params = params,
+                            envir = new.env(parent = globalenv())
+          )
+        })
+      }
+    )
+    
+    
+    output$download_html_beneficiarios <- downloadHandler(
+      filename = "Satisfacción de los beneficiarios de proyectos.html",
+      content = function(file) {
+        withProgress(message = 'Descargando informe html', {
+          
+          todos_anios <- 2021:2024
+          if (input$select_anio_bene == "all"){
+            params <- list(anio = todos_anios, rendered_by_shiny = TRUE)
+          } else { params <- list(anio = input$select_anio_bene, rendered_by_shiny = TRUE)}
+          
+          
+          rmarkdown::render("satisfaccion_usuarios_proyectos_2023_html.Rmd", output_file = file,
+                            params = params,
+                            envir = new.env(parent = globalenv())
+          )
+        })
+      }
+    )
+    
+    #categorización por identidad de genero
+    output$plot_genero_beneficiarios <- renderPlot({
+      beneficiarios_filtrado() %>% 
+        filter(!is.na(genero)) %>% 
+        mutate(genero = factor(genero, levels = c ("Otro", "Masculino", "Femenino"), ordered = TRUE)) %>% 
+        plot_barras(genero, "", "", "Identidad de género")
+    })
+    
+    output$dt_genero_beneficiarios <- renderDataTable({
+      beneficiarios_filtrado() %>% 
+        filter(!is.na(genero)) %>% 
+        categorica_1var(genero, "Identidad de género")
+    })
+    
+    
+    output$plot_percepcion_actividades_bene <- renderPlot({
+      beneficiarios_filtrado() %>%
+        mutate(percepcion_actividades_realizadas = factor(percepcion_actividades_realizadas, levels = c("Por mejorar", "Aceptables", "Buenas", "Muy buenas", "Excelentes"))) %>%
+        plot_barras(percepcion_actividades_realizadas, "", "", "")
+    })
+    
+    output$plot_objetivo_bene <- renderPlot({
+      beneficiarios_filtrado() %>%
+        mutate(percepcion_actividades_realizadas = factor(x2_considera_que_se_cumplio_el_objetivo_inicialmente_planteado, levels = c("Si", "No"), ordered = TRUE)) %>%
+        plot_donas_as(x2_considera_que_se_cumplio_el_objetivo_inicialmente_planteado)
+    })
+    
+    output$plot_inquietudes_bene <- renderPlot({
+      beneficiarios_filtrado() %>%
+        filter(!is.na(comunico_oportunamente_dichas_inquietudes_al_personal_encargado_para_adoptar_las_medidas_correctivas_correspondientes)) %>% 
+        plot_donas_as(comunico_oportunamente_dichas_inquietudes_al_personal_encargado_para_adoptar_las_medidas_correctivas_correspondientes)
+    })
+    
+    output$plot_mejora_actividades_bene <- renderPlot({
+      beneficiarios_filtrado() %>%
+        plot_donas_as(x3_considera_que_se_pueden_mejorarlas_actividades_planteadas_en_el_proyecto)
+    })
+    
+    output$plot_alternativas_bene <- renderPlot({
+      beneficiarios_filtrado() %>% 
+        filter(!is.na(x4_si_la_respuesta_es_si_cuales_de_las_siguientes_alternativas_propondria)) %>%
+        mutate(x4_si_la_respuesta_es_si_cuales_de_las_siguientes_alternativas_propondria = trimws(x4_si_la_respuesta_es_si_cuales_de_las_siguientes_alternativas_propondria)) %>%
+        mutate(x4_si_la_respuesta_es_si_cuales_de_las_siguientes_alternativas_propondria = factor(x4_si_la_respuesta_es_si_cuales_de_las_siguientes_alternativas_propondria, levels = c("f.	Clases más extensas", "e.	Mayor divulgación de los espacios y de sus resultados", "d.	Comunicación de los contenidos del programa de formación no continuada",  "c.	Fortalecimiento de las herramientas evaluativas", "b. Diversificación del contenido o metodología utilizada", "a.	Mejoramiento de la infraestructura (física y tecnológica) o dotación de la UPN"), ordered = TRUE)) %>%
+        plot_barras(x4_si_la_respuesta_es_si_cuales_de_las_siguientes_alternativas_propondria, "", "", "")
+    })
+    
+    output$plot_aporte_personal_bene <- renderPlot({
+      beneficiarios_filtrado() %>% 
+        plot_barras(x5_el_aporte_personal_que_le_trajo_el_proyecto_fue, "", "", "")
+    })
    
-    
+
     }
     
   

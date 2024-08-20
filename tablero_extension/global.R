@@ -288,6 +288,39 @@ plot_barras <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
   
 }
 
+plot_barras <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
+  col <- enquo(col)
+  
+  data <- x %>%
+    filter(autoriza_datos == "Acepto") %>% 
+    count(!!col )%>% 
+    mutate(perc = percent(n/sum(n), 0.1))
+  
+  if (is.null(top)) {
+    top <- 11
+  }
+  
+  data %>% 
+    arrange(desc(n)) %>% 
+    slice(1:top) %>% 
+    ggplot(aes(x = !!col, 
+               y= n, 
+               fill = !!col, 
+               label = paste(perc,"\n",n," "))) + 
+    geom_col()+
+    geom_text(vjust = 0.5, hjust = -0.1, size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$n)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
+    theme(legend.position="none")+
+    theme(axis.text.y = element_text(size = 14))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 40))+
+    scale_fill_manual(values = colores_plot)+
+    coord_flip()
+  
+}
 ## Función gráfico de barras AGRUPADO para df caracterizacion
 plot_barras_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo = "") {
   col <- enquo(col)
@@ -432,9 +465,10 @@ categorica_2var_escala <- function(x, cat1, cat2, rename, encabezado = NULL, tit
         mutate(!!cat1 := "Total General")
     ) %>% 
     group_by(!!cat1) %>% 
-    pivot_wider(names_from = !!cat2, values_from = n, values_fill = 0) %>%
-    # Obtener las categorías que realmente existen en los datos
-    categorias_existentes <- intersect(orden_categorias, colnames(table))
+    pivot_wider(names_from = !!cat2, values_from = n, values_fill = 0)
+  
+  # Obtener las categorías que realmente existen en los datos
+  categorias_existentes <- intersect(orden_categorias, colnames(table))
   
   # Reordenar columnas solo si existen las categorías
   if (length(categorias_existentes) > 0) {
@@ -450,7 +484,7 @@ categorica_2var_escala <- function(x, cat1, cat2, rename, encabezado = NULL, tit
     label_width <- 10
   }
   
-  table <- table %>%  ftable(title)
+  table <- table %>%  ftable(encabezado, title)
   
   return(table)
 }
