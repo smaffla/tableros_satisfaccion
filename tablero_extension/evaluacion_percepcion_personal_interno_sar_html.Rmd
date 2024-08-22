@@ -551,7 +551,7 @@ La encuesta de evaluación y percepción dirigida al personal interno del proyec
 
 # Tipo de vinculación de los encuestados
 
-En este apartado se muestra la distribución de los encuestados, categorizándolos por el tipo de vinculación que tienen con el proyecto SAR.
+En este apartado se muestra la distribución de los encuestados, categorizándolos por el tipo de vinculación con el proyecto SAR.
 
 ### Tabla
 ```{r}
@@ -569,7 +569,7 @@ sar %>%
 
 # Modalidad de contratación de los encuestados
 
-En este apartado se muestra la distribución de los encuestados en las diferentes modalidades de contratación que tienen en el proyecto SAR.
+En este apartado se muestra la distribución de los encuestados en las diferentes modalidades de contratación en el proyecto SAR.
 
 ### Tabla
 ```{r}

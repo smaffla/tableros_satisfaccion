@@ -584,7 +584,7 @@ dashboardPage(
       
       fluidRow(
         align = "center",
-        HTML("<h2 style = 'color: #00609d'>¿A consideración de los encuestados se cumplió con el objetivo planteado?<strong></strong></h2>"),
+        HTML("<h2 style = 'color: #00609d'><strong>¿A consideración de los encuestados se cumplió con el objetivo planteado?</strong></h2>"),
       ),
       
       br(),
@@ -601,7 +601,7 @@ dashboardPage(
       
       fluidRow(
         align = "center",
-        HTML("<h2 style = 'color: #00609d'>¿Comunicó oportunamente dichas inquietudes al personal encargado para adoptar las medidas correctivas correspondientes?<strong></strong></h2>"),
+        HTML("<h2 style = 'color: #00609d'><strong>¿Comunicó oportunamente dichas inquietudes al personal encargado para adoptar las medidas correctivas correspondientes?</strong></h2>"),
       ),
       
       br(),
@@ -628,7 +628,7 @@ dashboardPage(
       
       fluidRow(
         align = "center",
-        HTML("<h2 style = 'color: #00609d'>¿A consideración del encuestado se pueden mejorar las actividades planteadas en el proyecto?<strong></strong></h2>"),
+        HTML("<h2 style = 'color: #00609d'><strong>¿A consideración del encuestado se pueden mejorar las actividades planteadas en el proyecto?</strong></h2>"),
       ),
       
       br(),
@@ -645,7 +645,7 @@ dashboardPage(
       
       fluidRow(
         align = "center",
-        HTML("<h2 style = 'color: #00609d'>Alternativas propuestas para mejorar las actividades planteadas<strong></strong></h2>"),
+        HTML("<h2 style = 'color: #00609d'><strong>Alternativas propuestas para mejorar las actividades planteadas</strong></h2>"),
       ),
       
       br(),
@@ -662,7 +662,7 @@ dashboardPage(
       
       fluidRow(
         align = "center",
-        HTML("<h2 style = 'color: #00609d'>A consideración de los encuestados el aporte personal que brindó el proyecto fue:<strong></strong></h2>"),
+        HTML("<h2 style = 'color: #00609d'><strong>A consideración de los encuestados el aporte personal que brindó el proyecto fue: </strong></h2>"),
       ),
       
       br(),

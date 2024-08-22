@@ -50,14 +50,14 @@ server <- function(input, output, session) {
   ### Texto introduccion ------------------------------------------------------
   
   output$texto_introduccion_sar <- renderText({
-    paste("En este apartado se encuentra el análisis descriptivo de datos, correspondiente a las encuesta de evaluación y percepción dirigida al personal interno del proyecto SAR que se realizó en la Universidad Pedagógica Nacional",
+    paste("En este apartado se encuentra el análisis descriptivo de datos, correspondiente a la encuesta de evaluación y percepción dirigida al personal interno del proyecto SAR que se realizó en la Universidad Pedagógica Nacional",
           " (Cifras actualizadas a ", "27-06-2024",
           #Sys.Date()-1,
           ").", sep = "")
   })
   
   output$texto_introduccion_beneficiarios <- renderText({
-    paste("En este apartado se encuentra el análisis descriptivo de datos, correspondiente a las encuesta de satisfacción de usuarios que se realizó en la Universidad Pedagógica Nacional",
+    paste("En este apartado se encuentra el análisis descriptivo de datos, correspondiente a la encuesta de satisfacción de usuarios beneficiarios de proyectos que se realizó en la Universidad Pedagógica Nacional",
           " (Cifras actualizadas a ", "27-06-2024",
           #Sys.Date()-1,
           ").", sep = "")
