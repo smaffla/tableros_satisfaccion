@@ -218,6 +218,53 @@ server <- function(input, output, session) {
   #---------------------------------------------------------------------------------------
   # ENCUESTAS 2024
   
+  output$download_doc_calidad_2024 <- downloadHandler(
+    filename = "Encuestas de calidad del servicio (2024) - Subdirección de Admisiones y Registro.docx",
+    content = function(file) {
+      withProgress(message = 'Descargando informe word', {
+        
+        if (input$select_semestre_2024 == "all"){
+          params <- list(semestre = 3, rendered_by_shiny = TRUE)
+        } else if (input$select_semestre_2024 == "20241"){ 
+          params <- list(semestre = 1, rendered_by_shiny = TRUE)
+        } else if (input$select_semestre_2024 == "20242"){
+          params <- list(semestre = 2, rendered_by_shiny = TRUE)
+        }
+        
+        
+        
+        rmarkdown::render("calidad_admision_word.Rmd", output_file = file,
+                          params = params,
+                          envir = new.env(parent = globalenv())
+        )
+      })
+    }
+  )
+  
+  
+  output$download_html_calidad_2024 <- downloadHandler(
+    filename = "Encuestas de calidad del servicio (2024)- Subdirección de Admisiones y Registro.html",
+    content = function(file) {
+      withProgress(message = 'Descargando informe html', {
+        
+        if (input$select_semestre_2024 == "all"){
+          params <- list(semestre = 3, rendered_by_shiny = TRUE)
+        } else if (input$select_semestre_2024 == "20241"){ 
+          params <- list(semestre = 1, rendered_by_shiny = TRUE)
+        } else if (input$select_semestre_2024 == "20242"){
+          params <- list(semestre = 2, rendered_by_shiny = TRUE)
+        }
+        
+        
+        
+        rmarkdown::render("calidad_admision_html.Rmd", output_file = file,
+                          params = params,
+                          envir = new.env(parent = globalenv())
+        )
+      })
+    }
+  )
+  
   output$dt_tipo_de_usuario_2024 <- renderUI({
     table <- calidad_2024_filtrado() %>%
       categorica_1var(tipo_de_usuario, "Tipo de usuario")

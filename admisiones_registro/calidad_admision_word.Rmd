@@ -53,7 +53,7 @@ colores_plot <- c(#"#2171b5",
 calidad_20241 <- read.xlsx("Encuesta de Calidad del Servicio Subdirección de Admisiones y Registro 2024-1(1-324).xlsx")
 
 #Comentar esta línea cuando la encuesta de 2024 - 2 esté disponible
-calidad_2024 <- calidad_20241
+#calidad_2024 <- calidad_20241
 
 #❗❗❗    Descomentar el siguiente trozo de código y ajustarlo como se indica en cuanto esté disponible la encuesta de 2024-2
 
@@ -63,13 +63,13 @@ calidad_2024 <- calidad_20241
 
 #calidad_2024 <- rbind(calidad_20241, calidad_20242)
 
-# calidad_2024 <-  if(params$semestre == 1){
-#   calidad_20241
-# } else if (params$semestre == 2){
-#   calidad_20242
-# } else if (params$semestre == 3){
-#   calidad_2024
-# }
+calidad_2024 <-  if(params$semestre == 1){
+  calidad_20241
+} else if (params$semestre == 2){
+  calidad_20242
+} else if (params$semestre == 3){
+  calidad_2024
+}
 
 ```
 
@@ -548,7 +548,7 @@ if (params$rendered_by_shiny)
 
 ## Facultad
 
-Se muestra la distribución de los encuestados en las diferentes facultados de la UPN.
+Se muestra la distribución de los encuestados en las diferentes facultades de la UPN.
 
 ## Tabla
 ```{r}
@@ -568,7 +568,7 @@ Las preguntas de la encuesta se formularon con el objetivo de evaluar el nivel d
 
 ## Pregunta 1
 
-¿Como califica su experiencia en la Subdirección de Admisiones y Registro?
+¿Cómo califica su experiencia en la Subdirección de Admisiones y Registro?
 
 ```{r}
 calidad_2024 %>%
@@ -586,7 +586,7 @@ if (params$rendered_by_shiny)
 ```
 ## Pregunta 2
 
-El tiempo de respuesta a su solicitud fue oportuna
+El tiempo de respuesta a su solicitud fue oportuna.
 
 ```{r}
 calidad_2024 %>%

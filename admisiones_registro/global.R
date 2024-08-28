@@ -1,6 +1,6 @@
 # Carga de librerias ------------------------------------------------------
 
-library(plotly)
+#library(plotly)
 library(shiny)
 library(shinyWidgets)
 library(shinydashboard)

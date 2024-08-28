@@ -1,3 +1,4 @@
+install.packages("remotes", dependencies =TRUE, Ncpus = 4)
 install.packages('shinyWidgets', version='0.8.6', dependencies=TRUE, Ncpus=4)
 install.packages('shinydashboard', version='0.7.2', dependencies=TRUE, Ncpus=4)
 install.packages('openxlsx', version='4.2.5.2', dependencies=TRUE, Ncpus=4)

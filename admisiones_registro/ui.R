@@ -347,8 +347,8 @@ dashboardPage(
                 h4("Descargar informe descriptivo: "),
                 column(
                   width = 12,
-                  downloadButton('download_doc_admision', "Descargar Word"),
-                  downloadButton('download_html_admision', "Descargar HTML")
+                  downloadButton('download_doc_calidad_2024', "Descargar Word"),
+                  downloadButton('download_html_calidad_2024', "Descargar HTML")
                 )),
             )
           )

@@ -545,7 +545,7 @@ if (params$rendered_by_shiny)
 
 ## Facultad
 
-Se muestra la distribución de los encuestados en las diferentes facultados de la UPN.
+Se muestra la distribución de los encuestados en las diferentes facultades de la UPN.
 
 ## Tabla
 ```{r}
