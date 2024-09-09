@@ -572,10 +572,9 @@ calidad_2024 %>%
 Las preguntas de la encuesta se formularon con el objetivo de evaluar el nivel de satisfacción de la población, con respecto a la atención recibida de parte de la Subdirección.
 
 
-## Pregunta 1
+## ¿Cómo califica su experiencia en la Subdirección de Admisiones y Registro?
 
-¿Cómo califica su experiencia en la Subdirección de Admisiones y Registro?
-
+### Tabla
 ```{r}
 calidad_2024 %>%
   mutate(como_califica_su_experiencia_en_la_subdireccion_de_admisiones_y_registro = factor(como_califica_su_experiencia_en_la_subdireccion_de_admisiones_y_registro, levels = c("Excelente", "Buena", "Regular", "Mala"), ordered = TRUE)) %>%
@@ -583,6 +582,14 @@ calidad_2024 %>%
 
 ```
 
+### Gráfica
+
+```{r}
+calidad_2024 %>%
+  mutate(como_califica_su_experiencia_en_la_subdireccion_de_admisiones_y_registro = factor(como_califica_su_experiencia_en_la_subdireccion_de_admisiones_y_registro, levels = c("Mala", "Regular", "Buena", "Excelente"), ordered = TRUE)) %>%
+  plot_barras(como_califica_su_experiencia_en_la_subdireccion_de_admisiones_y_registro, "", "", "")
+
+```
 
 ```{r}
 
@@ -590,30 +597,58 @@ if (params$rendered_by_shiny)
   shiny::setProgress(0.50)
 
 ```
-## Pregunta 2
+## ¿El tiempo de respuesta a su solicitud fue oportuna?
 
-El tiempo de respuesta a su solicitud fue oportuna
-
+### Tabla
 ```{r}
 calidad_2024 %>%
     categorica_1var(el_tiempo_de_respuesta_a_su_solicitud_fue_oportuna, "Calificación")
 
 ```
 
-## Pregunta 3
+### Gráfica
+
+```{r}
+calidad_2024 %>%
+  mutate(el_tiempo_de_respuesta_a_su_solicitud_fue_oportuna = factor(el_tiempo_de_respuesta_a_su_solicitud_fue_oportuna, levels = c("N/S N/R: No sabe / No Responde", "5. Totalmente de acuerdo", "4. De acuerdo", "3. Indiferente", "2. En desacuerdo", "1. Totalmente en desacuerdo"), ordered = TRUE)) %>%
+  plot_barras(el_tiempo_de_respuesta_a_su_solicitud_fue_oportuna, "", "", "")
+
+```
+
+## ¿El funcionario de la Subdirección de Admisiones y Registro que atendió su solicitud conoce y da a conocer los procedimientos?
 
 El funcionario de la Subdirección de Admisiones y Registro que atendió su solicitud conoce y da a conocer los procedimientos de forma amable, adecuada, clara y oportuna.
+
+### Tabla
 ```{r}
 calidad_2024 %>% 
   categorica_1var(el_funcionario_de_la_subdireccion_de_admisiones_y_registro_que_atendio_su_solicitud_conoce_y_da_a_conocer_los_procedimientos_de_forma_amable_adecuada_clara_y_oportuna, "Calificación")
 ```
 
-## Pregunta 4
+### Gráfica
 
-La atención brindada por la Subdirección de Admisiones y Registro respondió a su requerimiento.
+```{r}
+calidad_2024 %>%
+  mutate(el_funcionario_de_la_subdireccion_de_admisiones_y_registro_que_atendio_su_solicitud_conoce_y_da_a_conocer_los_procedimientos_de_forma_amable_adecuada_clara_y_oportuna = factor(el_funcionario_de_la_subdireccion_de_admisiones_y_registro_que_atendio_su_solicitud_conoce_y_da_a_conocer_los_procedimientos_de_forma_amable_adecuada_clara_y_oportuna, levels = c("N/S N/R: No sabe / No Responde", "5. Totalmente de acuerdo", "4. De acuerdo", "3. Indiferente", "2. En desacuerdo", "1. Totalmente en desacuerdo"), ordered = TRUE)) %>%
+  plot_barras(el_funcionario_de_la_subdireccion_de_admisiones_y_registro_que_atendio_su_solicitud_conoce_y_da_a_conocer_los_procedimientos_de_forma_amable_adecuada_clara_y_oportuna, "", "", "")
+
+```
+
+## ¿La atención brindada por la Subdirección de Admisiones y Registro respondió a su requerimiento?
+
+### Tabla
 ```{r}
 calidad_2024 %>% 
   categorica_1var(la_atencion_brindada_por_la_subdireccion_de_admisiones_y_registro_respondio_a_su_requerimiento, "Calificación")
+```
+
+### Gráfica
+
+```{r}
+calidad_2024 %>%
+  mutate(la_atencion_brindada_por_la_subdireccion_de_admisiones_y_registro_respondio_a_su_requerimiento = factor(la_atencion_brindada_por_la_subdireccion_de_admisiones_y_registro_respondio_a_su_requerimiento, levels = c("N/S N/R: No sabe / No Responde", "5. Totalmente de acuerdo", "4. De acuerdo", "3. Indiferente", "2. En desacuerdo", "1. Totalmente en desacuerdo"), ordered = TRUE)) %>%
+  plot_barras(la_atencion_brindada_por_la_subdireccion_de_admisiones_y_registro_respondio_a_su_requerimiento, "", "", "")
+
 ```
 
 ```{r}
@@ -623,12 +658,21 @@ if (params$rendered_by_shiny)
 
 ```
 
-## Pregunta 5
+## ¿El sitio web institucional de la Subdirección de Admisiones y Registro le permite mantenerse informado sobre temas de su interés?
 
-El sitio web institucional de la Subdirección de Admisiones y Registro le permite mantenerse informado sobre temas de su interés.
+Tabla
 ```{r}
 calidad_2024 %>%
   categorica_1var(el_sitio_web_institucional_de_la_subdireccion_de_admisiones_y_registro_le_permite_mantenerse_informado_sobre_temas_de_su_interes, "Calificación")
+```
+
+### Gráfica
+
+```{r}
+calidad_2024 %>%
+  mutate(el_sitio_web_institucional_de_la_subdireccion_de_admisiones_y_registro_le_permite_mantenerse_informado_sobre_temas_de_su_interes = factor(el_sitio_web_institucional_de_la_subdireccion_de_admisiones_y_registro_le_permite_mantenerse_informado_sobre_temas_de_su_interes, levels = c("N/S N/R: No sabe / No Responde", "5. Totalmente de acuerdo", "4. De acuerdo", "3. Indiferente", "2. En desacuerdo", "1. Totalmente en desacuerdo"), ordered = TRUE)) %>%
+  plot_barras(el_sitio_web_institucional_de_la_subdireccion_de_admisiones_y_registro_le_permite_mantenerse_informado_sobre_temas_de_su_interes, "", "", "")
+
 ```
 
 ```{r}

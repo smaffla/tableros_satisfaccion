@@ -127,7 +127,7 @@ dashboardPage(
         
         fluidRow(
           align = "center",
-          HTML("<h2 style = 'color: #00609d'><strong>Tipo de población</strong></h2>"),
+          HTML("<h3 style = 'color: #00609d'><strong>Tipo de población</strong></h3>"),
         ),
         
         br(),
@@ -185,7 +185,7 @@ dashboardPage(
         
         fluidRow(
           align = "center",
-          HTML("<h2 style = 'color: #00609d'><strong>Pregunta 1: </strong></h2>"),
+          HTML("<h3 style = 'color: #00609d'><strong>¿El sitio web institucional de la Subdirección de Admisiones y Registro le permite mantenerse informado sobre temas de interés?</strong></h3>"),
         ),
         
         br(),
@@ -202,9 +202,12 @@ dashboardPage(
         
         fluidRow(
           column(
-            offset = 1,
-            width = 10,
+            width = 6,
             uiOutput("dt_pregunta_uno") %>% withSpinner(type = 8, size = 0.5)
+          ), 
+          column(
+            width = 6,
+            plotOutput("plot_pregunta_uno") %>% withSpinner(type = 8, size = 0.2)
           )
         ),
         
@@ -212,7 +215,7 @@ dashboardPage(
         
         fluidRow(
           align = "center",
-          HTML("<h2 style = 'color: #00609d'><strong>Pregunta 2: </strong></h2>"),
+          HTML("<h3 style = 'color: #00609d'><strong>¿El funcionario de la Subdirección de Admisiones y Registro que atendió su solicitud conoce y da a conocer los procedimientos?</strong></h3>"),
         ),
         
         br(),
@@ -229,9 +232,12 @@ dashboardPage(
         
         fluidRow(
           column(
-            offset = 1,
-            width = 10,
+            width = 6,
             uiOutput("dt_pregunta_dos") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          column(
+            width = 6,
+            plotOutput("plot_pregunta_dos") %>% withSpinner(type = 8, size = 0.2)
           )
         ),
         
@@ -239,26 +245,20 @@ dashboardPage(
         
         fluidRow(
           align = "center",
-          HTML("<h2 style = 'color: #00609d'><strong>Pregunta 3: </strong></h2>"),
+          HTML("<h3 style = 'color: #00609d'><strong>¿La atención al usuario brindada por la Subdirección de Admisiones y Registro respondió a sus requerimientos?</strong></h3>"),
         ),
         
-        br(),
-        
-        fluidRow(
-          align = "center",
-          div(
-            style = "max-width: 900px; margin: 0 auto;",
-            HTML("<h5 style='color: #393939;'>La atención al usuario brindada por la Subdirección de Admisiones y Registro respondió a sus requerimientos.</h5>")
-          )
-        ),
         
         br(),
         
         fluidRow(
           column(
-            offset = 1,
-            width = 10,
+            width = 6,
             uiOutput("dt_pregunta_tres") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          column(
+            width = 6,
+            plotOutput("plot_pregunta_tres") %>% withSpinner(type = 8, size = 0.2)
           )
         ),
         
@@ -266,26 +266,20 @@ dashboardPage(
         
         fluidRow(
           align = "center",
-          HTML("<h2 style = 'color: #00609d'><strong>Pregunta 4: </strong></h2>"),
+          HTML("<h3 style = 'color: #00609d'><strong>¿El tiempo de respuesta a su solicitud fue oportuna? </strong></h3>"),
         ),
         
-        br(),
-        
-        fluidRow(
-          align = "center",
-          div(
-            style = "max-width: 900px; margin: 0 auto;",
-            HTML("<h5 style='color: #393939;'>El tiempo de respuesta a su solicitud fue oportuna.</h5>")
-          )
-        ),
         
         br(),
         
         fluidRow(
           column(
-            offset = 1,
-            width = 10,
+            width = 6,
             uiOutput("dt_pregunta_cuatro") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          column(
+            width = 6,
+            plotOutput("plot_pregunta_cuatro") %>% withSpinner(type = 8, size = 0.2)
           )
         ),
         
@@ -293,26 +287,19 @@ dashboardPage(
         
         fluidRow(
           align = "center",
-          HTML("<h2 style = 'color: #00609d'><strong>Pregunta 5: </strong></h2>"),
-        ),
-        
-        br(),
-        
-        fluidRow(
-          align = "center",
-          div(
-            style = "max-width: 900px; margin: 0 auto;",
-            HTML("<h5 style='color: #393939;'>¿Cómo califica su experiencia en general en la Subdirección de Admisiones y Registro?</h5>")
-          )
+          HTML("<h3 style = 'color: #00609d'><strong>¿Cómo califica su experiencia en general en la Subdirección de Admisiones y Registro?</strong></h3>"),
         ),
         
         br(),
         
         fluidRow(
           column(
-            offset = 1,
-            width = 10,
+            width = 6,
             uiOutput("dt_pregunta_cinco") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          column(
+            width = 6,
+            plotOutput("plot_pregunta_cinco") %>% withSpinner(type = 8, size = 0.2)
           )
         ),
         
@@ -423,7 +410,7 @@ dashboardPage(
 
         fluidRow(
           align = "center",
-          HTML("<h2 style = 'color: #00609d'><strong>Tipo de población</strong></h2>"),
+          HTML("<h3 style = 'color: #00609d'><strong>Tipo de población</strong></h3>"),
         ),
 
         br(),
@@ -481,26 +468,19 @@ dashboardPage(
 
         fluidRow(
           align = "center",
-          HTML("<h2 style = 'color: #00609d'><strong>Pregunta 1: </strong></h2>"),
-        ),
-
-        br(),
-
-        fluidRow(
-          align = "center",
-          div(
-            style = "max-width: 900px; margin: 0 auto;",
-            HTML("<h5 style='color: #393939;'>¿Como califica su experiencia en la Subdirección de Admisiones y Registro?</h5>")
-          )
+          HTML("<h3 style = 'color: #00609d'><strong>¿Cómo califica su experiencia en la Subdirección de Admisiones y Registro?</strong></h3>"),
         ),
 
         br(),
 
         fluidRow(
           column(
-            offset = 1,
-            width = 10,
+            width = 6,
             uiOutput("dt_pregunta_uno_2024") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          column(
+            width = 6,
+            plotOutput("plot_pregunta_uno_2024") %>% withSpinner(type = 8, size = 0.2)
           )
         ),
 
@@ -508,26 +488,19 @@ dashboardPage(
 
         fluidRow(
           align = "center",
-          HTML("<h2 style = 'color: #00609d'><strong>Pregunta 2: </strong></h2>"),
-        ),
-
-        br(),
-
-        fluidRow(
-          align = "center",
-          div(
-            style = "max-width: 900px; margin: 0 auto;",
-            HTML("<h5 style='color: #393939;'>El tiempo de respuesta a su solicitud fue oportuna</h5>")
-          )
+          HTML("<h3 style = 'color: #00609d'><strong>¿El tiempo de respuesta a su solicitud fue oportuna?</strong></h3>"),
         ),
 
         br(),
 
         fluidRow(
           column(
-            offset = 1,
-            width = 10,
+            width = 6,
             uiOutput("dt_pregunta_dos_2024") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          column(
+            width = 6,
+            plotOutput("plot_pregunta_dos_2024") %>% withSpinner(type = 8, size = 0.2)
           )
         ),
 
@@ -535,26 +508,19 @@ dashboardPage(
 
         fluidRow(
           align = "center",
-          HTML("<h2 style = 'color: #00609d'><strong>Pregunta 3: </strong></h2>"),
-        ),
-
-        br(),
-
-        fluidRow(
-          align = "center",
-          div(
-            style = "max-width: 900px; margin: 0 auto;",
-            HTML("<h5 style='color: #393939;'>El funcionario de la Subdirección de Admisiones y Registro que atendió su solicitud conoce y da a conocer los procedimientos de forma amable, adecuada, clara y oportuna.</h5>")
-          )
+          HTML("<h3 style = 'color: #00609d'><strong>¿El funcionario de la Subdirección de Admisiones y Registro que atendió su solicitud conoce y da a conocer los procedimientos? </strong></h3>"),
         ),
 
         br(),
 
         fluidRow(
           column(
-            offset = 1,
-            width = 10,
+            width = 6,
             uiOutput("dt_pregunta_tres_2024") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          column(
+            width = 6,
+            plotOutput("plot_pregunta_tres_2024") %>% withSpinner(type = 8, size = 0.2)
           )
         ),
 
@@ -562,26 +528,19 @@ dashboardPage(
 
         fluidRow(
           align = "center",
-          HTML("<h2 style = 'color: #00609d'><strong>Pregunta 4: </strong></h2>"),
-        ),
-
-        br(),
-
-        fluidRow(
-          align = "center",
-          div(
-            style = "max-width: 900px; margin: 0 auto;",
-            HTML("<h5 style='color: #393939;'>La atención brindada por la Subdirección de Admisiones y Registro respondió a su requerimiento.</h5>")
-          )
+          HTML("<h3 style = 'color: #00609d'><strong>¿La atención brindada por la Subdirección de Admisiones y Registro respondió a su requerimiento?</strong></h3>"),
         ),
 
         br(),
 
         fluidRow(
           column(
-            offset = 1,
-            width = 10,
+            width = 6,
             uiOutput("dt_pregunta_cuatro_2024") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          column(
+            width = 6,
+            plotOutput("plot_pregunta_cuatro_2024") %>% withSpinner(type = 8, size = 0.2)
           )
         ),
 
@@ -589,26 +548,20 @@ dashboardPage(
 
         fluidRow(
           align = "center",
-          HTML("<h2 style = 'color: #00609d'><strong>Pregunta 5: </strong></h2>"),
+          HTML("<h3 style = 'color: #00609d'><strong>¿El sitio web institucional de la Subdirección de Admisiones y Registro le permite mantenerse informado sobre temas de su interés?</strong></h3>"),
         ),
 
-        br(),
-
-        fluidRow(
-          align = "center",
-          div(
-            style = "max-width: 900px; margin: 0 auto;",
-            HTML("<h5 style='color: #393939;'>El sitio web institucional de la Subdirección de Admisiones y Registro le permite mantenerse informado sobre temas de su interés. </h5>")
-          )
-        ),
 
         br(),
 
         fluidRow(
           column(
-            offset = 1,
-            width = 10,
+            width = 6,
             uiOutput("dt_pregunta_cinco_2024") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          column(
+            width = 6,
+            plotOutput("plot_pregunta_cinco_2024") %>% withSpinner(type = 8, size = 0.2)
           )
         ),
 

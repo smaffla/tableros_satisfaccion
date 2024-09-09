@@ -183,12 +183,24 @@ server <- function(input, output, session) {
     
   })
   
+  output$plot_pregunta_uno <- renderPlot({
+    gar_filtrado() %>% 
+      mutate(el_sitio_web_institucional_de_la_subdireccion_de_admisiones_y_registro_le_permite_mantenerse_informado_sobre_temas_de_interes_relacionados_con_noticias_de_oferta_academica_servicios_en_linea_rec = factor(el_sitio_web_institucional_de_la_subdireccion_de_admisiones_y_registro_le_permite_mantenerse_informado_sobre_temas_de_interes_relacionados_con_noticias_de_oferta_academica_servicios_en_linea_rec, levels = c("N/S N/R: No sabe / No Responde", "5. Totalmente de acuerdo", "4. De acuerdo", "3. Indiferente", "2. En desacuerdo", "1. Totalmente en desacuerdo"), ordered = TRUE)) %>%
+      plot_barras(el_sitio_web_institucional_de_la_subdireccion_de_admisiones_y_registro_le_permite_mantenerse_informado_sobre_temas_de_interes_relacionados_con_noticias_de_oferta_academica_servicios_en_linea_rec, "", "", "")
+  })
+  
   output$dt_pregunta_dos <- renderUI({
     table <- gar_filtrado() %>%
        categorica_1var(el_funcionario_de_la_subdireccion_de_admisiones_y_registro_que_atendio_su_solicitud_conoce_y_da_a_conocer_los_procedimientos_de_forma_amable_adecuada_clara_y_oportuna, "Calificación")
     
     flextable::htmltools_value(table)
     
+  })
+  
+  output$plot_pregunta_dos <- renderPlot({
+    gar_filtrado() %>% 
+      mutate(el_funcionario_de_la_subdireccion_de_admisiones_y_registro_que_atendio_su_solicitud_conoce_y_da_a_conocer_los_procedimientos_de_forma_amable_adecuada_clara_y_oportuna = factor(el_funcionario_de_la_subdireccion_de_admisiones_y_registro_que_atendio_su_solicitud_conoce_y_da_a_conocer_los_procedimientos_de_forma_amable_adecuada_clara_y_oportuna, levels = c("N/S N/R: No sabe / No Responde", "5. Totalmente de acuerdo", "4. De acuerdo", "3. Indiferente", "2. En desacuerdo", "1. Totalmente en desacuerdo"), ordered = TRUE)) %>%
+      plot_barras(el_funcionario_de_la_subdireccion_de_admisiones_y_registro_que_atendio_su_solicitud_conoce_y_da_a_conocer_los_procedimientos_de_forma_amable_adecuada_clara_y_oportuna, "", "", "")
   })
   
   output$dt_pregunta_tres <- renderUI({
@@ -198,12 +210,23 @@ server <- function(input, output, session) {
     
   })
   
+  output$plot_pregunta_tres <- renderPlot({
+    gar_filtrado() %>% 
+      mutate(la_atencion_al_usuario_brindada_por_la_subdireccion_de_admisiones_y_registro_respondio_a_sus_requerimientos = factor(la_atencion_al_usuario_brindada_por_la_subdireccion_de_admisiones_y_registro_respondio_a_sus_requerimientos, levels = c("N/S N/R: No sabe / No Responde", "5. Totalmente de acuerdo", "4. De acuerdo", "3. Indiferente", "2. En desacuerdo", "1. Totalmente en desacuerdo"), ordered = TRUE)) %>%
+      plot_barras(la_atencion_al_usuario_brindada_por_la_subdireccion_de_admisiones_y_registro_respondio_a_sus_requerimientos, "", "", "")
+  })
   
   output$dt_pregunta_cuatro <- renderUI({
     table <- gar_filtrado() %>%
       categorica_1var(el_tiempo_de_respuesta_a_su_solicitud_fue_oportuna, "Calificación")
     flextable::htmltools_value(table)
     
+  })
+  
+  output$plot_pregunta_cuatro <- renderPlot({
+    gar_filtrado() %>% 
+      mutate(el_tiempo_de_respuesta_a_su_solicitud_fue_oportuna = factor(el_tiempo_de_respuesta_a_su_solicitud_fue_oportuna, levels = c("N/S N/R: No sabe / No Responde", "5. Totalmente de acuerdo", "4. De acuerdo", "3. Indiferente", "2. En desacuerdo", "1. Totalmente en desacuerdo"), ordered = TRUE)) %>%
+      plot_barras(el_tiempo_de_respuesta_a_su_solicitud_fue_oportuna, "", "", "")
   })
   
   output$dt_pregunta_cinco <- renderUI({
@@ -214,6 +237,11 @@ server <- function(input, output, session) {
     
   })
   
+  output$plot_pregunta_cinco <- renderPlot({
+    gar_filtrado() %>% 
+      mutate(como_califica_su_experiencia_en_general_en_la_subdireccion_de_admisiones_y_registro = factor(como_califica_su_experiencia_en_general_en_la_subdireccion_de_admisiones_y_registro, levels = c("Mala", "Regular", "Buena", "Excelente"), ordered = TRUE)) %>%
+      plot_barras(como_califica_su_experiencia_en_general_en_la_subdireccion_de_admisiones_y_registro, "", "", "")
+  })
   
   #---------------------------------------------------------------------------------------
   # ENCUESTAS 2024
@@ -300,10 +328,23 @@ server <- function(input, output, session) {
     
   })
   
+  output$plot_pregunta_uno_2024 <- renderPlot({
+   calidad_2024_filtrado() %>% 
+      mutate(como_califica_su_experiencia_en_la_subdireccion_de_admisiones_y_registro = factor(como_califica_su_experiencia_en_la_subdireccion_de_admisiones_y_registro, levels = c("Mala", "Regular", "Buena", "Excelente"), ordered = TRUE)) %>%
+      plot_barras(como_califica_su_experiencia_en_la_subdireccion_de_admisiones_y_registro, "", "", "")
+  })
+  
+  
   output$dt_pregunta_dos_2024 <- renderUI({
     table <- calidad_2024_filtrado() %>%
       categorica_1var(el_tiempo_de_respuesta_a_su_solicitud_fue_oportuna, "Calificación")
     flextable::htmltools_value(table)
+  })
+  
+  output$plot_pregunta_dos_2024 <- renderPlot({
+    calidad_2024_filtrado() %>% 
+      mutate(el_tiempo_de_respuesta_a_su_solicitud_fue_oportuna = factor(el_tiempo_de_respuesta_a_su_solicitud_fue_oportuna, levels = c("N/S N/R: No sabe / No Responde", "5. Totalmente de acuerdo", "4. De acuerdo", "3. Indiferente", "2. En desacuerdo", "1. Totalmente en desacuerdo"), ordered = TRUE)) %>%
+      plot_barras(el_tiempo_de_respuesta_a_su_solicitud_fue_oportuna, "", "", "")
   })
   
   output$dt_pregunta_tres_2024 <- renderUI({
@@ -313,6 +354,11 @@ server <- function(input, output, session) {
     
   })
   
+  output$plot_pregunta_tres_2024 <- renderPlot({
+    calidad_2024_filtrado() %>% 
+      mutate(el_funcionario_de_la_subdireccion_de_admisiones_y_registro_que_atendio_su_solicitud_conoce_y_da_a_conocer_los_procedimientos_de_forma_amable_adecuada_clara_y_oportuna = factor(el_funcionario_de_la_subdireccion_de_admisiones_y_registro_que_atendio_su_solicitud_conoce_y_da_a_conocer_los_procedimientos_de_forma_amable_adecuada_clara_y_oportuna, levels = c("N/S N/R: No sabe / No Responde", "5. Totalmente de acuerdo", "4. De acuerdo", "3. Indiferente", "2. En desacuerdo", "1. Totalmente en desacuerdo"), ordered = TRUE)) %>%
+      plot_barras(el_funcionario_de_la_subdireccion_de_admisiones_y_registro_que_atendio_su_solicitud_conoce_y_da_a_conocer_los_procedimientos_de_forma_amable_adecuada_clara_y_oportuna, "", "", "")
+  })
   
   output$dt_pregunta_cuatro_2024 <- renderUI({
     table <- calidad_2024_filtrado() %>%
@@ -321,11 +367,23 @@ server <- function(input, output, session) {
     
   })
   
+  output$plot_pregunta_cuatro_2024 <- renderPlot({
+    calidad_2024_filtrado() %>% 
+      mutate(la_atencion_brindada_por_la_subdireccion_de_admisiones_y_registro_respondio_a_su_requerimiento = factor(el_funcionario_de_la_subdireccion_de_admisiones_y_registro_que_atendio_su_solicitud_conoce_y_da_a_conocer_los_procedimientos_de_forma_amable_adecuada_clara_y_oportuna, levels = c("N/S N/R: No sabe / No Responde", "5. Totalmente de acuerdo", "4. De acuerdo", "3. Indiferente", "2. En desacuerdo", "1. Totalmente en desacuerdo"), ordered = TRUE)) %>%
+      plot_barras(la_atencion_brindada_por_la_subdireccion_de_admisiones_y_registro_respondio_a_su_requerimiento, "", "", "")
+  })
+  
   output$dt_pregunta_cinco_2024 <- renderUI({
     table <- calidad_2024_filtrado() %>%
       categorica_1var(el_sitio_web_institucional_de_la_subdireccion_de_admisiones_y_registro_le_permite_mantenerse_informado_sobre_temas_de_su_interes, "Calificación")
     flextable::htmltools_value(table)
     
+  })
+  
+  output$plot_pregunta_cinco_2024 <- renderPlot({
+    calidad_2024_filtrado() %>% 
+      mutate(el_sitio_web_institucional_de_la_subdireccion_de_admisiones_y_registro_le_permite_mantenerse_informado_sobre_temas_de_su_interes = factor(el_sitio_web_institucional_de_la_subdireccion_de_admisiones_y_registro_le_permite_mantenerse_informado_sobre_temas_de_su_interes, levels = c("N/S N/R: No sabe / No Responde", "5. Totalmente de acuerdo", "4. De acuerdo", "3. Indiferente", "2. En desacuerdo", "1. Totalmente en desacuerdo"), ordered = TRUE)) %>%
+      plot_barras(el_sitio_web_institucional_de_la_subdireccion_de_admisiones_y_registro_le_permite_mantenerse_informado_sobre_temas_de_su_interes, "", "", "")
   })
   
 #------------------------------------------------------------------
