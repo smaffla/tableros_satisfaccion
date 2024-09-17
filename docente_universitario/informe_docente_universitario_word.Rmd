@@ -1,5 +1,5 @@
 ---
-title: "Encuestas de calidad del servicio - Subdirección de Admisiones y Registro"
+title: "ENCUESTA DE SATISFACCIÓN DIRIGIDA A BENEFICIARIOS DE PROYECTOS 2023"
 author: "Oficina de Desarrollo y Planeación"
 output:
   word_document:
@@ -14,7 +14,6 @@ output:
 params:
   mes: NA
   anio: NA
-  semestre: NA
   rendered_by_shiny: no
 subtitle: Universidad Pedagógica Nacional
 editor_options:
@@ -50,27 +49,7 @@ colores_plot <- c(#"#2171b5",
                                               "#fe9929","#ec7014")
 
 
-calidad_20241 <- read.xlsx("Encuesta de Calidad del Servicio Subdirección de Admisiones y Registro 2024-1(1-324).xlsx")
-
-#Comentar esta línea cuando la encuesta de 2024 - 2 esté disponible
-#calidad_2024 <- calidad_20241
-
-#❗❗❗    Descomentar el siguiente trozo de código y ajustarlo como se indica en cuanto esté disponible la encuesta de 2024-2
-
-
-###Variables para lectura de la encuesta del semestre 2024 - 2 cuando esté disponible 
-#calidad_20242 <- read.xlsx("Encuesta 2024 - 2 (Añada aquí nombre del archivo")
-
-#calidad_2024 <- rbind(calidad_20241, calidad_20242)
-
-calidad_2024 <-  if(params$semestre == 1){
-  calidad_20241
-} else if (params$semestre == 2){
-  calidad_20242
-} else if (params$semestre == 3){
-  calidad_2024
-}
-
+beneficiarios <- read.xlsx("ENCUESTA DE SATISFACCIÓN DIRIGIDA A BENEFICIAROS DE PROYECTOS 2023.xlsx")
 ```
 
 ```{r}
@@ -158,13 +137,12 @@ plot_donas <- function(x, col, titulo = "") {
                                label.theme = element_text(size = 18)))
 }
 
-
 ## Función gráfico de barras para df caracterizacion
 plot_barras <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
   col <- enquo(col)
   
   data <- x %>%
-    #filter(autoriza_datos == "Acepto") %>% 
+    filter(autoriza_datos == "Acepto") %>% 
     count(!!col )%>% 
     mutate(perc = percent(n/sum(n), 0.1))
   
@@ -276,7 +254,7 @@ categorica_1var <- function(x, cat1, rename, encabezado = NULL, title = NULL, wr
     }
   
   table <- x %>% 
-    #filter(autoriza_datos == "Acepto") %>% 
+    filter(autoriza_datos == "Acepto") %>% 
     count(!!cat1) %>% 
     adorn_totals(where = "row", name = "Total General") %>%
     rename('{rename}' := !!cat1, "Cantidad" = n) %>% 
@@ -459,86 +437,108 @@ tabla_prom <- function(x, col, rename, encabezado = NULL, title = NULL, wrap_wid
 ```
 
 ```{r}
-
-calidad_2024 <- calidad_2024 %>% 
+beneficiarios <- beneficiarios %>% 
   distinct()
 
-
-calidad_2024 <- calidad_2024 %>% 
+beneficiarios <- beneficiarios %>% 
   clean_names()
 
-calidad_2024 <- calidad_2024 %>% 
+beneficiarios <- beneficiarios %>% 
+  rename(autoriza_datos = autorizacion_tratamiento_de_datos_personales_declaro_que_he_sido_informado_por_la_universidad_pedagogica_nacional_en_adelante_la_upn_identificada_con_nit_899_999_124_4_con_domicilio_en_la_c)
+
+beneficiarios <- beneficiarios %>% 
   mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
   mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
          mesdili = str_to_title(mesdili)) %>% 
   mutate(anodili = year(hora_de_finalizacion))
 
-calidad_2024 <- calidad_2024 %>% 
-  rename(tipo_de_usuario = por_favor_seleccione_segun_corresponda)
 
-calidad_2024 <- calidad_2024 %>% 
-  rename(facultad =  por_favor_seleccione_su_facultad_segun_corresponda)
+beneficiarios <- beneficiarios %>% 
+  rename(percepcion_actividades_realizadas = selecciones_una_opcion_en_cada_una_de_las_siguientes_preguntas_como_le_parecieron_las_actividades_desarrolladas_en_el_marco_del_proyecto)
 
-calidad_2024 <- calidad_2024 %>% 
-  mutate(facultad = recode(facultad,
-                           "FFacultad de Humanidades" = "Facultad de Humanidades"))
- # gar<- gar%>%
- #   filter(anodili %in% params$anio)
+beneficiarios <- beneficiarios %>%
+  mutate(percepcion_actividades_realizadas = if_else(percepcion_actividades_realizadas == "Buenas ", "Buenas", percepcion_actividades_realizadas))
+
+ beneficiarios <- beneficiarios %>%
+   filter(anodili %in% params$anio)
 ```
 
+
+```{r}
+categorias_a_unificar <- list(
+  "SAR 20224" = c("SAR 20224 Escuela de Natación UPN", "SAR20224", "SAR2024", "SAR 2024"),
+  "Escuela de Natación" = c("SAR 20224 Escuela de Natación UPN", "SAR20224", "SAR2024", "SAR 2024", "Escuela de Natación", "NATACION", "Natacion nivel 4", "Curso de natación", "Curso de natacion", "Curso de Natación.", "Curso natación", "Curso de natación "),
+  "Diplomado en Pedagogía para las Artes Escénicas" = c("Diplomado en pedagogía para las artes escenicas", "Diplomado en Pedagogía para las Artes Escénicas", "Diplomado en pedagogía para las artes escénicas 11723", "Diplomado en Pedagogía para las Artes Escénicas 11723", "Diplomado en pedagogía para las artes escénicas Código 11723"),
+  "Acompañamiento a la Educación Media del Siglo XXI" = c("Acompañamiento a la educación media del siglo XXI", "Acompañamiento a la educación media del siglo XXI - SAR 10621", "Acompañamiento a la educación media del siglo XXI  SAR10621", "Acompañamiento a la educación media para el sXXI SAR10621", "Código: SAR10621  Acompañamiento a la educación media del siglo XXI"),
+  "Cátedra de Estudios Afrocolombianos" = c("Catedra de Estudios Afrocolombianos", "CÁTEDRA DE ESTUDIOS AFROCOLOMBIANOS", "Cátedra de estudios afrocolombianos con énfasis en la comunidad palenquera"),
+  "Contrato Interadministrativo CD-CI-126-2023" = c("Contrato Inter administrativo para realizar el diplomado en artes en primera infancia denominado - Identidad, territorio y patrimonio. No CD-CI-126-2023", "Contrato interadministrativo  para realizar el diplomado en artes en primera infancia denominado -identidad, territorio y patrimonio .No CD-CI-126 -2023", "Contrato interadministrativo  para realizar el diplomado en artes en primera infancia denominado-identidad territorio y patrimonio No CD-CI-126-2023", "Contrato interadministrativo para realizar el diplomado en artes en primera infancia  denominado identidad territor CD CIio y p No.atrimonio 126 2023", "Contrato interadministrativo para realizar el diplomado en artes en primera infancia denominado - identidad, territorio y patrimonio -. No. CD - CI -126- 2023", "Contrato Interadministrativo para realizar el diplomado en artes en primera infancia denominado -identidad, territorio y patrimonio- No. CD-CI-126-2023", "Contrato Interadministrativo para realizar el diplomado en artes en primera infancia denominado -Identidad, Territorio y Patrimonio-. No. CD-CI-126-2023", "Contrato interadministrativo para realizar el diplomado en artes en primera infancia denominado-identidad territorio y patrimonio - No. CD-CI-126-2023"),
+  "Convenio 645 ART-UPN" = c("Convenio  645 ART  UPN", "Convenio 645 ART - UPN", "Convenio 645 ART- UPN", "Convenio 645 de la ART/ UPN"),
+  "Diplomado en Lengua de Señas Colombiana y Enseñanza de Personas Sordas" = c("Diplomado en lengua de señas colombiana y enseñanza de personas sordas", "Diplomado en Lengua de señas Colombiana y enseñanza de personas Sordas", 'Diplomado "Lengua de señas colombiana y enseñanza de personas sordas"', "Diplomado en Lengua de Señas Colombiana y enseñanza de personas sordas", "Diplomado de lengua de señas colombiana y enseñanza de personas Sordas", "Diplomado en lengua de señas", "Diplomado en Lengua de Señas Colombiana", "Diplomado en lengua de señas colombiana y enseñanza a personas sordas", "Diplomado en Lengua de Señas Colombiana y Enseñanza de Sordos", "Diplomado en lengua de señas y enseñanza para personas sordas.", "Diplomado en lengua dexseñas colombiana y enseñanza para personas sordas", "Diplomado lengua de señas y educación de personas sordas", "Diplomado lengua de señas y educación de personas Sordas - SED", "proyecto  SAR Diplomado de Lengua  de Señas  Colombiana y enseñanza de personas sordas."),
+  "Escuela de Deportes Acuáticos" = c("Escuela de deportes acuáticos", "Escuela de deportes acuaticos 20522", "Escuela de deportes acuaticós 20522", "Escuela de deportes acuáticos 20522", "Escuela de deportes acuáticos N° 20522", "Escuela Deportes Acuáticos", "Escuela Deportes Acuáticos 20522", "Escuela Deportes Acuáticos 20522"),
+    "Maestría en Investigación Social" = c("Maestría en Investigación Social", "Maestria en investigacion social", "Maestría Investigación Social", "Maestría en investigacion social"),
+  "Doctorado en Educación" = c("Doctorado en educación", "Doctorado en Educación", "Doctorado en Educación y Cultura"),
+  "Curso de Actualización en Estudios Afrocolombianos" = c("Curso de actualización en estudios afrocolombianos", "Curso actualización estudios afrocolombianos", "Curso de actualización en Estudios Afrocolombianos", "Curso de Actualización Estudios Afrocolombianos"),
+  "Licenciatura en Educación Especial" = c("Licenciatura en Educación Especial", "Licenciatura en educacion especial", "Licenciatura Educación Especial", "Licenciatura en educación especial"),
+  "Diplomado en Didáctica del Inglés" = c("Diplomado en Didáctica del Inglés", "Diplomado en didactica del ingles", "Diplomado en didáctica del inglés"),
+  "Investigación en Primera Infancia" = c("Investigación en primera infancia", "Investigación en Primera Infancia", "Investigación en la primera infancia"),
+  "Especialización en Educación Infantil" = c("Especialización en educación infantil", "Especialización en Educación Infantil", "Especialización en educacion infantil"),
+  "Escuela de Liderazgo para la Transformación" = c("Escuela de liderazgo para la transformación", "Escuela de Liderazgo para la Transformación", "Escuela Liderazgo Transformación"),
+  "Programa de Formación para la Convivencia" = c("Programa de formación para la convivencia", "Programa de Formación para la Convivencia", "Programa Formación Convivencia"),
+  "Semillero de Investigación en Educación Inclusiva" = c("Semillero de investigación en educación inclusiva", "Semillero de Investigación en Educación Inclusiva", "Semillero Investigación Inclusiva"),
+  "Curso de Formación Docente en TICs" = c("Curso de formación docente en TICs", "Curso de Formación Docente en TICs", "Curso TICs para docentes"),
+  "Diplomado en Gestión Educativa" = c("Diplomado en gestión educativa", "Diplomado en Gestión Educativa", "Diplomado Gestión Educativa"),
+  "Especialización en Tecnologías de la Información" = c("Especialización en tecnologías de la información", "Especialización en Tecnologías de la Información", "Especialización en tecnologías de información"),
+  "Maestría en Estudios de la Infancia" = c("Maestría en estudios de la infancia", "Maestría en Estudios de la Infancia", "Maestría Estudios Infancia"),
+  "Taller Literario: El Lenguaje Secreto" = c("Taller del lenguaje secreto", "", "Taller del lenguaje secreto", "Taller El Lenguaje Secreto", "Taller Literario: El Lenguaje Secreto", "El lenguaje secreto", "el lenguaje secreto", "Taller Literario: El Lenguaje Secreto.", "Taller Literario: ", "Taller Literario")
+  )
+
+
+beneficiarios <- beneficiarios %>%
+  mutate(nombre_y_codigo_del_proyecto = trimws(nombre_y_codigo_del_proyecto)) %>% 
+  mutate(nombre_y_codigo_del_proyecto = fct_collapse(nombre_y_codigo_del_proyecto, !!!categorias_a_unificar))
+
+
+nombres_a_eliminar <- c("Edwin Rodríguez", "Eliana Paola Varela Barreto", "Liliana Barragan", "Luis Alejandro Moreno Ladino", "Marly Quintero López", "Angela Rocio Guayacundo Tibaquira", "Antonia Forero Pataquiva", "Claudia Milena Muñoz Herrán", "Claudia Patricia Rodríguez", "Constanza Pataquiva", "Derly Vanessa Acosta García", "Ingrid nataly hernandez yazo", "Isblenia Guarin Martinez", "Kely Johanna Hernández Sánchez", "Laura Lizeth Ramos Huertas", "Leidy Llined Triana Rivera", "Lorena Alexandra Carrillo Herrera", "Luisa Fernanda Sanchez Camargo", "Magda Lucero Hernández Villalba", "Maria Liliana Pinilla Avendaño", "María Marlen Rodríguez Rodriguez", "Nancy Lorena Castro González", "Nancy Paola Zapata Medina", "Sandra Milena Gómez Romero", "Sandra Yolanda Gómez Panqueva", "Soraida Castañeda Ortega")
+
+beneficiarios <- beneficiarios %>%
+  filter(!nombre_y_codigo_del_proyecto %in% nombres_a_eliminar)
+```
 
 <!-- Eliminamos duplicados -->
 
 ```{r}
 
-# gar <- gar[!duplicated(gar[c("correo_electronico")]), ]
-# 
-# duplicados <- gar[duplicated(gar$correo_electronico), ]
-# 
-# print(duplicados)
-```
-
-```{r}
-texto <-if (params$semestre == 1) {
-  "en el primer semestre del año 2024 (2024 - I)"
-} else if (params$semestre == 2){
-  "en el segundo semestre del año 2024 (2024 - II)"
-} else if (params$semestre == 3){
-  "en el primer y segundo semestre del año 2024 (2024 - I & II)"
-}
-
+beneficiarios <- beneficiarios[!duplicated(beneficiarios[c("nombre_del_encuestado_a", "fecha_diligenciamiento", "nombre_y_codigo_del_proyecto")]), ]
 
 ```
 
 
 ```{r}
-total <- calidad_2024 %>% count() %>% pull() 
+total_autoriza <- beneficiarios %>% filter(autoriza_datos == "Acepto") %>% count() %>% pull()
+total <- beneficiarios %>% count() %>% pull() 
 ```
 
 
-El siguiente informe de la encuesta realizada por parte de la Subdirección de Admisiones y Registro realizadas **`r texto`**  fue respondida por **`r total`** personas, esta encuesta se realiza para analizar y evaluar la efectividad de las estrategias, identificar tendencias y tomar decisiones informadas.
+La encuesta de satisfacción dirigida a los beneficiarios de proectos 2023 fue respondida por **`r total`** personas, de las cuales **`r total_autoriza`** dieron su autorización para el uso de sus datos en este análisis estadístico.
 
+# Identidad de género
 
-# Tipo de población
-
-La población que se acerca a la Subdirección de Admisiones y Registro para solicitar algún servicio o información se categoriza según el tipo de usuario y la facultad de la universidad a la que pertenece.
-
-## Tipo de usuario
+En este apartado se muestra la distribución del personal interno del proyecto SAR, categorizados por el género con el que se identifican.
 
 ### Tabla
 ```{r}
-
-calidad_2024 %>% 
-  #mutate(tipo_de_usuario = factor(tipo_de_usuario, levels = c ("Estudiante de pregrado", "Estudiante de posgrado", "Egresado de pregrado", "Egresado de posgrado", "Usuario externo", "Otro"), ordered = TRUE)) %>% 
-  categorica_1var(tipo_de_usuario, "Tipo de usuario")
+beneficiarios %>% 
+  filter(!is.na(genero)) %>% 
+  categorica_1var(genero, "Identidad de género")
 ```
 
 ### Gráfica
 ```{r}
-calidad_2024 %>%
-  plot_barras(tipo_de_usuario, "", "", "Tipo de usuario")
+beneficiarios %>% 
+  filter(!is.na(genero)) %>% 
+  mutate(genero = factor(genero, levels = c ("Otro", "Masculino", "Femenino"), ordered = TRUE)) %>% 
+  plot_barras(genero, "", "", "Identidad de género")
 ```
-
 
 ```{r}
 
@@ -547,43 +547,24 @@ if (params$rendered_by_shiny)
 
 ```
 
-## Facultad
+# Calificación y/o aporte por criterio de evaluación
 
-Se muestra la distribución de los encuestados en las diferentes facultades de la UPN.
+En este apartado se muestran diferentes aspectos evaluados por los beneficiarios que respondieron la encuesta de satisfacción.
 
-## Tabla
+## Percepción de los encuestados frente a las actividades desarrolladas en el marco del proyecto
+
 ```{r}
-calidad_2024 %>% 
-  categorica_1var(facultad, "Facultad a la que pertenece")
+beneficiarios %>%
+  mutate(percepcion_actividades_realizadas = factor(percepcion_actividades_realizadas, levels = c("Por mejorar", "Aceptables", "Buenas", "Muy buenas", "Excelentes"))) %>%
+  plot_barras(percepcion_actividades_realizadas, "", "", "")
 ```
 
-## Gráfica
 
+## ¿A consideración de los encuestados se cumplió con el objetivo planteado?
 ```{r}
-calidad_2024 %>%
-  plot_barras(facultad, "", "", "Facultad")
-```
-
-Las preguntas de la encuesta se formularon con el objetivo de evaluar el nivel de satisfacción de la población, con respecto a la atención recibida de parte de la Subdirección.
-
-
-## ¿Cómo califica su experiencia en la Subdirección de Admisiones y Registro?
-
-### Tabla
-```{r}
-calidad_2024 %>%
-  mutate(como_califica_su_experiencia_en_la_subdireccion_de_admisiones_y_registro = factor(como_califica_su_experiencia_en_la_subdireccion_de_admisiones_y_registro, levels = c("Excelente", "Buena", "Regular", "Mala"), ordered = TRUE)) %>%
-  categorica_1var(como_califica_su_experiencia_en_la_subdireccion_de_admisiones_y_registro, "Nombre")
-
-```
-
-### Gráfica
-
-```{r}
-calidad_2024 %>%
-  mutate(como_califica_su_experiencia_en_la_subdireccion_de_admisiones_y_registro = factor(como_califica_su_experiencia_en_la_subdireccion_de_admisiones_y_registro, levels = c("Mala", "Regular", "Buena", "Excelente"), ordered = TRUE)) %>%
-  plot_barras(como_califica_su_experiencia_en_la_subdireccion_de_admisiones_y_registro, "", "", "")
-
+beneficiarios %>%
+  mutate(percepcion_actividades_realizadas = factor(x2_considera_que_se_cumplio_el_objetivo_inicialmente_planteado, levels = c("Si", "No"), ordered = TRUE)) %>%
+  plot_donas_as(x2_considera_que_se_cumplio_el_objetivo_inicialmente_planteado)
 ```
 
 ```{r}
@@ -592,57 +573,31 @@ if (params$rendered_by_shiny)
   shiny::setProgress(0.50)
 
 ```
-## ¿El tiempo de respuesta a su solicitud fue oportuna?
+### En caso de que a percepción suya no se hayan cumplido dichos objetivos, ¿comunicó oportunamente dichas inquietudes al personal encargado para adoptar las medidas correctivas correspondientes?
 
-### Tabla
+Esta pregunta fue contestada solo por los encuestados que respondieron "No" a la pregunta "¿se cumplió con el objetivo planteado?"
+
 ```{r}
-calidad_2024 %>%
-    categorica_1var(el_tiempo_de_respuesta_a_su_solicitud_fue_oportuna, "Calificación")
-
+beneficiarios %>%
+  filter(!is.na(comunico_oportunamente_dichas_inquietudes_al_personal_encargado_para_adoptar_las_medidas_correctivas_correspondientes)) %>% 
+  plot_donas_as(comunico_oportunamente_dichas_inquietudes_al_personal_encargado_para_adoptar_las_medidas_correctivas_correspondientes)
 ```
 
-### Gráfica
+## ¿A consideración del encuestado se pueden mejorar las actividades planteadas en el proyecto?
 
 ```{r}
-calidad_2024 %>%
-  mutate(el_tiempo_de_respuesta_a_su_solicitud_fue_oportuna = factor(el_tiempo_de_respuesta_a_su_solicitud_fue_oportuna, levels = c("N/S N/R: No sabe / No Responde", "5. Totalmente de acuerdo", "4. De acuerdo", "3. Indiferente", "2. En desacuerdo", "1. Totalmente en desacuerdo"), ordered = TRUE)) %>%
-  plot_barras(el_tiempo_de_respuesta_a_su_solicitud_fue_oportuna, "", "", "")
-
+beneficiarios %>% 
+  plot_donas_as(x3_considera_que_se_pueden_mejorarlas_actividades_planteadas_en_el_proyecto)
 ```
 
-## ¿El funcionario de la Subdirección de Admisiones y Registro que atendió su solicitud conoce y da a conocer los procedimientos?
-
-El funcionario de la Subdirección de Admisiones y Registro que atendió su solicitud conoce y da a conocer los procedimientos de forma amable, adecuada, clara y oportuna.
-
-### Tabla
-```{r}
-calidad_2024 %>% 
-  categorica_1var(el_funcionario_de_la_subdireccion_de_admisiones_y_registro_que_atendio_su_solicitud_conoce_y_da_a_conocer_los_procedimientos_de_forma_amable_adecuada_clara_y_oportuna, "Calificación")
-```
-
-### Gráfica
+### Alternativas propuestas para mejorar las actividades planteadas
 
 ```{r}
-calidad_2024 %>%
-  mutate(el_funcionario_de_la_subdireccion_de_admisiones_y_registro_que_atendio_su_solicitud_conoce_y_da_a_conocer_los_procedimientos_de_forma_amable_adecuada_clara_y_oportuna = factor(el_funcionario_de_la_subdireccion_de_admisiones_y_registro_que_atendio_su_solicitud_conoce_y_da_a_conocer_los_procedimientos_de_forma_amable_adecuada_clara_y_oportuna, levels = c("N/S N/R: No sabe / No Responde", "5. Totalmente de acuerdo", "4. De acuerdo", "3. Indiferente", "2. En desacuerdo", "1. Totalmente en desacuerdo"), ordered = TRUE)) %>%
-  plot_barras(el_funcionario_de_la_subdireccion_de_admisiones_y_registro_que_atendio_su_solicitud_conoce_y_da_a_conocer_los_procedimientos_de_forma_amable_adecuada_clara_y_oportuna, "", "", "")
-
-```
-
-## ¿La atención brindada por la Subdirección de Admisiones y Registro respondió a su requerimiento?
-
-### Tabla
-```{r}
-calidad_2024 %>% 
-  categorica_1var(la_atencion_brindada_por_la_subdireccion_de_admisiones_y_registro_respondio_a_su_requerimiento, "Calificación")
-```
-
-### Gráfica
-
-```{r}
-calidad_2024 %>%
-  mutate(la_atencion_brindada_por_la_subdireccion_de_admisiones_y_registro_respondio_a_su_requerimiento = factor(la_atencion_brindada_por_la_subdireccion_de_admisiones_y_registro_respondio_a_su_requerimiento, levels = c("N/S N/R: No sabe / No Responde", "5. Totalmente de acuerdo", "4. De acuerdo", "3. Indiferente", "2. En desacuerdo", "1. Totalmente en desacuerdo"), ordered = TRUE)) %>%
-  plot_barras(la_atencion_brindada_por_la_subdireccion_de_admisiones_y_registro_respondio_a_su_requerimiento, "", "", "")
+beneficiarios %>%
+  filter(!is.na(x4_si_la_respuesta_es_si_cuales_de_las_siguientes_alternativas_propondria)) %>%
+  mutate(x4_si_la_respuesta_es_si_cuales_de_las_siguientes_alternativas_propondria = trimws(x4_si_la_respuesta_es_si_cuales_de_las_siguientes_alternativas_propondria)) %>%
+  mutate(x4_si_la_respuesta_es_si_cuales_de_las_siguientes_alternativas_propondria = factor(x4_si_la_respuesta_es_si_cuales_de_las_siguientes_alternativas_propondria, levels = c("f.	Clases más extensas", "e.	Mayor divulgación de los espacios y de sus resultados", "d.	Comunicación de los contenidos del programa de formación no continuada",  "c.	Fortalecimiento de las herramientas evaluativas", "b. Diversificación del contenido o metodología utilizada", "a.	Mejoramiento de la infraestructura (física y tecnológica) o dotación de la UPN"), ordered = TRUE)) %>%
+  plot_barras(x4_si_la_respuesta_es_si_cuales_de_las_siguientes_alternativas_propondria, "", "", "")
 
 ```
 
@@ -653,21 +608,11 @@ if (params$rendered_by_shiny)
 
 ```
 
-## ¿El sitio web institucional de la Subdirección de Admisiones y Registro le permite mantenerse informado sobre temas de su interés?
-
-Tabla
-```{r}
-calidad_2024 %>%
-  categorica_1var(el_sitio_web_institucional_de_la_subdireccion_de_admisiones_y_registro_le_permite_mantenerse_informado_sobre_temas_de_su_interes, "Calificación")
-```
-
-### Gráfica
+## A consideración de los encuestados el aporte personal que brindó el proyecto fue:
 
 ```{r}
-calidad_2024 %>%
-  mutate(el_sitio_web_institucional_de_la_subdireccion_de_admisiones_y_registro_le_permite_mantenerse_informado_sobre_temas_de_su_interes = factor(el_sitio_web_institucional_de_la_subdireccion_de_admisiones_y_registro_le_permite_mantenerse_informado_sobre_temas_de_su_interes, levels = c("N/S N/R: No sabe / No Responde", "5. Totalmente de acuerdo", "4. De acuerdo", "3. Indiferente", "2. En desacuerdo", "1. Totalmente en desacuerdo"), ordered = TRUE)) %>%
-  plot_barras(el_sitio_web_institucional_de_la_subdireccion_de_admisiones_y_registro_le_permite_mantenerse_informado_sobre_temas_de_su_interes, "", "", "")
-
+beneficiarios %>% 
+  plot_barras(x5_el_aporte_personal_que_le_trajo_el_proyecto_fue, "", "", "")
 ```
 
 ```{r}
@@ -676,3 +621,4 @@ if (params$rendered_by_shiny)
   shiny::setProgress(1)
 
 ```
+

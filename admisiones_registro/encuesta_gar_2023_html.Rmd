@@ -99,6 +99,7 @@ ftable <- function(x, encabezado = NULL, title = NULL) {
     
 }
 
+
 plot_donas_as <- function(x, col, titulo = "") {
   
   col <- enquo(col)

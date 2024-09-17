@@ -313,6 +313,7 @@ categorica_2var <- function(x, cat1, cat2, rename, encabezado = NULL, title = NU
   return(table)
 }
 
+
 categorica_2var_escala <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
   cat1 <- enquo(cat1)
   cat2 <- enquo(cat2)

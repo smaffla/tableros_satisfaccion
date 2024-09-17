@@ -235,6 +235,7 @@ plot_barras_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo
 }
 
 
+
 plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
   
   col <- enquo(col)

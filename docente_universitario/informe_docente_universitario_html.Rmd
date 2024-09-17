@@ -1,30 +1,35 @@
 ---
-title: "Encuestas de calidad del servicio - Subdirección de Admisiones y Registro"
+title: "ENCUESTA DE SATISFACCIÓN Y PERCEPCIÓN CIARP SOCIALIZACIONES 2023"
 author: "Oficina de Desarrollo y Planeación"
 output:
-  word_document:
+  html_document:
     fig_height: 7
     fig_width: 10
+    highlight: tango
+    keep_md: no
+    number_sections: no
+    theme: cerulean
+    toc: yes
+    css: "corp-styles.css"
+    toc_depth: 4
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+  word_document:
     toc: yes
     toc_depth: '4'
-  html_document:
-    toc: yes
-    toc_depth: '4'
-    df_print: paged
 params:
-  mes: NA
   anio: NA
-  semestre: NA
   rendered_by_shiny: no
 subtitle: Universidad Pedagógica Nacional
 editor_options:
   chunk_output_type: inline
-toc-title: Tabla de contenido
 ---
 
-<!-- <div> -->
-<!-- <img src="https://estilos.upn.edu.co/userfiles/footer/footer.svg" alt="UPN" class="watermark"> -->
-<!-- </div> -->
+
+<div>
+<img src="https://estilos.upn.edu.co/userfiles/footer/footer.svg" alt="UPN" class="watermark">
+</div>
 
 \newpage
 
@@ -50,27 +55,35 @@ colores_plot <- c(#"#2171b5",
                                               "#fe9929","#ec7014")
 
 
-calidad_20241 <- read.xlsx("Encuesta de Calidad del Servicio Subdirección de Admisiones y Registro 2024-1(1-324).xlsx")
+ciarp_s20231 <- read.xlsx("ENCUESTA DE PERCEPCIÓN CIARP SOCIALIZACIONES 2023-1.xlsx", sheet = "base de datos")
 
-#Comentar esta línea cuando la encuesta de 2024 - 2 esté disponible
-#calidad_2024 <- calidad_20241
+ciarp_s20231 <- ciarp_s20231 %>%
+  rename(
+    `¿Considera.que.la.metodología.empleada.en.la.socialización.fue.la.adecuada?` = Pregunta.1,
+    `Puntos:.¿Considera.que.la.metodología.empleada.en.la.socialización.fue.la.adecuada?` = `¿Considera.que.la.metodología.empleada.en.la.socialización.fue.la.adecuada?2`,
+    `¿Fueron.resueltas.todas.sus.inquietudes.durante.la.socialización?` = Pregunta.2,
+    `Puntos:.¿Fueron.resueltas.todas.sus.inquietudes.durante.la.socialización?` = `¿Fueron.resueltas.todas.sus.inquietudes.durante.la.socialización?2`
+  )
 
-#❗❗❗    Descomentar el siguiente trozo de código y ajustarlo como se indica en cuanto esté disponible la encuesta de 2024-2
+ciarp_s20232 <- read.xlsx("ENCUESTA DE PERCEPCIÓN CIARP SOCIALIZACIONES 2023-2.xlsx", sheet = "Base de datos")
 
+ciarp_s20232 <- subset(ciarp_s20232, select = -Correo.electrónico)
 
-###Variables para lectura de la encuesta del semestre 2024 - 2 cuando esté disponible 
-#calidad_20242 <- read.xlsx("Encuesta 2024 - 2 (Añada aquí nombre del archivo")
+ciarp_s <- rbind(ciarp_s20231, ciarp_s20232)
 
-#calidad_2024 <- rbind(calidad_20241, calidad_20242)
+# ciarp_s <-  if(params$semestre == 1){
+#   ciarp_s20231
+# } else if (params$semestre == 2){
+#   ciarp_s20232
+# } else if (params$semestre == 3){
+#   ciarp_s
+# }
 
-calidad_2024 <-  if(params$semestre == 1){
-  calidad_20241
-} else if (params$semestre == 2){
-  calidad_20242
-} else if (params$semestre == 3){
-  calidad_2024
-}
+str(ciarp_s20231)
 
+str(ciarp_s20232)
+
+str(ciarp_s)
 ```
 
 ```{r}
@@ -158,13 +171,12 @@ plot_donas <- function(x, col, titulo = "") {
                                label.theme = element_text(size = 18)))
 }
 
-
 ## Función gráfico de barras para df caracterizacion
 plot_barras <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
   col <- enquo(col)
   
   data <- x %>%
-    #filter(autoriza_datos == "Acepto") %>% 
+    filter(autoriza_datos == "Acepto") %>% 
     count(!!col )%>% 
     mutate(perc = percent(n/sum(n), 0.1))
   
@@ -276,7 +288,7 @@ categorica_1var <- function(x, cat1, rename, encabezado = NULL, title = NULL, wr
     }
   
   table <- x %>% 
-    #filter(autoriza_datos == "Acepto") %>% 
+    filter(autoriza_datos == "Acepto") %>% 
     count(!!cat1) %>% 
     adorn_totals(where = "row", name = "Total General") %>%
     rename('{rename}' := !!cat1, "Cantidad" = n) %>% 
@@ -459,86 +471,51 @@ tabla_prom <- function(x, col, rename, encabezado = NULL, title = NULL, wrap_wid
 ```
 
 ```{r}
-
-calidad_2024 <- calidad_2024 %>% 
+ciarp_s <- ciarp_s %>% 
   distinct()
 
-
-calidad_2024 <- calidad_2024 %>% 
+ciarp_s <- ciarp_s %>% 
   clean_names()
 
-calidad_2024 <- calidad_2024 %>% 
+ciarp_s <- ciarp_s %>% 
   mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
   mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
          mesdili = str_to_title(mesdili)) %>% 
   mutate(anodili = year(hora_de_finalizacion))
 
-calidad_2024 <- calidad_2024 %>% 
-  rename(tipo_de_usuario = por_favor_seleccione_segun_corresponda)
 
-calidad_2024 <- calidad_2024 %>% 
-  rename(facultad =  por_favor_seleccione_su_facultad_segun_corresponda)
 
-calidad_2024 <- calidad_2024 %>% 
-  mutate(facultad = recode(facultad,
-                           "FFacultad de Humanidades" = "Facultad de Humanidades"))
- # gar<- gar%>%
- #   filter(anodili %in% params$anio)
+# beneficiarios <- beneficiarios %>%
+#   filter(mesdili %in% params$mes)
 ```
-
 
 <!-- Eliminamos duplicados -->
 
-```{r}
-
-# gar <- gar[!duplicated(gar[c("correo_electronico")]), ]
-# 
-# duplicados <- gar[duplicated(gar$correo_electronico), ]
-# 
-# print(duplicados)
-```
 
 ```{r}
-texto <-if (params$semestre == 1) {
-  "en el primer semestre del año 2024 (2024 - I)"
-} else if (params$semestre == 2){
-  "en el segundo semestre del año 2024 (2024 - II)"
-} else if (params$semestre == 3){
-  "en el primer y segundo semestre del año 2024 (2024 - I & II)"
-}
-
-
+total <- ciarp_s %>% count() %>% pull() 
 ```
 
 
-```{r}
-total <- calidad_2024 %>% count() %>% pull() 
-```
+La encuesta de satisfacción y percepción para las socializaciones CIARP fue respondida por **`r total`** personas.
 
+# Tipo de vinculación
 
-El siguiente informe de la encuesta realizada por parte de la Subdirección de Admisiones y Registro realizadas **`r texto`**  fue respondida por **`r total`** personas, esta encuesta se realiza para analizar y evaluar la efectividad de las estrategias, identificar tendencias y tomar decisiones informadas.
-
-
-# Tipo de población
-
-La población que se acerca a la Subdirección de Admisiones y Registro para solicitar algún servicio o información se categoriza según el tipo de usuario y la facultad de la universidad a la que pertenece.
-
-## Tipo de usuario
+En este apartado se muestra la distribución de los encuestados, categorizandolos por el tipo de vinculación que tienen con la UPN.
 
 ### Tabla
 ```{r}
-
-calidad_2024 %>% 
-  #mutate(tipo_de_usuario = factor(tipo_de_usuario, levels = c ("Estudiante de pregrado", "Estudiante de posgrado", "Egresado de pregrado", "Egresado de posgrado", "Usuario externo", "Otro"), ordered = TRUE)) %>% 
-  categorica_1var(tipo_de_usuario, "Tipo de usuario")
+ciarp_s %>% 
+  filter(!is.na(tipo_de_vinculacion_con_la_universidad_pedagogica_nacional)) %>% 
+  categorica_1var(tipo_de_vinculacion_con_la_universidad_pedagogica_nacional, "Tipo de vinculación")
 ```
 
 ### Gráfica
 ```{r}
-calidad_2024 %>%
-  plot_barras(tipo_de_usuario, "", "", "Tipo de usuario")
+ciarp_s %>% 
+  filter(!is.na(tipo_de_vinculacion_con_la_universidad_pedagogica_nacional)) %>%
+  plot_barras(tipo_de_vinculacion_con_la_universidad_pedagogica_nacional, "", "", "Tipo de vinculación")
 ```
-
 
 ```{r}
 
@@ -547,43 +524,24 @@ if (params$rendered_by_shiny)
 
 ```
 
-## Facultad
+# Calificación y/o aporte por criterio de evaluación
 
-Se muestra la distribución de los encuestados en las diferentes facultades de la UPN.
+En este apartado se muestran diferentes aspectos evaluados por los beneficiarios que respondieron la encuesta de satisfacción.
 
-## Tabla
+## Percepción de los encuestados frente a las actividades desarrolladas en el marco del proyecto
+
 ```{r}
-calidad_2024 %>% 
-  categorica_1var(facultad, "Facultad a la que pertenece")
+beneficiarios %>%
+  mutate(percepcion_actividades_realizadas = factor(percepcion_actividades_realizadas, levels = c("Por mejorar", "Aceptables", "Buenas", "Muy buenas", "Excelentes"))) %>%
+  plot_barras(percepcion_actividades_realizadas, "", "", "")
 ```
 
-## Gráfica
 
+## ¿A consideración de los encuestados se cumplió con el objetivo planteado?
 ```{r}
-calidad_2024 %>%
-  plot_barras(facultad, "", "", "Facultad")
-```
-
-Las preguntas de la encuesta se formularon con el objetivo de evaluar el nivel de satisfacción de la población, con respecto a la atención recibida de parte de la Subdirección.
-
-
-## ¿Cómo califica su experiencia en la Subdirección de Admisiones y Registro?
-
-### Tabla
-```{r}
-calidad_2024 %>%
-  mutate(como_califica_su_experiencia_en_la_subdireccion_de_admisiones_y_registro = factor(como_califica_su_experiencia_en_la_subdireccion_de_admisiones_y_registro, levels = c("Excelente", "Buena", "Regular", "Mala"), ordered = TRUE)) %>%
-  categorica_1var(como_califica_su_experiencia_en_la_subdireccion_de_admisiones_y_registro, "Nombre")
-
-```
-
-### Gráfica
-
-```{r}
-calidad_2024 %>%
-  mutate(como_califica_su_experiencia_en_la_subdireccion_de_admisiones_y_registro = factor(como_califica_su_experiencia_en_la_subdireccion_de_admisiones_y_registro, levels = c("Mala", "Regular", "Buena", "Excelente"), ordered = TRUE)) %>%
-  plot_barras(como_califica_su_experiencia_en_la_subdireccion_de_admisiones_y_registro, "", "", "")
-
+beneficiarios %>%
+  mutate(percepcion_actividades_realizadas = factor(x2_considera_que_se_cumplio_el_objetivo_inicialmente_planteado, levels = c("Si", "No"), ordered = TRUE)) %>%
+  plot_donas_as(x2_considera_que_se_cumplio_el_objetivo_inicialmente_planteado)
 ```
 
 ```{r}
@@ -592,58 +550,21 @@ if (params$rendered_by_shiny)
   shiny::setProgress(0.50)
 
 ```
-## ¿El tiempo de respuesta a su solicitud fue oportuna?
+### En caso de que a percepción suya no se hayan cumplido dichos objetivos, ¿comunicó oportunamente dichas inquietudes al personal encargado para adoptar las medidas correctivas correspondientes?
 
-### Tabla
+Esta pregunta fue contestada solo por los encuestados que respondieron "No" a la pregunta "¿se cumplió con el objetivo planteado?"
+
 ```{r}
-calidad_2024 %>%
-    categorica_1var(el_tiempo_de_respuesta_a_su_solicitud_fue_oportuna, "Calificación")
-
+beneficiarios %>%
+  filter(!is.na(comunico_oportunamente_dichas_inquietudes_al_personal_encargado_para_adoptar_las_medidas_correctivas_correspondientes)) %>% 
+  plot_donas_as(comunico_oportunamente_dichas_inquietudes_al_personal_encargado_para_adoptar_las_medidas_correctivas_correspondientes)
 ```
 
-### Gráfica
+## ¿A consideración del encuestado se pueden mejorar las actividades planteadas en el proyecto?
 
 ```{r}
-calidad_2024 %>%
-  mutate(el_tiempo_de_respuesta_a_su_solicitud_fue_oportuna = factor(el_tiempo_de_respuesta_a_su_solicitud_fue_oportuna, levels = c("N/S N/R: No sabe / No Responde", "5. Totalmente de acuerdo", "4. De acuerdo", "3. Indiferente", "2. En desacuerdo", "1. Totalmente en desacuerdo"), ordered = TRUE)) %>%
-  plot_barras(el_tiempo_de_respuesta_a_su_solicitud_fue_oportuna, "", "", "")
-
-```
-
-## ¿El funcionario de la Subdirección de Admisiones y Registro que atendió su solicitud conoce y da a conocer los procedimientos?
-
-El funcionario de la Subdirección de Admisiones y Registro que atendió su solicitud conoce y da a conocer los procedimientos de forma amable, adecuada, clara y oportuna.
-
-### Tabla
-```{r}
-calidad_2024 %>% 
-  categorica_1var(el_funcionario_de_la_subdireccion_de_admisiones_y_registro_que_atendio_su_solicitud_conoce_y_da_a_conocer_los_procedimientos_de_forma_amable_adecuada_clara_y_oportuna, "Calificación")
-```
-
-### Gráfica
-
-```{r}
-calidad_2024 %>%
-  mutate(el_funcionario_de_la_subdireccion_de_admisiones_y_registro_que_atendio_su_solicitud_conoce_y_da_a_conocer_los_procedimientos_de_forma_amable_adecuada_clara_y_oportuna = factor(el_funcionario_de_la_subdireccion_de_admisiones_y_registro_que_atendio_su_solicitud_conoce_y_da_a_conocer_los_procedimientos_de_forma_amable_adecuada_clara_y_oportuna, levels = c("N/S N/R: No sabe / No Responde", "5. Totalmente de acuerdo", "4. De acuerdo", "3. Indiferente", "2. En desacuerdo", "1. Totalmente en desacuerdo"), ordered = TRUE)) %>%
-  plot_barras(el_funcionario_de_la_subdireccion_de_admisiones_y_registro_que_atendio_su_solicitud_conoce_y_da_a_conocer_los_procedimientos_de_forma_amable_adecuada_clara_y_oportuna, "", "", "")
-
-```
-
-## ¿La atención brindada por la Subdirección de Admisiones y Registro respondió a su requerimiento?
-
-### Tabla
-```{r}
-calidad_2024 %>% 
-  categorica_1var(la_atencion_brindada_por_la_subdireccion_de_admisiones_y_registro_respondio_a_su_requerimiento, "Calificación")
-```
-
-### Gráfica
-
-```{r}
-calidad_2024 %>%
-  mutate(la_atencion_brindada_por_la_subdireccion_de_admisiones_y_registro_respondio_a_su_requerimiento = factor(la_atencion_brindada_por_la_subdireccion_de_admisiones_y_registro_respondio_a_su_requerimiento, levels = c("N/S N/R: No sabe / No Responde", "5. Totalmente de acuerdo", "4. De acuerdo", "3. Indiferente", "2. En desacuerdo", "1. Totalmente en desacuerdo"), ordered = TRUE)) %>%
-  plot_barras(la_atencion_brindada_por_la_subdireccion_de_admisiones_y_registro_respondio_a_su_requerimiento, "", "", "")
-
+beneficiarios %>% 
+  plot_donas_as(x3_considera_que_se_pueden_mejorarlas_actividades_planteadas_en_el_proyecto)
 ```
 
 ```{r}
@@ -653,21 +574,22 @@ if (params$rendered_by_shiny)
 
 ```
 
-## ¿El sitio web institucional de la Subdirección de Admisiones y Registro le permite mantenerse informado sobre temas de su interés?
+### Alternativas propuestas para mejorar las actividades planteadas
 
-Tabla
 ```{r}
-calidad_2024 %>%
-  categorica_1var(el_sitio_web_institucional_de_la_subdireccion_de_admisiones_y_registro_le_permite_mantenerse_informado_sobre_temas_de_su_interes, "Calificación")
+beneficiarios %>%
+  filter(!is.na(x4_si_la_respuesta_es_si_cuales_de_las_siguientes_alternativas_propondria)) %>%
+  mutate(x4_si_la_respuesta_es_si_cuales_de_las_siguientes_alternativas_propondria = trimws(x4_si_la_respuesta_es_si_cuales_de_las_siguientes_alternativas_propondria)) %>%
+  mutate(x4_si_la_respuesta_es_si_cuales_de_las_siguientes_alternativas_propondria = factor(x4_si_la_respuesta_es_si_cuales_de_las_siguientes_alternativas_propondria, levels = c("f.	Clases más extensas", "e.	Mayor divulgación de los espacios y de sus resultados", "d.	Comunicación de los contenidos del programa de formación no continuada",  "c.	Fortalecimiento de las herramientas evaluativas", "b. Diversificación del contenido o metodología utilizada", "a.	Mejoramiento de la infraestructura (física y tecnológica) o dotación de la UPN"), ordered = TRUE)) %>%
+  plot_barras(x4_si_la_respuesta_es_si_cuales_de_las_siguientes_alternativas_propondria, "", "", "")
+
 ```
 
-### Gráfica
+## A consideración de los encuestados el aporte personal que brindó el proyecto fue:
 
 ```{r}
-calidad_2024 %>%
-  mutate(el_sitio_web_institucional_de_la_subdireccion_de_admisiones_y_registro_le_permite_mantenerse_informado_sobre_temas_de_su_interes = factor(el_sitio_web_institucional_de_la_subdireccion_de_admisiones_y_registro_le_permite_mantenerse_informado_sobre_temas_de_su_interes, levels = c("N/S N/R: No sabe / No Responde", "5. Totalmente de acuerdo", "4. De acuerdo", "3. Indiferente", "2. En desacuerdo", "1. Totalmente en desacuerdo"), ordered = TRUE)) %>%
-  plot_barras(el_sitio_web_institucional_de_la_subdireccion_de_admisiones_y_registro_le_permite_mantenerse_informado_sobre_temas_de_su_interes, "", "", "")
-
+beneficiarios %>% 
+  plot_barras(x5_el_aporte_personal_que_le_trajo_el_proyecto_fue, "", "", "")
 ```
 
 ```{r}
@@ -676,3 +598,4 @@ if (params$rendered_by_shiny)
   shiny::setProgress(1)
 
 ```
+
