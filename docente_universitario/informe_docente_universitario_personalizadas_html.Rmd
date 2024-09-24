@@ -1,5 +1,5 @@
 ---
-title: "ENCUESTA DE SATISFACCIÓN Y PERCEPCIÓN CIARP SOCIALIZACIONES 2023"
+title: "ENCUESTA DE SATISFACCIÓN Y PERCEPCIÓN CIARP ASESORÍAS PERSONALIZADAS 2023"
 author: "Oficina de Desarrollo y Planeación"
 output:
   html_document:
@@ -55,21 +55,20 @@ colores_plot <- c(#"#2171b5",
                                               "#fe9929","#ec7014")
 
 
-ciarp_s20231 <- read.xlsx("ENCUESTA DE PERCEPCIÓN CIARP SOCIALIZACIONES 2023-1.xlsx", sheet = "base de datos")
+ciarp_p20231 <- read.xlsx("ENCUESTA DE PERCEPCIÓN CIARP ASESORIAS PERSONALIZADAS 2023-1.xlsx", sheet = "BASE DE DATOS")
 
-ciarp_s20231 <- ciarp_s20231 %>%
-  rename(
-    `¿Considera.que.la.metodología.empleada.en.la.socialización.fue.la.adecuada?` = Pregunta.1,
-    `Puntos:.¿Considera.que.la.metodología.empleada.en.la.socialización.fue.la.adecuada?` = `¿Considera.que.la.metodología.empleada.en.la.socialización.fue.la.adecuada?2`,
-    `¿Fueron.resueltas.todas.sus.inquietudes.durante.la.socialización?` = Pregunta.2,
-    `Puntos:.¿Fueron.resueltas.todas.sus.inquietudes.durante.la.socialización?` = `¿Fueron.resueltas.todas.sus.inquietudes.durante.la.socialización?2`
-  )
+# ciarp_s20231 <- ciarp_s20231 %>%
+#   rename(
+#     `¿Considera.que.la.metodología.empleada.en.la.socialización.fue.la.adecuada?` = Pregunta.1,
+#     `Puntos:.¿Considera.que.la.metodología.empleada.en.la.socialización.fue.la.adecuada?` = `¿Considera.que.la.metodología.empleada.en.la.socialización.fue.la.adecuada?2`,
+#     `¿Fueron.resueltas.todas.sus.inquietudes.durante.la.socialización?` = Pregunta.2,
+#     `Puntos:.¿Fueron.resueltas.todas.sus.inquietudes.durante.la.socialización?` = `¿Fueron.resueltas.todas.sus.inquietudes.durante.la.socialización?2`
+#   )
 
-ciarp_s20232 <- read.xlsx("ENCUESTA DE PERCEPCIÓN CIARP SOCIALIZACIONES 2023-2.xlsx", sheet = "Base de datos")
+ciarp_p20232 <- read.xlsx("ENCUESTA DE PERCEPCIÓN CIARP ASESORIAS PERSONALIZADAS 2023-2.xlsx", sheet = "base de datos")
 
-ciarp_s20232 <- subset(ciarp_s20232, select = -Correo.electrónico)
 
-ciarp_s <- rbind(ciarp_s20231, ciarp_s20232)
+ciarp_p <- rbind(ciarp_p20231, ciarp_p20232)
 
 # ciarp_s <-  if(params$semestre == 1){
 #   ciarp_s20231
@@ -79,11 +78,11 @@ ciarp_s <- rbind(ciarp_s20231, ciarp_s20232)
 #   ciarp_s
 # }
 
-str(ciarp_s20231)
+str(ciarp_p20231)
 
-str(ciarp_s20232)
+str(ciarp_p20232)
 
-str(ciarp_s)
+str(ciarp_p)
 ```
 
 ```{r}
@@ -460,13 +459,13 @@ tabla_prom <- function(x, col, rename, encabezado = NULL, title = NULL, wrap_wid
 ```
 
 ```{r}
-ciarp_s <- ciarp_s %>% 
+ciarp_p <- ciarp_p %>% 
   distinct()
 
-ciarp_s <- ciarp_s %>% 
+ciarp_p <- ciarp_p %>% 
   clean_names()
 
-ciarp_s <- ciarp_s %>% 
+ciarp_p <- ciarp_p %>% 
   mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
   mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
          mesdili = str_to_title(mesdili)) %>% 
@@ -482,29 +481,11 @@ ciarp_s <- ciarp_s %>%
 
 
 ```{r}
-total <- ciarp_s %>% count() %>% pull() 
+total <- ciarp_p %>% count() %>% pull() 
 ```
 
 
 La encuesta de satisfacción y percepción para las socializaciones CIARP fue respondida por **`r total`** personas.
-
-# Tipo de vinculación
-
-En este apartado se muestra la distribución de los encuestados, categorizandolos por el tipo de vinculación que tienen con la UPN.
-
-### Tabla
-```{r}
-ciarp_s %>% 
-  filter(!is.na(tipo_de_vinculacion_con_la_universidad_pedagogica_nacional)) %>% 
-  categorica_1var(tipo_de_vinculacion_con_la_universidad_pedagogica_nacional, "Tipo de vinculación")
-```
-
-### Gráfica
-```{r}
-ciarp_s %>% 
-  filter(!is.na(tipo_de_vinculacion_con_la_universidad_pedagogica_nacional)) %>%
-  plot_barras(tipo_de_vinculacion_con_la_universidad_pedagogica_nacional, "", "", "Tipo de vinculación")
-```
 
 ```{r}
 
@@ -517,28 +498,30 @@ if (params$rendered_by_shiny)
 
 En este apartado se muestran diferentes aspectos evaluados por los encuestados que respondieron la encuesta de satisfacción.
 
-## ¿Considera que la metodología empleada en la socialización fue la adecuada? 
+## ¿Considera que el proceso de agendamiento de la asesoría, fue oportuno? 
 
 
 ```{r}
-p1 = mean(ciarp_s$considera_que_la_metodologia_empleada_en_la_socializacion_fue_la_adecuada)
+p1 = mean(ciarp_p$considera_que_el_proceso_de_agendamiento_de_la_asesoria_fue_oportuno)
 promedio_pregunta1 = round(p1, 1)
 ```
 
-La pruntuación promedio para este aspecto fue de **`r promedio_pregunta1`** lo cuál indica que los encuestados han tenido una percepción bastante positiva de la metodología empleada en la socialización.
+La pruntuación promedio para este aspecto fue de **`r promedio_pregunta1`** lo cuál indica que en promedio los encuestados consideran que el proceso de agendamiento de las asesorías personalizadas fue oportuno.
 
 ### Tabla
 ```{r}
-ciarp_s %>% 
-  mutate(puntos_considera_que_la_metodologia_empleada_en_la_socializacion_fue_la_adecuada = factor(puntos_considera_que_la_metodologia_empleada_en_la_socializacion_fue_la_adecuada, levels = c("Muy satisfecho", "Satisfecho", "Normal" ))) %>% 
-  categorica_1var(puntos_considera_que_la_metodologia_empleada_en_la_socializacion_fue_la_adecuada, "Calificación")
+ciarp_p %>% 
+  mutate(puntos_considera_que_el_proceso_de_agendamiento_de_la_asesoria_fue_oportuno = factor(puntos_considera_que_el_proceso_de_agendamiento_de_la_asesoria_fue_oportuno, levels = c("Muy satisfecho", "Satisfecho", "Normal" ))) %>%
+  categorica_1var(puntos_considera_que_el_proceso_de_agendamiento_de_la_asesoria_fue_oportuno, "Calificación")
 ```
+
 ### Gráfica
 ```{r}
-ciarp_s %>%
-  mutate(puntos_considera_que_la_metodologia_empleada_en_la_socializacion_fue_la_adecuada = factor(puntos_considera_que_la_metodologia_empleada_en_la_socializacion_fue_la_adecuada, levels = c("Normal", "Satisfecho", "Muy satisfecho"))) %>%
-  plot_barras(puntos_considera_que_la_metodologia_empleada_en_la_socializacion_fue_la_adecuada, "", "", "")
+ciarp_p %>%
+  mutate(puntos_considera_que_el_proceso_de_agendamiento_de_la_asesoria_fue_oportuno = factor(puntos_considera_que_el_proceso_de_agendamiento_de_la_asesoria_fue_oportuno, levels = c("Satisfecho", "Muy satisfecho"))) %>%
+  plot_barras(puntos_considera_que_el_proceso_de_agendamiento_de_la_asesoria_fue_oportuno, "", "", "")
 ```
+
 ```{r}
 
 if (params$rendered_by_shiny)
@@ -546,27 +529,27 @@ if (params$rendered_by_shiny)
 
 ```
 
-## ¿Fueron resueltas todas sus inquietudes durante la socialización? 
+## ¿Considera que la metodología empleada en la asesoría fue la adecuada?
 
 
 ```{r}
-p2 = mean(ciarp_s$fueron_resueltas_todas_sus_inquietudes_durante_la_socializacion)
+p2 = mean(ciarp_p$considera_que_la_metodologia_empleada_en_la_asesoria_fue_la_adecuada)
 promedio_pregunta2 = round(p2, 1)
 ```
 
-La puntuación promedio para este aspecto fue de **`r promedio_pregunta2`** lo cuál indica que los encuestados han tenido una percepción bastante positiva de frente a las respuestas dadas a las inquietudes que surgieron en la socialización.
+La puntuación promedio para este aspecto fue de **`r promedio_pregunta2`** lo cuál indica que los encuestados han tenido una percepción bastante positiva de la metodología empleada en la asesoría.
 
 ### Tabla
 ```{r}
-ciarp_s %>% 
-    mutate(puntos_fueron_resueltas_todas_sus_inquietudes_durante_la_socializacion = factor(puntos_fueron_resueltas_todas_sus_inquietudes_durante_la_socializacion, levels = c("Muy satisfecho", "Satisfecho", "Normal" ))) %>% 
-  categorica_1var(puntos_fueron_resueltas_todas_sus_inquietudes_durante_la_socializacion, "Calificación")
+ciarp_p %>% 
+    mutate(puntos_considera_que_la_metodologia_empleada_en_la_asesoria_fue_la_adecuada = factor(puntos_considera_que_la_metodologia_empleada_en_la_asesoria_fue_la_adecuada, levels = c("Muy satisfecho", "Satisfecho", "Normal" ))) %>% 
+  categorica_1var(puntos_considera_que_la_metodologia_empleada_en_la_asesoria_fue_la_adecuada, "Calificación")
 ```
 ### Gráfica
 ```{r}
-ciarp_s %>%
-  mutate(puntos_fueron_resueltas_todas_sus_inquietudes_durante_la_socializacion = factor(puntos_fueron_resueltas_todas_sus_inquietudes_durante_la_socializacion, levels = c("Normal", "Satisfecho", "Muy satisfecho"))) %>%
-  plot_barras(puntos_fueron_resueltas_todas_sus_inquietudes_durante_la_socializacion, "", "", "")
+ciarp_p %>%
+  mutate(puntos_considera_que_la_metodologia_empleada_en_la_asesoria_fue_la_adecuada = factor(puntos_considera_que_la_metodologia_empleada_en_la_asesoria_fue_la_adecuada, levels = c("Normal", "Satisfecho", "Muy satisfecho"))) %>%
+  plot_barras(puntos_considera_que_la_metodologia_empleada_en_la_asesoria_fue_la_adecuada, "", "", "")
 ```
 
 ```{r}
@@ -576,15 +559,26 @@ if (params$rendered_by_shiny)
 
 ```
 
-## ¿Tenía conocimiento de los procedimientos adelantados por el CIARP?
+## ¿Fueron resueltas todas sus inquietudes durante la asesoría?
+
+
 ```{r}
-ciarp_s %>%
-  mutate(tenia_conocimiento_de_los_procedimientos_adelantados_por_el_ciarp = factor(tenia_conocimiento_de_los_procedimientos_adelantados_por_el_ciarp, levels = c("Si", "No"), ordered = TRUE)) %>%
-  plot_donas_as(tenia_conocimiento_de_los_procedimientos_adelantados_por_el_ciarp)
+p3 = mean(ciarp_p$fueron_resueltas_todas_sus_inquietudes_durante_la_asesoria)
+promedio_pregunta3 = round(p3, 1)
 ```
+
+La puntuación promedio para este aspecto fue de **`r promedio_pregunta3`** lo cuál indica que los encuestados han tenido una percepción bastante positiva de frente a las respuestas dadas a las inquietudes que surgieron en la socialización.
+
+### Tabla
 ```{r}
+ciarp_p %>% 
+    mutate(puntos_fueron_resueltas_todas_sus_inquietudes_durante_la_asesoria = factor(puntos_fueron_resueltas_todas_sus_inquietudes_durante_la_asesoria, levels = c("Muy satisfecho", "Satisfecho", "Normal" ))) %>% 
+  categorica_1var(puntos_fueron_resueltas_todas_sus_inquietudes_durante_la_asesoria, "Calificación")
+```
 
-if (params$rendered_by_shiny)
-  shiny::setProgress(1)
-
+### Gráfica
+```{r}
+ciarp_p %>%
+  mutate(puntos_fueron_resueltas_todas_sus_inquietudes_durante_la_asesoria = factor(puntos_fueron_resueltas_todas_sus_inquietudes_durante_la_asesoria, levels = c("Normal", "Satisfecho", "Muy satisfecho"))) %>%
+  plot_barras(puntos_fueron_resueltas_todas_sus_inquietudes_durante_la_asesoria, "", "", "")
 ```
