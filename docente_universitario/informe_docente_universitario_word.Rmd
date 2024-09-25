@@ -72,12 +72,6 @@ ciarp_s <- rbind(ciarp_s20231, ciarp_s20232)
 # } else if (params$semestre == 3){
 #   ciarp_s
 # }
-
-str(ciarp_s20231)
-
-str(ciarp_s20232)
-
-str(ciarp_s)
 ```
 
 ```{r}

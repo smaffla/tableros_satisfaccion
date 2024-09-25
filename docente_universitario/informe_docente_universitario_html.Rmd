@@ -20,6 +20,7 @@ output:
     toc_depth: '4'
 params:
   anio: NA
+  semestre: NA
   rendered_by_shiny: no
 subtitle: Universidad Pedagógica Nacional
 editor_options:
@@ -71,19 +72,13 @@ ciarp_s20232 <- subset(ciarp_s20232, select = -Correo.electrónico)
 
 ciarp_s <- rbind(ciarp_s20231, ciarp_s20232)
 
-# ciarp_s <-  if(params$semestre == 1){
-#   ciarp_s20231
-# } else if (params$semestre == 2){
-#   ciarp_s20232
-# } else if (params$semestre == 3){
-#   ciarp_s
-# }
-
-str(ciarp_s20231)
-
-str(ciarp_s20232)
-
-str(ciarp_s)
+ciarp_s <-  if(params$semestre == 1){
+  ciarp_s20231
+} else if (params$semestre == 2){
+  ciarp_s20232
+} else if (params$semestre == 3){
+  ciarp_s
+}
 ```
 
 ```{r}
@@ -539,6 +534,7 @@ ciarp_s %>%
   mutate(puntos_considera_que_la_metodologia_empleada_en_la_socializacion_fue_la_adecuada = factor(puntos_considera_que_la_metodologia_empleada_en_la_socializacion_fue_la_adecuada, levels = c("Normal", "Satisfecho", "Muy satisfecho"))) %>%
   plot_barras(puntos_considera_que_la_metodologia_empleada_en_la_socializacion_fue_la_adecuada, "", "", "")
 ```
+
 ```{r}
 
 if (params$rendered_by_shiny)
@@ -582,6 +578,7 @@ ciarp_s %>%
   mutate(tenia_conocimiento_de_los_procedimientos_adelantados_por_el_ciarp = factor(tenia_conocimiento_de_los_procedimientos_adelantados_por_el_ciarp, levels = c("Si", "No"), ordered = TRUE)) %>%
   plot_donas_as(tenia_conocimiento_de_los_procedimientos_adelantados_por_el_ciarp)
 ```
+
 ```{r}
 
 if (params$rendered_by_shiny)

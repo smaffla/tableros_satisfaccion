@@ -70,19 +70,13 @@ ciarp_p20232 <- read.xlsx("ENCUESTA DE PERCEPCIÓN CIARP ASESORIAS PERSONALIZAD
 
 ciarp_p <- rbind(ciarp_p20231, ciarp_p20232)
 
-# ciarp_s <-  if(params$semestre == 1){
-#   ciarp_s20231
-# } else if (params$semestre == 2){
-#   ciarp_s20232
-# } else if (params$semestre == 3){
-#   ciarp_s
-# }
-
-str(ciarp_p20231)
-
-str(ciarp_p20232)
-
-str(ciarp_p)
+ciarp_s <-  if(params$semestre == 1){
+  ciarp_s20231
+} else if (params$semestre == 2){
+  ciarp_s20232
+} else if (params$semestre == 3){
+  ciarp_s
+}
 ```
 
 ```{r}

@@ -1,38 +1,31 @@
----
-title: "ENCUESTA DE SATISFACCIÓN DIRIGIDA A BENEFICIARIOS DE PROYECTOS 2023"
-author: "Oficina de Desarrollo y Planeación"
-output:
-  word_document:
-    fig_height: 7
-    fig_width: 10
-    toc: yes
-    toc_depth: '4'
-  html_document:
-    toc: yes
-    toc_depth: '4'
-    df_print: paged
-params:
-  mes: NA
-  anio: NA
-  rendered_by_shiny: no
-subtitle: Universidad Pedagógica Nacional
-editor_options:
-  chunk_output_type: inline
-toc-title: Tabla de contenido
----
+# Carga de librerias ------------------------------------------------------
 
-<!-- <div> -->
-<!-- <img src="https://estilos.upn.edu.co/userfiles/footer/footer.svg" alt="UPN" class="watermark"> -->
-<!-- </div> -->
+#library(plotly)
+library(shiny)
+library(shinyWidgets)
+library(shinydashboard)
+library(openxlsx)
+library(janitor)
+library(scales)
+library(summaryBox)
+library(shinycssloaders)
+library(lubridate)
+library(ggthemes)
+library(DT)
+library(tidyverse)
+library(ggrepel)
+library(lubridate)
+library(glue)
+library(flextable)
+library(htmltools)
 
-\newpage
+Sys.setlocale("LC_TIME", "es_ES.utf8")
 
-```{r setup, include=FALSE}
 knitr::opts_chunk$set(
-	echo = FALSE,
-	message = FALSE,
-	warning = FALSE,
-	dpi = 300	)
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  dpi = 300	)
 
 library(openxlsx)
 library(tidyverse)
@@ -43,37 +36,80 @@ library(lubridate)
 library(forcats)
 
 colores_plot <- c(#"#2171b5",
-                                              "#4292c6","#74a9cf",
-                                              "#41b6c4","#7fcdbb",#"#238b45","#41ab5d",
-                                              "#78c679","#c7e9b4","#edf8b1","#fee391","#fec44f",
-                                              "#fe9929","#ec7014")
+  "#4292c6","#74a9cf",
+  "#41b6c4","#7fcdbb",#"#238b45","#41ab5d",
+  "#78c679","#c7e9b4","#edf8b1","#fee391","#fec44f",
+  "#fe9929","#ec7014")
 
 
-ciarp_p20231 <- read.xlsx("ENCUESTA DE PERCEPCIÓN CIARP ASESORIAS PERSONALIZADAS 2023-1.xlsx", sheet = "BASE DE DATOS")
+ciarp_s20231 <- read.xlsx("ENCUESTA DE PERCEPCIÓN CIARP SOCIALIZACIONES 2023-1.xlsx", sheet = "base de datos")
 
-# ciarp_s20231 <- ciarp_s20231 %>%
-#   rename(
-#     `¿Considera.que.la.metodología.empleada.en.la.socialización.fue.la.adecuada?` = Pregunta.1,
-#     `Puntos:.¿Considera.que.la.metodología.empleada.en.la.socialización.fue.la.adecuada?` = `¿Considera.que.la.metodología.empleada.en.la.socialización.fue.la.adecuada?2`,
-#     `¿Fueron.resueltas.todas.sus.inquietudes.durante.la.socialización?` = Pregunta.2,
-#     `Puntos:.¿Fueron.resueltas.todas.sus.inquietudes.durante.la.socialización?` = `¿Fueron.resueltas.todas.sus.inquietudes.durante.la.socialización?2`
-#   )
+ciarp_s20231 <- ciarp_s20231 %>%
+  rename(
+    `¿Considera.que.la.metodología.empleada.en.la.socialización.fue.la.adecuada?` = Pregunta.1,
+    `Puntos:.¿Considera.que.la.metodología.empleada.en.la.socialización.fue.la.adecuada?` = `¿Considera.que.la.metodología.empleada.en.la.socialización.fue.la.adecuada?2`,
+    `¿Fueron.resueltas.todas.sus.inquietudes.durante.la.socialización?` = Pregunta.2,
+    `Puntos:.¿Fueron.resueltas.todas.sus.inquietudes.durante.la.socialización?` = `¿Fueron.resueltas.todas.sus.inquietudes.durante.la.socialización?2`
+  )
 
-ciarp_p20232 <- read.xlsx("ENCUESTA DE PERCEPCIÓN CIARP ASESORIAS PERSONALIZADAS 2023-2.xlsx", sheet = "base de datos")
+ciarp_s20232 <- read.xlsx("ENCUESTA DE PERCEPCIÓN CIARP SOCIALIZACIONES 2023-2.xlsx", sheet = "Base de datos")
+
+ciarp_s20232 <- subset(ciarp_s20232, select = -Correo.electrónico)
+
+ciarp_s <- rbind(ciarp_s20231, ciarp_s20232)
 
 
-ciarp_p <- rbind(ciarp_p20231, ciarp_p20232)
+ciarp_s <- ciarp_s %>% 
+  distinct()
 
-# ciarp_s <-  if(params$semestre == 1){
-#   ciarp_s20231
-# } else if (params$semestre == 2){
-#   ciarp_s20232
-# } else if (params$semestre == 3){
-#   ciarp_s
-# }
-```
+ciarp_s <- ciarp_s %>% 
+  clean_names()
 
-```{r}
+ciarp_s <- ciarp_s %>% 
+  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
+  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+         mesdili = str_to_title(mesdili)) %>% 
+  mutate(anodili = year(hora_de_finalizacion))
+
+ciarp_s20231 <- ciarp_s20231 %>% 
+  distinct()
+
+ciarp_s20231 <- ciarp_s20231 %>% 
+  clean_names()
+
+ciarp_s20231 <- ciarp_s20231 %>% 
+  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
+  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+         mesdili = str_to_title(mesdili)) %>% 
+  mutate(anodili = year(hora_de_finalizacion))
+
+ciarp_s20232 <- ciarp_s20232 %>% 
+  distinct()
+
+ciarp_s20232 <- ciarp_s20232 %>% 
+  clean_names()
+
+ciarp_s20232 <- ciarp_s20232 %>% 
+  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
+  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+         mesdili = str_to_title(mesdili)) %>% 
+  mutate(anodili = year(hora_de_finalizacion))
+
+
+#Funciones
+generate_html <- function(variable) {
+  HTML(glue("<h2 style = 'color: #00609d'>{variable()}</h2>"))
+}
+
+generate_html_text <- function(variable) {
+  HTML(glue("<h5 style = 'color: #393939'>{variable()}</h5>"))
+}
+
+
+generate_html_negrilla <- function(variable) {
+  HTML(glue("<h3 style = 'color: #00609d'><strong>{variable()}</strong></h3>"))
+}
+
 ftable <- function(x, encabezado = NULL, title = NULL) {
   
   table <- x %>% 
@@ -98,7 +134,7 @@ ftable <- function(x, encabezado = NULL, title = NULL) {
   }
   
   return(table)
-    
+  
 }
 
 plot_donas_as <- function(x, col, titulo = "") {
@@ -265,9 +301,9 @@ plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
 categorica_1var <- function(x, cat1, rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
   cat1 <- enquo(cat1)
   
-    if (is.null(wrap_width)) {
+  if (is.null(wrap_width)) {
     wrap_width <- 100
-    }
+  }
   
   table <- x %>% 
     count(!!cat1) %>% 
@@ -277,7 +313,7 @@ categorica_1var <- function(x, cat1, rename, encabezado = NULL, title = NULL, wr
     ftable(encabezado, title)
   
   return(table)
-    
+  
 }
 
 categorica_2var <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
@@ -301,9 +337,9 @@ categorica_2var <- function(x, cat1, cat2, rename, encabezado = NULL, title = NU
     #mutate(across(where(is.numeric), ~ percent(.x, 0.01, decimal.mark = ","))) %>% 
     rename("{rename}" := !!cat1)
   
-      if (is.null(label_width)) {
+  if (is.null(label_width)) {
     label_width <- 10
-      
+    
   }
   
   # Personalizar el tamaño de las etiquetas de columna
@@ -399,9 +435,9 @@ categorica_2varp <- function(x, cat1, cat2, rename, encabezado = NULL, title = N
     mutate(across(where(is.numeric), ~ percent(.x, 0.1, decimal.mark = ","))) %>% 
     rename("{rename}" := !!cat1)
   
-      if (is.null(label_width)) {
+  if (is.null(label_width)) {
     label_width <- 10
-      
+    
   }
   
   # Personalizar el tamaño de las etiquetas de columna
@@ -427,146 +463,21 @@ tabla_prom <- function(x, col, rename, encabezado = NULL, title = NULL, wrap_wid
   }
   
   table <- x %>% 
-  group_by(!!col) %>%
-  summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
-  ungroup() %>% 
-  #arrange(desc(promedio_general)) %>% 
-  rename("{rename}" := !!col,
-         "Promedio" = promedio_general) %>% 
-  as.data.frame()  
+    group_by(!!col) %>%
+    summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
+    ungroup() %>% 
+    #arrange(desc(promedio_general)) %>% 
+    rename("{rename}" := !!col,
+           "Promedio" = promedio_general) %>% 
+    as.data.frame()  
   
   formatted_table <- ftable(table, encabezado, title) %>% 
-  bg(i = nrow_part(.), bg = "white") %>%
-  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
-  color(i = nrow_part(.), color = "black") %>%
-  bold(i = nrow_part(.), bold = FALSE)
+    bg(i = nrow_part(.), bg = "white") %>%
+    bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+    color(i = nrow_part(.), color = "black") %>%
+    bold(i = nrow_part(.), bold = FALSE)
   
   return(formatted_table)
   
 }
-```
 
-```{r}
-ciarp_p <- ciarp_p %>% 
-  distinct()
-
-ciarp_p <- ciarp_p %>% 
-  clean_names()
-
-ciarp_p <- ciarp_p %>% 
-  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
-  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
-         mesdili = str_to_title(mesdili)) %>% 
-  mutate(anodili = year(hora_de_finalizacion))
-
-
-
-# beneficiarios <- beneficiarios %>%
-#   filter(mesdili %in% params$mes)
-```
-
-<!-- Eliminamos duplicados -->
-
-
-```{r}
-total <- ciarp_p %>% count() %>% pull() 
-```
-
-
-La encuesta de satisfacción y percepción para las socializaciones CIARP fue respondida por **`r total`** personas.
-
-```{r}
-
-if (params$rendered_by_shiny)
-  shiny::setProgress(0.25)
-
-```
-
-# Calificación y/o aporte por criterio de evaluación
-
-En este apartado se muestran diferentes aspectos evaluados por los encuestados que respondieron la encuesta de satisfacción.
-
-## ¿Considera que el proceso de agendamiento de la asesoría, fue oportuno? 
-
-
-```{r}
-p1 = mean(ciarp_p$considera_que_el_proceso_de_agendamiento_de_la_asesoria_fue_oportuno)
-promedio_pregunta1 = round(p1, 1)
-```
-
-La pruntuación promedio para este aspecto fue de **`r promedio_pregunta1`** lo cuál indica que en promedio los encuestados consideran que el proceso de agendamiento de las asesorías personalizadas fue oportuno.
-
-### Tabla
-```{r}
-ciarp_p %>% 
-  mutate(puntos_considera_que_el_proceso_de_agendamiento_de_la_asesoria_fue_oportuno = factor(puntos_considera_que_el_proceso_de_agendamiento_de_la_asesoria_fue_oportuno, levels = c("Muy satisfecho", "Satisfecho", "Normal" ))) %>%
-  categorica_1var(puntos_considera_que_el_proceso_de_agendamiento_de_la_asesoria_fue_oportuno, "Calificación")
-```
-
-### Gráfica
-```{r}
-ciarp_p %>%
-  mutate(puntos_considera_que_el_proceso_de_agendamiento_de_la_asesoria_fue_oportuno = factor(puntos_considera_que_el_proceso_de_agendamiento_de_la_asesoria_fue_oportuno, levels = c("Satisfecho", "Muy satisfecho"))) %>%
-  plot_barras(puntos_considera_que_el_proceso_de_agendamiento_de_la_asesoria_fue_oportuno, "", "", "")
-```
-
-```{r}
-
-if (params$rendered_by_shiny)
-  shiny::setProgress(0.50)
-
-```
-
-## ¿Considera que la metodología empleada en la asesoría fue la adecuada?
-
-
-```{r}
-p2 = mean(ciarp_p$considera_que_la_metodologia_empleada_en_la_asesoria_fue_la_adecuada)
-promedio_pregunta2 = round(p2, 1)
-```
-
-La puntuación promedio para este aspecto fue de **`r promedio_pregunta2`** lo cuál indica que los encuestados han tenido una percepción bastante positiva de la metodología empleada en la asesoría.
-
-### Tabla
-```{r}
-ciarp_p %>% 
-    mutate(puntos_considera_que_la_metodologia_empleada_en_la_asesoria_fue_la_adecuada = factor(puntos_considera_que_la_metodologia_empleada_en_la_asesoria_fue_la_adecuada, levels = c("Muy satisfecho", "Satisfecho", "Normal" ))) %>% 
-  categorica_1var(puntos_considera_que_la_metodologia_empleada_en_la_asesoria_fue_la_adecuada, "Calificación")
-```
-### Gráfica
-```{r}
-ciarp_p %>%
-  mutate(puntos_considera_que_la_metodologia_empleada_en_la_asesoria_fue_la_adecuada = factor(puntos_considera_que_la_metodologia_empleada_en_la_asesoria_fue_la_adecuada, levels = c("Normal", "Satisfecho", "Muy satisfecho"))) %>%
-  plot_barras(puntos_considera_que_la_metodologia_empleada_en_la_asesoria_fue_la_adecuada, "", "", "")
-```
-
-```{r}
-
-if (params$rendered_by_shiny)
-  shiny::setProgress(0.75)
-
-```
-
-## ¿Fueron resueltas todas sus inquietudes durante la asesoría?
-
-
-```{r}
-p3 = mean(ciarp_p$fueron_resueltas_todas_sus_inquietudes_durante_la_asesoria)
-promedio_pregunta3 = round(p3, 1)
-```
-
-La puntuación promedio para este aspecto fue de **`r promedio_pregunta3`** lo cuál indica que los encuestados han tenido una percepción bastante positiva de frente a las respuestas dadas a las inquietudes que surgieron en la socialización.
-
-### Tabla
-```{r}
-ciarp_p %>% 
-    mutate(puntos_fueron_resueltas_todas_sus_inquietudes_durante_la_asesoria = factor(puntos_fueron_resueltas_todas_sus_inquietudes_durante_la_asesoria, levels = c("Muy satisfecho", "Satisfecho", "Normal" ))) %>% 
-  categorica_1var(puntos_fueron_resueltas_todas_sus_inquietudes_durante_la_asesoria, "Calificación")
-```
-
-### Gráfica
-```{r}
-ciarp_p %>%
-  mutate(puntos_fueron_resueltas_todas_sus_inquietudes_durante_la_asesoria = factor(puntos_fueron_resueltas_todas_sus_inquietudes_durante_la_asesoria, levels = c("Normal", "Satisfecho", "Muy satisfecho"))) %>%
-  plot_barras(puntos_fueron_resueltas_todas_sus_inquietudes_durante_la_asesoria, "", "", "")
-```
