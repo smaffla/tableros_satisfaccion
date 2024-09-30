@@ -14,6 +14,7 @@ output:
 params:
   mes: NA
   anio: NA
+  semestre: NA
   rendered_by_shiny: no
 subtitle: Universidad Pedagógica Nacional
 editor_options:
@@ -64,13 +65,13 @@ ciarp_p20232 <- read.xlsx("ENCUESTA DE PERCEPCIÓN CIARP ASESORIAS PERSONALIZAD
 
 ciarp_p <- rbind(ciarp_p20231, ciarp_p20232)
 
-# ciarp_s <-  if(params$semestre == 1){
-#   ciarp_s20231
-# } else if (params$semestre == 2){
-#   ciarp_s20232
-# } else if (params$semestre == 3){
-#   ciarp_s
-# }
+ciarp_p <-  if(params$semestre == 1){
+  ciarp_p20231
+} else if (params$semestre == 2){
+  ciarp_p20232
+} else if (params$semestre == 3){
+  ciarp_p
+}
 ```
 
 ```{r}

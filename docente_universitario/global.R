@@ -42,6 +42,9 @@ colores_plot <- c(#"#2171b5",
   "#fe9929","#ec7014")
 
 
+
+#Depuración de archivo que contiene las respuestas de las encuestas ciarp socializaciones
+
 ciarp_s20231 <- read.xlsx("ENCUESTA DE PERCEPCIÓN CIARP SOCIALIZACIONES 2023-1.xlsx", sheet = "base de datos")
 
 ciarp_s20231 <- ciarp_s20231 %>%
@@ -94,6 +97,53 @@ ciarp_s20232 <- ciarp_s20232 %>%
   mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
          mesdili = str_to_title(mesdili)) %>% 
   mutate(anodili = year(hora_de_finalizacion))
+
+
+#Depuración del archivo que contiene las respuestas de las encuestas ciarp asesorias peersonalizadas
+
+ciarp_p20231 <- read.xlsx("ENCUESTA DE PERCEPCIÓN CIARP ASESORIAS PERSONALIZADAS 2023-1.xlsx", sheet = "BASE DE DATOS")
+
+ciarp_p20232 <- read.xlsx("ENCUESTA DE PERCEPCIÓN CIARP ASESORIAS PERSONALIZADAS 2023-2.xlsx", sheet = "base de datos")
+
+ciarp_p <- rbind(ciarp_p20231, ciarp_p20232)
+
+ciarp_p <- ciarp_p %>% 
+  distinct()
+
+ciarp_p <- ciarp_p %>% 
+  clean_names()
+
+ciarp_p <- ciarp_p %>% 
+  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
+  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+         mesdili = str_to_title(mesdili)) %>% 
+  mutate(anodili = year(hora_de_finalizacion))
+
+
+ciarp_p20231 <- ciarp_p20231 %>% 
+  distinct()
+
+ciarp_p20231 <- ciarp_p20231 %>% 
+  clean_names()
+
+ciarp_p20231 <- ciarp_p20231 %>% 
+  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
+  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+         mesdili = str_to_title(mesdili)) %>% 
+  mutate(anodili = year(hora_de_finalizacion))
+
+ciarp_p20232 <- ciarp_p20232 %>% 
+  distinct()
+
+ciarp_p20232 <- ciarp_p20232 %>% 
+  clean_names()
+
+ciarp_p20232 <- ciarp_p20232 %>% 
+  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
+  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+         mesdili = str_to_title(mesdili)) %>% 
+  mutate(anodili = year(hora_de_finalizacion))
+
 
 
 #Funciones
