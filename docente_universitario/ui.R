@@ -9,9 +9,16 @@ dashboardPage(
   
   dashboardSidebar(
     sidebarMenu(
+      tags$head(
+        tags$style(HTML("
+        .main-sidebar {
+          width: 250 px !important;
+        }
+      "))
+      ),
       style = "position: fixed;",
       menuItem("Encuestas CIARP", badgeLabel = "Socializaciones", badgeColor = "light-blue", tabName = "dashboardCiarps", icon = icon("users"), startExpanded = TRUE),
-      menuItem("Encuestas CIARP", badgeLabel = "Personalizadas", badgeColor = "light-blue", tabName = "dashboardCiarpp", icon = icon("users"), startExpanded = TRUE)
+      menuItem("Encuestas CIARP", badgeLabel = "Personalizadas", badgeColor = "light-blue", tabName = "dashboardCiarpp", icon = icon("user"), startExpanded = TRUE)
     )
   ), #  Cierra sidebarmenu
   

@@ -467,7 +467,7 @@ ciarp_s <- ciarp_s %>%
 #   filter(mesdili %in% params$mes)
 ```
 
-<!-- Eliminamos duplicados -->
+
 
 
 ```{r}
@@ -475,11 +475,11 @@ total <- ciarp_s %>% count() %>% pull()
 ```
 
 
-La encuesta de satisfacción y percepción para las socializaciones CIARP fue respondida por **`r total`** personas.
+La encuesta de satisfacción y percepción para las socializaciones CIARP fue respondida por **`r total`** docentes.
 
 # Tipo de vinculación
 
-En este apartado se muestra la distribución de los encuestados, categorizandolos por el tipo de vinculación que tienen con la UPN.
+En este apartado se muestra la distribución de los docentes encuestados, categorizándolos por el tipo de vinculación que tienen con la UPN.
 
 ### Tabla
 ```{r}
@@ -504,7 +504,7 @@ if (params$rendered_by_shiny)
 
 # Calificación y/o aporte por criterio de evaluación
 
-En este apartado se muestran diferentes aspectos evaluados por los encuestados que respondieron la encuesta de satisfacción.
+En este apartado se muestran diferentes aspectos evaluados por los docentes encuestados que respondieron la encuesta de satisfacción.
 
 ## ¿Considera que la metodología empleada en la socialización fue la adecuada? 
 
@@ -514,7 +514,7 @@ p1 = mean(ciarp_s$considera_que_la_metodologia_empleada_en_la_socializacion_fue_
 promedio_pregunta1 = round(p1, 1)
 ```
 
-La pruntuación promedio para este aspecto fue de **`r promedio_pregunta1`** lo cuál indica que los encuestados han tenido una percepción bastante positiva de la metodología empleada en la socialización.
+La puntuación promedio para este aspecto fue de **`r promedio_pregunta1`** lo cuál indica que los docentes han tenido una percepción bastante positiva de la metodología empleada en la socialización.
 
 ### Tabla
 ```{r}
@@ -543,7 +543,7 @@ p2 = mean(ciarp_s$fueron_resueltas_todas_sus_inquietudes_durante_la_socializacio
 promedio_pregunta2 = round(p2, 1)
 ```
 
-La puntuación promedio para este aspecto fue de **`r promedio_pregunta2`** lo cuál indica que los encuestados han tenido una percepción bastante positiva de frente a las respuestas dadas a las inquietudes que surgieron en la socialización.
+La puntuación promedio para este aspecto fue de **`r promedio_pregunta2`** lo cuál indica que los docentes han tenido una percepción bastante positiva de frente a las respuestas dadas a las inquietudes que surgieron en la socialización.
 
 ### Tabla
 ```{r}
