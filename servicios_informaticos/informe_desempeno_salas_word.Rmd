@@ -446,34 +446,39 @@ desempeno <- desempeno %>%
   mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
          mesdili = str_to_title(mesdili)) %>% 
   mutate(anodili = year(hora_de_finalizacion))
+
+
+desempeno[] <- lapply(desempeno, function(x) gsub("^[a-d]\\)\\s+", "", x))
 ```
 
 
 
 
 ```{r}
-total <- desempeno %>% count() %>% pull() 
+total <- desempeno %>% count() %>% pull()
 ```
 
 
 La encuesta de satisfacción y percepción sobre el desempeño de las salas de cómputo de la UPN fue respondida por **`r total`** personas.
 
-# Tipo de vinculación
+# Dependencia
 
-En este apartado se muestra la distribución de los encuestados, categorizándolos por el tipo de vinculación que tienen con la UPN.
+En este apartado se muestra la distribución de los administradores de las salas de cómputo en las distintas dependencias de la UPN.
 
 ### Tabla
 ```{r}
-ciarp_s %>% 
-  filter(!is.na(tipo_de_vinculacion_con_la_universidad_pedagogica_nacional)) %>% 
-  categorica_1var(tipo_de_vinculacion_con_la_universidad_pedagogica_nacional, "Tipo de vinculación")
+desempeno %>% 
+  filter(!is.na(dependencia_number_10)) %>% 
+  categorica_1var(dependencia_number_10, "Tipo de vinculación")
+
 ```
 
 ### Gráfica
 ```{r}
-ciarp_s %>% 
-  filter(!is.na(tipo_de_vinculacion_con_la_universidad_pedagogica_nacional)) %>%
-  plot_barras(tipo_de_vinculacion_con_la_universidad_pedagogica_nacional, "", "", "Tipo de vinculación")
+desempeno %>% 
+  filter(!is.na(dependencia_number_10)) %>%
+  plot_barras(dependencia_number_10, "", "", "")
+  
 ```
 
 ```{r}
@@ -485,30 +490,23 @@ if (params$rendered_by_shiny)
 
 # Calificación y/o aporte por criterio de evaluación
 
-En este apartado se muestran diferentes aspectos evaluados por los docentes encuestados que respondieron la encuesta de satisfacción.
+En este apartado se muestran diferentes aspectos evaluados por los usuarios de salas de cómputo que contestaron la encuesta.
 
-## ¿Considera que la metodología empleada en la socialización fue la adecuada? 
-
-
-```{r}
-p1 = mean(ciarp_s$considera_que_la_metodologia_empleada_en_la_socializacion_fue_la_adecuada)
-promedio_pregunta1 = round(p1, 1)
-```
-
-La puntuación promedio para este aspecto fue de **`r promedio_pregunta1`** lo cuál indica que los docentes han tenido una percepción bastante positiva de la metodología empleada en la socialización.
+## ¿Cómo evaluaría el profesionalismo del administrador de la sala de cómputo en su interacción con estudiantes y personal académico? 
 
 ### Tabla
 ```{r}
-ciarp_s %>% 
-  mutate(puntos_considera_que_la_metodologia_empleada_en_la_socializacion_fue_la_adecuada = factor(puntos_considera_que_la_metodologia_empleada_en_la_socializacion_fue_la_adecuada, levels = c("Muy satisfecho", "Satisfecho", "Normal" ))) %>% 
-  categorica_1var(puntos_considera_que_la_metodologia_empleada_en_la_socializacion_fue_la_adecuada, "Calificación")
+desempeno %>% 
+  mutate(como_evaluaria_el_profesionalismo_del_administrador_de_la_sala_de_computo_en_su_interaccion_con_estudiantes_y_personal_academico = factor(como_evaluaria_el_profesionalismo_del_administrador_de_la_sala_de_computo_en_su_interaccion_con_estudiantes_y_personal_academico, levels = c("Excelente", "Bueno", "Aceptable", "Necesita mejorar", "Insatisfactorio"))) %>% 
+  categorica_1var(como_evaluaria_el_profesionalismo_del_administrador_de_la_sala_de_computo_en_su_interaccion_con_estudiantes_y_personal_academico, "Calificación")
 ```
 ### Gráfica
 ```{r}
-ciarp_s %>%
-  mutate(puntos_considera_que_la_metodologia_empleada_en_la_socializacion_fue_la_adecuada = factor(puntos_considera_que_la_metodologia_empleada_en_la_socializacion_fue_la_adecuada, levels = c("Normal", "Satisfecho", "Muy satisfecho"))) %>%
-  plot_barras(puntos_considera_que_la_metodologia_empleada_en_la_socializacion_fue_la_adecuada, "", "", "")
+desempeno %>%
+ 
+  mutate(como_evaluaria_el_profesionalismo_del_administrador_de_la_sala_de_computo_en_su_interaccion_con_estudiantes_y_personal_academico = factor(como_evaluaria_el_profesionalismo_del_administrador_de_la_sala_de_computo_en_su_interaccion_con_estudiantes_y_personal_academico, levels = c("Insatisfactorio", "Necesita mejorar", "Aceptable", "Bueno", "Excelente"))) %>%   plot_barras(como_evaluaria_el_profesionalismo_del_administrador_de_la_sala_de_computo_en_su_interaccion_con_estudiantes_y_personal_academico, "", "", "")
 ```
+
 ```{r}
 
 if (params$rendered_by_shiny)
@@ -516,27 +514,18 @@ if (params$rendered_by_shiny)
 
 ```
 
-## ¿Fueron resueltas todas sus inquietudes durante la socialización? 
-
-
-```{r}
-p2 = mean(ciarp_s$fueron_resueltas_todas_sus_inquietudes_durante_la_socializacion)
-promedio_pregunta2 = round(p2, 1)
-```
-
-La puntuación promedio para este aspecto fue de **`r promedio_pregunta2`** lo cuál indica que los docentes han tenido una percepción bastante positiva de frente a las respuestas dadas a las inquietudes que surgieron en la socialización.
+## ¿Cómo evaluaría la capacidad del administrador para resolver problemas técnicos y situaciones imprevistas? 
 
 ### Tabla
 ```{r}
-ciarp_s %>% 
-    mutate(puntos_fueron_resueltas_todas_sus_inquietudes_durante_la_socializacion = factor(puntos_fueron_resueltas_todas_sus_inquietudes_durante_la_socializacion, levels = c("Muy satisfecho", "Satisfecho", "Normal" ))) %>% 
-  categorica_1var(puntos_fueron_resueltas_todas_sus_inquietudes_durante_la_socializacion, "Calificación")
+desempeno %>% 
+  mutate(como_evaluaria_la_capacidad_del_administrador_para_resolver_problemas_tecnicos_y_situaciones_imprevistas_number_10 = factor(como_evaluaria_la_capacidad_del_administrador_para_resolver_problemas_tecnicos_y_situaciones_imprevistas_number_10, levels = c("Excelente", "Bueno", "Aceptable", "Necesita mejorar", "Insatisfactorio"))) %>% 
+  categorica_1var(como_evaluaria_la_capacidad_del_administrador_para_resolver_problemas_tecnicos_y_situaciones_imprevistas_number_10, "Calificación")
 ```
 ### Gráfica
 ```{r}
-ciarp_s %>%
-  mutate(puntos_fueron_resueltas_todas_sus_inquietudes_durante_la_socializacion = factor(puntos_fueron_resueltas_todas_sus_inquietudes_durante_la_socializacion, levels = c("Normal", "Satisfecho", "Muy satisfecho"))) %>%
-  plot_barras(puntos_fueron_resueltas_todas_sus_inquietudes_durante_la_socializacion, "", "", "")
+desempeno %>%
+  mutate(como_evaluaria_la_capacidad_del_administrador_para_resolver_problemas_tecnicos_y_situaciones_imprevistas_number_10 = factor(como_evaluaria_la_capacidad_del_administrador_para_resolver_problemas_tecnicos_y_situaciones_imprevistas_number_10, levels = c("Insatisfactorio", "Necesita mejorar", "Aceptable", "Bueno", "Excelente"))) %>%   plot_barras(como_evaluaria_la_capacidad_del_administrador_para_resolver_problemas_tecnicos_y_situaciones_imprevistas_number_10, "", "", "")
 ```
 
 ```{r}
