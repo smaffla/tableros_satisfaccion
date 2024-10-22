@@ -1,6 +1,6 @@
 dashboardPage(
   dashboardHeader(
-    title = "Encuestas de calidad del servicio - Subdirección de Admisiones y Registro"
+    title = "Encuestas percerpción y calidad - Asesorías CIARP"
   ),
   
   ## ⏹️ 🍔 Sidebar -----------------------------------------------------------------
@@ -104,7 +104,7 @@ dashboardPage(
                   
                 box(
                     title = "Introducción", width = 8, background = "light-blue",
-                    "Esta encuesta muestra el análisis descriptivo de datos, correspondiente a la encuesta de satisfacción dirigida a los docentes de la UPN para conocer su percepción sobre las socializaciones realizadas por el CIARP"
+                    "Este informe muestra el análisis descriptivo de datos, correspondiente a la encuesta de satisfacción dirigida a los docentes de la UPN para conocer su percepción sobre las socializaciones realizadas por el CIARP"
                   ),
                 
                 column(
