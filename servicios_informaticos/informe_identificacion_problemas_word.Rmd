@@ -1,0 +1,705 @@
+---
+title: "ENCUESTA PARA LA IDENTIFICACIÓN DE PROBLEMAS ESPECÍFICOS EN LAS SALAS DE CÓMPUTO"
+author: "Oficina de Desarrollo y Planeación"
+output:
+  word_document:
+    fig_height: 7
+    fig_width: 10
+    toc: yes
+    toc_depth: '4'
+  html_document:
+    toc: yes
+    toc_depth: '4'
+    df_print: paged
+params:
+  mes: NA
+  anio: NA
+  semestre: NA
+  rendered_by_shiny: no
+subtitle: Universidad Pedagógica Nacional
+editor_options:
+  chunk_output_type: inline
+toc-title: Tabla de contenido
+---
+
+<!-- <div> -->
+<!-- <img src="https://estilos.upn.edu.co/userfiles/footer/footer.svg" alt="UPN" class="watermark"> -->
+<!-- </div> -->
+
+\newpage
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = FALSE,
+	message = FALSE,
+	warning = FALSE,
+	dpi = 300	)
+
+library(openxlsx)
+library(tidyverse)
+library(janitor)
+library(flextable)
+library(scales)
+library(lubridate)
+library(forcats)
+
+colores_plot <- c(#"#2171b5",
+                                              "#4292c6","#74a9cf",
+                                              "#41b6c4","#7fcdbb",#"#238b45","#41ab5d",
+                                              "#78c679","#c7e9b4","#edf8b1","#fee391","#fec44f",
+                                              "#fe9929","#ec7014")
+
+
+identi_problemas <- read.xlsx("Encuesta para la Identificación de Problemas Específicos en las Salas de Cómputo(1-19).xlsx")
+
+# ciarp_s <-  if(params$semestre == 1){
+#   ciarp_s20231
+# } else if (params$semestre == 2){
+#   ciarp_s20232
+# } else if (params$semestre == 3){
+#   ciarp_s
+#
+
+```
+
+```{r}
+ftable <- function(x, encabezado = NULL, title = NULL) {
+  
+  table <- x %>% 
+    flextable() %>% 
+    set_caption(caption = title) %>%
+    align(part = "header", align = "center") %>% 
+    align(j = 2:ncol_keys(.), align = "center") %>% 
+    bg(part = "header", bg = "#2c7fb8") %>% 
+    color(part = "header", color = "white") %>% 
+    bg(j = 1, bg = "#D9D9D9") %>% 
+    bg(i = nrow_part(.), bg = "#2c7fb8") %>%
+    bold(part = "header") %>% 
+    bold(i = nrow_part(.)) %>%
+    color(i = nrow_part(.), color = "white") %>%
+    border(part = "all", border = fp_border_default(color="black", width = 1)) %>% 
+    autofit() %>%
+    fit_to_width(max_width = 8.5)
+  
+  if (!is.null(encabezado)) {
+    table <- table %>% 
+      add_header_row(colwidths = ncol_keys(.), values = encabezado)
+  }
+  
+  return(table)
+    
+}
+
+plot_donas_as <- function(x, col, titulo = "") {
+  
+  col <- enquo(col)
+  
+  data <- x %>%
+    mutate(!!col := factor(!!col, levels = c("Si", "No"))) %>% 
+    count(!!col) %>% 
+    mutate(porcentaje = n / sum(n),
+           ymax = cumsum(porcentaje),
+           ymin = c(0, head(ymax, n = -1)),
+           labelpos = (ymax + ymin) / 2,
+           labelname = paste(n,"\n",percent(porcentaje, 0.1)))
+  #filter(porcentaje >= 0.005)
+  
+  ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 10, xmin = 1, fill = !!col)) +
+    geom_rect() +
+    geom_text(aes(x = -1.5, y = labelpos, label = labelname), size = 5, color = "black", fontface = "bold") +
+    labs(title = str_wrap(titulo, width = 30)) +
+    scale_fill_manual(values = c("#3690c0", "#fc9272")) +
+    coord_polar(theta = "y") +
+    xlim(c(20, -10)) +
+    theme_void() +
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
+    guides(fill = guide_legend(title = "", label.position = "right",
+                               label.theme = element_text(size = 18)))
+}
+
+plot_donas <- function(x, col, titulo = "") {
+  
+  col <- enquo(col)
+  
+  data <- x %>%
+    count(!!col) %>% 
+    mutate(porcentaje = n / sum(n),
+           ymax = cumsum(porcentaje),
+           ymin = c(0, head(ymax, n = -1)),
+           labelpos = (ymax + ymin) / 2,
+           labelname = paste(n,"\n",percent(porcentaje, 0.1)))
+  #filter(porcentaje >= 0.005)
+  
+  ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 10, xmin = 1, fill = !!col)) +
+    geom_rect() +
+    geom_text(aes(x = -1.5, y = labelpos, label = labelname), size = 5, color = "black", fontface = "bold") +
+    labs(title = str_wrap(titulo, width = 30)) +
+    scale_fill_manual(values = colores_plot) +
+    coord_polar(theta = "y") +
+    xlim(c(20, -10)) +
+    theme_void() +
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
+    guides(fill = guide_legend(title = "", label.position = "right",
+                               label.theme = element_text(size = 18)))
+}
+
+## Función gráfico de barras para df caracterizacion
+plot_barras <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
+  col <- enquo(col)
+  
+  data <- x %>%
+    count(!!col )%>% 
+    mutate(perc = percent(n/sum(n), 0.1))
+  
+  if (is.null(top)) {
+    top <- 11
+  }
+  
+  data %>% 
+    arrange(desc(n)) %>% 
+    slice(1:top) %>% 
+    ggplot(aes(x = !!col, 
+               y= n, 
+               fill = !!col, 
+               label = paste(perc,"\n",n," "))) + 
+    geom_col()+
+    geom_text(vjust = 0.5, hjust = -0.1, size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$n)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
+    theme(legend.position="none")+
+    theme(axis.text.y = element_text(size = 14))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 40))+
+    scale_fill_manual(values = colores_plot) +
+    coord_flip()
+  
+}
+
+## Función gráfico de barras AGRUPADO para df caracterizacion
+plot_barras_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo = "") {
+  col <- enquo(col)
+  group <- enquo(group)
+  
+  data <- x %>%
+    count(!!group, !!col) %>% 
+    mutate(perc = percent(n/sum(n), 0.1))
+  
+  data %>% 
+    ggplot(aes(x = !!col, 
+               y= n, 
+               fill = !!group, 
+               label = paste(perc,"\n",n," "))) + 
+    geom_col(position = "dodge")+
+    geom_text(vjust = 0.5, hjust = -0.2 ,size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$n)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30))+ 
+    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+    guides(fill = guide_legend(title = leyenda, label.position = "right"
+                               , nrow = 2, label.theme = element_text(size = 12)))+
+    theme(legend.position = "bottom",
+          axis.text.y = element_text(size = 13),
+          axis.text.x = element_text(size = 13)) +
+    theme(axis.text.y = element_text(size = 12))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
+    scale_fill_manual(values = colores_plot) +
+    coord_flip()
+  
+}
+
+
+plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
+  
+  col <- enquo(col)
+  
+  if (is.null(top)) {
+    top <- 11
+  }
+  
+  data <- x %>%  
+    group_by(!!col) %>%
+    summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
+    ungroup()
+  
+  data %>% 
+    arrange(desc(promedio_general)) %>% 
+    slice(1:top) %>% 
+    ggplot(aes(x = !!col, 
+               y= promedio_general, 
+               fill = !!col, 
+               label = promedio_general)) + 
+    geom_col()+
+    geom_text(vjust = 0.5, hjust = -0.5, size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$promedio_general)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
+    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+    theme(legend.position="none")+
+    theme(axis.text.y = element_text(size = 14))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
+    scale_fill_manual(values = colores_plot)+
+    coord_flip()
+  
+}
+
+
+categorica_1var <- function(x, cat1, rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
+  cat1 <- enquo(cat1)
+  
+    if (is.null(wrap_width)) {
+    wrap_width <- 100
+    }
+  
+  table <- x %>% 
+    count(!!cat1) %>% 
+    adorn_totals(where = "row", name = "Total General") %>%
+    rename('{rename}' := !!cat1, "Cantidad" = n) %>% 
+    mutate('{rename}' := str_wrap(!!sym(rename), width = wrap_width)) %>%
+    ftable(encabezado, title)
+  
+  return(table)
+    
+}
+
+categorica_2var <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
+  cat1 <- enquo(cat1)
+  cat2 <- enquo(cat2)
+  
+  table <- x %>% 
+    count(!!cat1, !!cat2) %>% 
+    rbind(
+      x %>% 
+        filter(!is.na(!!cat2)) %>% 
+        count(!!cat2) %>% 
+        mutate(!!cat1 := "Total General")
+    ) %>% 
+    group_by(!!cat1) %>% 
+    #mutate(p = n/sum(n)) %>% 
+    #filter (p >= 0.0005) %>% 
+    #select(-n) %>% 
+    pivot_wider(names_from = !!cat2, values_from = n, values_fill = 0) %>%
+    adorn_totals(where = "col", name = "Total General") %>%
+    #mutate(across(where(is.numeric), ~ percent(.x, 0.01, decimal.mark = ","))) %>% 
+    rename("{rename}" := !!cat1)
+  
+      if (is.null(label_width)) {
+    label_width <- 10
+      
+  }
+  
+  # Personalizar el tamaño de las etiquetas de columna
+  colnames(table) <- str_wrap(colnames(table), width = label_width)
+  
+  table <- table %>%  ftable(encabezado, title)
+  
+  return(table)
+}
+
+categorica_2var_escala <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
+  cat1 <- enquo(cat1)
+  cat2 <- enquo(cat2)
+  
+  # Definir el orden fijo de las categorías
+  orden_categorias <- c("Excelente", "Muy bueno", "Bueno", "Aceptable", "Por mejorar")
+  
+  table <- x %>% 
+    count(!!cat1, !!cat2) %>% 
+    rbind(
+      x %>% 
+        filter(!is.na(!!cat2)) %>% 
+        count(!!cat2) %>% 
+        mutate(!!cat1 := "Total General")
+    ) %>% 
+    group_by(!!cat1) %>% 
+    pivot_wider(names_from = !!cat2, values_from = n, values_fill = 0) %>%
+    # Asegurar que todas las categorías estén presentes y en el orden correcto
+    mutate(across(all_of(orden_categorias), ~if_else(is.na(.), 0, .))) %>%
+    select(1, all_of(orden_categorias), everything()) %>%
+    adorn_totals(where = "col", name = "Total General") %>%
+    rename("{rename}" := !!cat1)
+  
+  if (is.null(label_width)) {
+    label_width <- 10
+  }
+  
+  table <- table %>%  ftable(encabezado, title)
+  
+  return(table)
+}
+
+categorica_vinculacion_modalidad <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
+  cat1 <- enquo(cat1)
+  cat2 <- enquo(cat2)
+  
+  # Definir el orden fijo de las categorías
+  orden_categorias <- c("Contrato de prestación de servicios", "Resolución de incentivos", "Otra")
+  
+  table <- x %>% 
+    count(!!cat1, !!cat2) %>% 
+    rbind(
+      x %>% 
+        filter(!is.na(!!cat2)) %>% 
+        count(!!cat2) %>% 
+        mutate(!!cat1 := "Total General")
+    ) %>% 
+    group_by(!!cat1) %>% 
+    pivot_wider(names_from = !!cat2, values_from = n, values_fill = 0) %>%
+    # Asegurar que todas las categorías estén presentes y en el orden correcto
+    mutate(across(all_of(orden_categorias), ~if_else(is.na(.), 0, .))) %>%
+    select(1, all_of(orden_categorias), everything()) %>%
+    adorn_totals(where = "col", name = "Total General") %>%
+    rename("{rename}" := !!cat1)
+  
+  if (is.null(label_width)) {
+    label_width <- 10
+  }
+  
+  table <- table %>%  ftable(encabezado, title)
+  
+  return(table)
+}
+
+categorica_2varp <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
+  cat1 <- enquo(cat1)
+  cat2 <- enquo(cat2)
+  
+  table <- x %>% 
+    count(!!cat1, !!cat2) %>% 
+    rbind(
+      x %>% 
+        filter(!is.na(!!cat2)) %>% 
+        count(!!cat2) %>% 
+        mutate(!!cat1 := "Total General")
+    ) %>% 
+    group_by(!!cat1) %>% 
+    mutate(p = n/sum(n)) %>% 
+    #filter (p >= 0.0005) %>% 
+    select(-n) %>% 
+    pivot_wider(names_from = !!cat2, values_from = p, values_fill = 0) %>% 
+    adorn_totals(where = "col", name = "Total General") %>%
+    mutate(across(where(is.numeric), ~ percent(.x, 0.1, decimal.mark = ","))) %>% 
+    rename("{rename}" := !!cat1)
+  
+      if (is.null(label_width)) {
+    label_width <- 10
+      
+  }
+  
+  # Personalizar el tamaño de las etiquetas de columna
+  colnames(table) <- str_wrap(colnames(table), width = label_width)
+  
+  table <- table %>%  ftable(encabezado, title)
+  
+  return(table)
+}
+
+wrap_text <- function(x, width) {
+  sapply(x, function(y) {
+    paste(strwrap(y, width = width), collapse = "\n")
+  })
+}
+
+tabla_prom <- function(x, col, rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
+  
+  col <- enquo(col)
+  
+  if (is.null(wrap_width)) {
+    wrap_width <- 100
+  }
+  
+  table <- x %>% 
+  group_by(!!col) %>%
+  summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
+  ungroup() %>% 
+  #arrange(desc(promedio_general)) %>% 
+  rename("{rename}" := !!col,
+         "Promedio" = promedio_general) %>% 
+  as.data.frame()  
+  
+  formatted_table <- ftable(table, encabezado, title) %>% 
+  bg(i = nrow_part(.), bg = "white") %>%
+  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+  color(i = nrow_part(.), color = "black") %>%
+  bold(i = nrow_part(.), bold = FALSE)
+  
+  return(formatted_table)
+  
+}
+```
+
+```{r}
+identi_problemas <- identi_problemas %>% 
+  distinct()
+
+identi_problemas <- identi_problemas %>% 
+  clean_names()
+
+identi_problemas <- identi_problemas %>% 
+  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
+  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+         mesdili = str_to_title(mesdili)) %>% 
+  mutate(anodili = year(hora_de_finalizacion))
+
+identi_problemas <- identi_problemas %>%
+  mutate(
+    sede = fct_collapse(
+      sede, "Calle 72" = 
+        c("calle 72", "CALLE 72", "Calle 72", "CLL 72", "cll 72", "CLL 72", "cll 72 ", "CLL 72 ")
+      )
+    )
+
+identi_problemas <- identi_problemas %>% 
+  mutate(
+    sede = case_when(
+      str_detect(sede, "Parque Nacional") ~ "Parque Nacional",
+      TRUE ~ sede
+    )
+  )
+
+identi_problemas <- identi_problemas %>%
+  mutate(
+    edificio = case_when(
+      str_detect(edificio, "A") ~ "Edificio A",
+      str_detect(edificio, "B") ~ "Edificio B",
+      str_detect(edificio, "C") ~ "Edificio C",
+      str_detect(edificio, "E") ~ "Edificio E",
+      TRUE ~ edificio
+    )
+  )
+
+identi_problemas <- identi_problemas %>%
+  mutate(
+    facultad_o_area_administrativa = case_when(
+      str_detect(facultad_o_area_administrativa, "Facultad Educación") ~ "Facultad Educación Física",
+      TRUE ~ facultad_o_area_administrativa
+    )
+  )
+
+```
+
+
+
+
+```{r}
+total <- identi_problemas %>% count() %>% pull()
+```
+
+
+La encuesta realizada para la identificación de problemas en las salas de cómputo fue contestada por **`r total`** personas.
+
+# Facultad
+
+En este apartado se muestran la facultad a la que pertenecen las personas que contestaron la encuesta para la identificación de problemas específicos en las salas de cómputo.
+
+### Tabla
+```{r}
+identi_problemas %>% 
+  filter(!is.na(facultad_o_area_administrativa)) %>% 
+  categorica_1var(facultad_o_area_administrativa, "Facultad")
+
+```
+
+### Gráfica
+```{r}
+identi_problemas %>% 
+  filter(!is.na(facultad_o_area_administrativa)) %>%
+  plot_barras(facultad_o_area_administrativa, "", "", "")
+  
+```
+
+# Sede - Edificio
+
+En este apartado se muestran los edificios y sus respectivas sedes en los  cuales se identificaron problemas específicos en las salas de cómputo. 
+
+
+### Tabla
+```{r}
+
+#Se filtraron los registros con información errónea o confusa para preservar la integridad de los datos.
+
+identi_problemas %>%
+  filter(!str_detect(edificio, "Parque Nacional")) %>%
+  filter(!str_detect(edificio, "Salón 13")) %>%
+  filter(!is.na(sede)) %>% 
+  categorica_2var(sede, edificio, "Sede")
+
+```
+
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.25)
+
+```
+
+# Calificación y/o aporte por criterio de evaluación
+
+En este apartado se muestran diferentes aspectos evaluados por los usuarios de salas de cómputo que contestaron la encuesta.
+
+## ¿Cómo calificaría la ventilación en la sala de cómputo? 
+
+### Tabla
+```{r}
+identi_problemas %>% 
+  mutate(como_calificaria_la_ventilacion_en_la_sala_de_computo = factor(como_calificaria_la_ventilacion_en_la_sala_de_computo, levels = c("Excelente, siempre hay un flujo de aire fresco.", "Buena, aunque en ocasiones se siente un poco de calor.", "Deficiente, el aire se siente viciado y caliente.", "Muy mala, la falta de ventilación es un problema constante."))) %>%
+  categorica_1var(como_calificaria_la_ventilacion_en_la_sala_de_computo, "Calificación")
+```
+### Gráfica
+```{r}
+identi_problemas %>%
+ mutate(
+   como_calificaria_la_ventilacion_en_la_sala_de_computo = case_when(
+   str_detect(como_calificaria_la_ventilacion_en_la_sala_de_computo, "Excelente") ~ "Excelente",
+   str_detect(como_calificaria_la_ventilacion_en_la_sala_de_computo, "Buena") ~ "Buena",
+   str_detect(como_calificaria_la_ventilacion_en_la_sala_de_computo, "Deficiente") ~ "Deficiente",
+   str_detect(como_calificaria_la_ventilacion_en_la_sala_de_computo, "Muy mala") ~ "Muy mala",
+   TRUE ~ como_calificaria_la_ventilacion_en_la_sala_de_computo
+   )) %>% 
+  mutate(como_calificaria_la_ventilacion_en_la_sala_de_computo = factor(como_calificaria_la_ventilacion_en_la_sala_de_computo, levels = c("Muy mala", "Deficiente", "Buena", "Excelente"))) %>%   
+  plot_barras(como_calificaria_la_ventilacion_en_la_sala_de_computo, "", "", "")
+```
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.50)
+
+```
+## ¿La sala de cómputo cuenta con aire acondicionado? 
+
+### Tabla
+```{r}
+identi_problemas %>% 
+  mutate(la_sala_de_computo_cuenta_con_aire_acondicionado = factor(la_sala_de_computo_cuenta_con_aire_acondicionado, levels = c("Sí, y funciona correctamente. ", "Sí, pero no es suficiente para mantener una temperatura adecuada. ", "No, pero se utilizan ventiladores o sistemas alternativos de enfriamiento. ", "No, y no se cuenta con ningún sistema de enfriamiento."))) %>%
+  categorica_1var(la_sala_de_computo_cuenta_con_aire_acondicionado, "Calificación")
+```
+### Gráfica
+```{r}
+identi_problemas %>%
+  mutate(la_sala_de_computo_cuenta_con_aire_acondicionado = factor(la_sala_de_computo_cuenta_con_aire_acondicionado, levels = c("No, y no se cuenta con ningún sistema de enfriamiento.", "No, pero se utilizan ventiladores o sistemas alternativos de enfriamiento. ", "Sí, pero no es suficiente para mantener una temperatura adecuada. ", "Sí, y funciona correctamente. "))) %>%   
+  plot_barras(la_sala_de_computo_cuenta_con_aire_acondicionado, "", "", "")
+```
+
+## ¿Cómo evaluaría la ilumnicación en la sala de cómputo? 
+
+### Tabla
+```{r}
+identi_problemas %>% 
+  mutate(como_evaluaria_la_iluminacion_en_la_sala_de_computo = factor(como_evaluaria_la_iluminacion_en_la_sala_de_computo, levels = c("Óptima, ni demasiado brillante ni demasiado oscura. ", "Aceptable, aunque hay algunas zonas con iluminación deficiente. ", "Deficiente, el aire se siente viciado y caliente.", "Inadecuada, hay demasiada luz o sombras que dificultan la visión. "))) %>%
+  categorica_1var(como_evaluaria_la_iluminacion_en_la_sala_de_computo, "Calificación")
+```
+
+### Gráfica
+```{r}
+identi_problemas %>%
+ mutate(
+   como_evaluaria_la_iluminacion_en_la_sala_de_computo = case_when(
+   str_detect(como_evaluaria_la_iluminacion_en_la_sala_de_computo, "Óptima") ~ "Óptima",
+   str_detect(como_evaluaria_la_iluminacion_en_la_sala_de_computo, "Aceptable") ~ "Aceptable",
+   str_detect(como_evaluaria_la_iluminacion_en_la_sala_de_computo, "Inadecuada") ~ "Inadecuada",
+   TRUE ~ como_evaluaria_la_iluminacion_en_la_sala_de_computo
+   )) %>% 
+  mutate(como_evaluaria_la_iluminacion_en_la_sala_de_computo = factor(como_evaluaria_la_iluminacion_en_la_sala_de_computo, levels = c("Inadecuada", "Aceptable", "Óptima", "Excelente"))) %>%   
+  plot_barras(como_evaluaria_la_iluminacion_en_la_sala_de_computo, "", "", "")
+```
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.75)
+
+```
+
+## ¿Cuál es su percepción sobre la infraestructura de la sala de cómputo? 
+
+### Tabla
+```{r}
+identi_problemas %>% 
+  mutate(cual_es_su_percepcion_sobre_la_infraestructura_de_la_sala_de_computo = factor(cual_es_su_percepcion_sobre_la_infraestructura_de_la_sala_de_computo, levels = c("Excelente, las instalaciones están en perfectas condiciones. ", "Buena, aunque hay algunas áreas que necesitan mantenimiento. ", "Deficiente, se observan daños estructurales y falta de mantenimiento. "))) %>%
+  categorica_1var(cual_es_su_percepcion_sobre_la_infraestructura_de_la_sala_de_computo, "Calificación")
+```
+
+### Gráfica
+```{r}
+identi_problemas %>%
+ mutate(
+   cual_es_su_percepcion_sobre_la_infraestructura_de_la_sala_de_computo = case_when(
+   str_detect(cual_es_su_percepcion_sobre_la_infraestructura_de_la_sala_de_computo, "Excelente") ~ "Excelente",
+   str_detect(cual_es_su_percepcion_sobre_la_infraestructura_de_la_sala_de_computo, "Buena") ~ "Buena",
+   str_detect(cual_es_su_percepcion_sobre_la_infraestructura_de_la_sala_de_computo, "Deficiente") ~ "Deficiente",
+   TRUE ~ cual_es_su_percepcion_sobre_la_infraestructura_de_la_sala_de_computo
+   )) %>% 
+  mutate(cual_es_su_percepcion_sobre_la_infraestructura_de_la_sala_de_computo = factor(cual_es_su_percepcion_sobre_la_infraestructura_de_la_sala_de_computo, levels = c("Deficiente", "Buena", "Excelente"))) %>%   
+  plot_barras(cual_es_su_percepcion_sobre_la_infraestructura_de_la_sala_de_computo, "", "", "")
+```
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.75)
+
+```
+
+## ¿Cómo calificaría el estado de los equipos de cómputo en la sala? 
+
+### Tabla
+```{r}
+identi_problemas %>% 
+  mutate(como_calificaria_el_estado_de_los_equipos_de_computo_en_la_sala = factor(como_calificaria_el_estado_de_los_equipos_de_computo_en_la_sala, levels = c("Excelente, todos los equipos son nuevos y funcionan correctamente. ", "Bueno, aunque algunos equipos son algo antiguos. ", "Deficiente, hay varios equipos obsoletos y con fallas frecuentes. ", "Muy malo, la mayoría de los equipos están obsoletos y no funcionan adecuadamente."))) %>%
+  categorica_1var(como_calificaria_el_estado_de_los_equipos_de_computo_en_la_sala, "Calificación")
+```
+
+### Gráfica
+```{r}
+identi_problemas %>%
+ mutate(
+   como_calificaria_el_estado_de_los_equipos_de_computo_en_la_sala = case_when(
+   str_detect(como_calificaria_el_estado_de_los_equipos_de_computo_en_la_sala, "Excelente") ~ "Excelente",
+   str_detect(como_calificaria_el_estado_de_los_equipos_de_computo_en_la_sala, "Bueno") ~ "Bueno",
+   str_detect(como_calificaria_el_estado_de_los_equipos_de_computo_en_la_sala, "Deficiente") ~ "Deficiente",
+   str_detect(como_calificaria_el_estado_de_los_equipos_de_computo_en_la_sala, "Muy malo") ~ "Muy malo",
+   TRUE ~ como_calificaria_el_estado_de_los_equipos_de_computo_en_la_sala
+   )) %>% 
+  mutate(como_calificaria_el_estado_de_los_equipos_de_computo_en_la_sala = factor(como_calificaria_el_estado_de_los_equipos_de_computo_en_la_sala, levels = c("Muy malo", "Deficiente", "Bueno", "Excelente"))) %>%   
+  plot_barras(como_calificaria_el_estado_de_los_equipos_de_computo_en_la_sala, "", "", "")
+```
+
+## ¿Qué opina sobre el mobiliario (sillas, mesas) en la sala de cómputo?
+
+### Tabla
+```{r}
+identi_problemas %>% 
+  mutate(que_opina_sobre_el_mobiliario_sillas_mesas_en_la_sala_de_computo = factor(que_opina_sobre_el_mobiliario_sillas_mesas_en_la_sala_de_computo, levels = c("Excelente, todo el mobiliario es nuevo y ergonómico. ", "Bueno, aunque algunas sillas o mesas necesitan ser reemplazadas. ", "Deficiente, el mobiliario está deteriorado y no es cómodo. "))) %>%
+  categorica_1var(que_opina_sobre_el_mobiliario_sillas_mesas_en_la_sala_de_computo, "Calificación")
+```
+
+### Gráfica
+```{r}
+identi_problemas %>%
+ mutate(
+   que_opina_sobre_el_mobiliario_sillas_mesas_en_la_sala_de_computo = case_when(
+   str_detect(que_opina_sobre_el_mobiliario_sillas_mesas_en_la_sala_de_computo, "Excelente") ~ "Excelente",
+   str_detect(que_opina_sobre_el_mobiliario_sillas_mesas_en_la_sala_de_computo, "Bueno") ~ "Bueno",
+   str_detect(que_opina_sobre_el_mobiliario_sillas_mesas_en_la_sala_de_computo, "Deficiente") ~ "Deficiente",
+   str_detect(que_opina_sobre_el_mobiliario_sillas_mesas_en_la_sala_de_computo, "Muy malo") ~ "Muy malo",
+   TRUE ~ que_opina_sobre_el_mobiliario_sillas_mesas_en_la_sala_de_computo
+   )) %>% 
+  mutate(que_opina_sobre_el_mobiliario_sillas_mesas_en_la_sala_de_computo = factor(que_opina_sobre_el_mobiliario_sillas_mesas_en_la_sala_de_computo, levels = c("Muy malo", "Deficiente", "Bueno", "Excelente"))) %>%   
+  plot_barras(que_opina_sobre_el_mobiliario_sillas_mesas_en_la_sala_de_computo, "", "", "")
+```
+
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(1)
+
+```
