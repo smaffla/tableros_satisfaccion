@@ -12,7 +12,7 @@ dashboardPage(
       tags$head(
         tags$style(HTML("
         .main-sidebar {
-          width: 250 px !important;
+          width: 255px !important;
         }
       "))
       ),
