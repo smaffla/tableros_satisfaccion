@@ -18,22 +18,10 @@ library(lubridate)
 library(glue)
 library(flextable)
 library(htmltools)
+library(forcats)
 
 Sys.setlocale("LC_TIME", "es_ES.utf8")
 
-knitr::opts_chunk$set(
-  echo = FALSE,
-  message = FALSE,
-  warning = FALSE,
-  dpi = 300	)
-
-library(openxlsx)
-library(tidyverse)
-library(janitor)
-library(flextable)
-library(scales)
-library(lubridate)
-library(forcats)
 
 colores_plot <- c(#"#2171b5",
   "#4292c6","#74a9cf",
@@ -114,6 +102,91 @@ identi_problemas <- identi_problemas %>%
   )
 
 
+#Informe de satisfacción laboral 
+
+satis_laboral <- read.xlsx("Encuesta de Satisfacción Laboral(1-10).xlsx")
+
+satis_laboral <- satis_laboral %>% 
+  distinct()
+
+satis_laboral <- satis_laboral %>% 
+  clean_names()
+
+satis_laboral <- satis_laboral %>% 
+  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
+  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+         mesdili = str_to_title(mesdili)) %>% 
+  mutate(anodili = year(hora_de_finalizacion))
+
+
+satis_laboral <- satis_laboral %>%
+  rename(tareas_adicionales = 
+           si_la_respuesta_anterior_fue_a_veces_o_frecuentemente_mencione_ejemplos_de_esas_tareas_adicionales,
+         trabajo_adicional = en_el_ultimo_mes_le_ha_tocado_trabajar_fuera_de_su_horario_laboral_noches_fines_de_semana_dias_festivos) 
+
+satis_laboral <- satis_laboral %>% 
+  mutate(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual =
+           trimws(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual)) %>% 
+  mutate(con_que_frecuencia_se_le_asignan_tareas_que_no_forman_parte_de_su_descripcion_de_puesto_o_sus_objetivos_de_contrato
+         = trimws(
+           con_que_frecuencia_se_le_asignan_tareas_que_no_forman_parte_de_su_descripcion_de_puesto_o_sus_objetivos_de_contrato))
+
+satis_laboral_num <- satis_laboral %>% 
+  mutate(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual = case_when(
+    como_calificaria_su_satisfaccion_general_con_su_trabajo_actual == "Muy satisfecho" ~ "5",
+    como_calificaria_su_satisfaccion_general_con_su_trabajo_actual == "Satisfecho" ~ "4",
+    como_calificaria_su_satisfaccion_general_con_su_trabajo_actual == "Ni satisfecho ni insatisfecho" ~ "3",
+    como_calificaria_su_satisfaccion_general_con_su_trabajo_actual == "Insatisfecho" ~ "2",
+    como_calificaria_su_satisfaccion_general_con_su_trabajo_actual == "Muy insatisfecho" ~ "1",
+    TRUE ~ como_calificaria_su_satisfaccion_general_con_su_trabajo_actual
+  )) %>% 
+  mutate(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a =
+           trimws(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a)) %>% 
+  mutate(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a =
+           case_when(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a ==
+                       "Excelente" ~ "3",
+                     como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a ==
+                       "Bueno" ~ "2",
+                     como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a ==
+                       "Regular" ~ "1",
+                     TRUE ~ como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a))
+
+satis_laboral <- satis_laboral %>% 
+  mutate(tareas_adicionales = case_when(
+    tareas_adicionales == "." | tareas_adicionales == "N/A" | tareas_adicionales == "NINGUNA" |
+      tareas_adicionales == "Na" | tareas_adicionales == "N.A" | tareas_adicionales == "nunca" |
+      tareas_adicionales == "No he tenido tareas adicionales" | is.na(tareas_adicionales) ~ "Ninguna",
+    TRUE ~ tareas_adicionales
+  )
+  )
+
+satis_laboral <- satis_laboral %>%
+  mutate(
+    trabajo_adicional = case_when(
+      trabajo_adicional == "N.A" ~ "No responde",
+      TRUE ~ trabajo_adicional
+    )
+  )
+
+satis_laboral <- satis_laboral %>%
+  mutate(
+    por_que = case_when(
+      por_que == "N.A" ~ "No responde",
+      TRUE ~ por_que
+    )
+  )
+
+satis_laboral <- satis_laboral %>%
+  mutate(
+    por_que_1 = case_when(
+      por_que_1 == "N.A" ~ "No responde",
+      TRUE ~ por_que_1
+    )
+  )
+
+
+
+
 
 #Funciones
 generate_html <- function(variable) {
@@ -156,32 +229,30 @@ ftable <- function(x, encabezado = NULL, title = NULL) {
   
 }
 
-plot_donas_as <- function(x, col, titulo = "") {
-  
-  col <- enquo(col)
-  
-  data <- x %>%
-    mutate(!!col := factor(!!col, levels = c("Si", "No"))) %>% 
-    count(!!col) %>% 
-    mutate(porcentaje = n / sum(n),
-           ymax = cumsum(porcentaje),
-           ymin = c(0, head(ymax, n = -1)),
-           labelpos = (ymax + ymin) / 2,
-           labelname = paste(n,"\n",percent(porcentaje, 0.1)))
-  #filter(porcentaje >= 0.005)
-  
-  ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 10, xmin = 1, fill = !!col)) +
-    geom_rect() +
-    geom_text(aes(x = -1.5, y = labelpos, label = labelname), size = 5, color = "black", fontface = "bold") +
-    labs(title = str_wrap(titulo, width = 30)) +
-    scale_fill_manual(values = c("#3690c0", "#fc9272")) +
-    coord_polar(theta = "y") +
-    xlim(c(20, -10)) +
-    theme_void() +
-    theme(plot.title.position = "plot",
-          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
-    guides(fill = guide_legend(title = "", label.position = "right",
-                               label.theme = element_text(size = 18)))
+styled_dt <- function(x, title = NULL) {
+  table <- x %>%
+    datatable(
+      options = list(
+        pageLength = 7,
+        lengthMenu = list(c(7, 10, 15, -1), c(7, 10, 15, "Todos")),
+        initComplete = JS(
+          "function(settings, json) {",
+          "$(this.api().table().header()).css({'background-color': '#2c7fb8', 'color': 'white', 'font-weight': 'bold'});",
+          "}"
+        )
+      ),
+      caption = htmltools::tags$caption(
+        style = 'caption-side: top; text-align: center; color:black; font-size:150%',
+        title
+      )
+    ) %>%
+    formatStyle(
+      columns = names(x),
+      backgroundColor = styleEqual(names(x), rep('#D9D9D9', length(names(x)))),
+      color = styleEqual(names(x), rep('black', length(names(x)))),
+      fontWeight = styleEqual(names(x), rep('bold', length(names(x))))
+    )
+  return(table)
 }
 
 plot_donas <- function(x, col, titulo = "") {
@@ -334,6 +405,29 @@ categorica_1var <- function(x, cat1, rename, encabezado = NULL, title = NULL, wr
   return(table)
   
 }
+
+categorica_1vardt <- function(x, col, sum_col, rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
+  col <- enquo(col)
+  sum_col <- enquo(sum_col)
+  
+  if (is.null(wrap_width)) {
+    wrap_width <- 100
+  }
+  
+  table <- x %>% 
+    group_by(!!col) %>%
+    summarise(Suma = sum(!!sum_col, na.rm = TRUE), .groups = 'drop') %>%
+    adorn_totals(where = "row", name = "Total General") %>%
+    mutate(Suma = format(Suma, big.mark = ".", decimal.mark = ",", scientific = FALSE)) %>% 
+    #arrange(Suma) %>% 
+    rename('{rename}' := !!col, "Cantidad" = Suma) %>% 
+    #mutate('{rename}' := str_wrap(!!sym(rename), width = wrap_width)) %>%
+    styled_dt(title)
+  
+  return(table)
+  
+}
+
 
 categorica_2var <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
   cat1 <- enquo(cat1)

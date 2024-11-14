@@ -170,8 +170,7 @@ server <- function(input, output, session) {
   
   output$plot_facultad <- renderPlot({
     gar_filtrado() %>% 
-      mutate(tipo_de_usuario = factor(tipo_de_usuario, levels = c ("Otro", "Usuario externo", "Egresado de posgrado", "Egresado de pregrado", "Estudiante de pregrado", "Estudiante de posgrado"), ordered = TRUE)) %>% 
-      plot_barras(tipo_de_usuario, "", "", "Tipo de usuario")
+      plot_barras(facultad, "", "", "Facultad")
   })
   
   output$dt_pregunta_uno <- renderUI({
@@ -316,8 +315,7 @@ server <- function(input, output, session) {
   
   output$plot_facultad_2024 <- renderPlot({
     calidad_2024_filtrado() %>% 
-      mutate(tipo_de_usuario = factor(tipo_de_usuario, levels = c ("Otro", "Usuario externo", "Egresado de posgrado", "Egresado de pregrado", "Estudiante de pregrado", "Estudiante de posgrado"), ordered = TRUE)) %>% 
-      plot_barras(tipo_de_usuario, "", "", "Tipo de usuario")
+      plot_barras(facultad, "", "", "Facultad")
   })
   
   output$dt_pregunta_uno_2024 <- renderUI({
