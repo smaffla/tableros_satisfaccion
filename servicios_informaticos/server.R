@@ -16,6 +16,17 @@ desempeno_filtred <- reactive({
       filter(anodili %in% anios_seleccionados)
   })
   
+desempeno_num_filtred <- reactive({
+  anios_seleccionados <- if (input$select_anio_desempeno == "all") {
+    todos_los_anios
+  } else {
+    input$select_anio_desempeno
+  }
+  
+  desempeno_num %>%
+    filter(anodili %in% anios_seleccionados)
+})
+
   problems_filtred <- reactive({
     anios_seleccionados <- if (input$select_anio_problems == "all") {
       todos_los_anios
@@ -40,6 +51,18 @@ desempeno_filtred <- reactive({
 
   })
   
+  satis_laboral_num_filtred <- reactive({
+    
+    anios_seleccionados <- if (input$select_anio_satis == "all") {
+      todos_los_anios
+    } else {
+      input$select_anio_satis
+    }
+    
+    satis_laboral_num %>%
+      filter(anodili %in% anios_seleccionados)
+    
+  })
   
     ###Encuestas 2023
   
@@ -70,6 +93,37 @@ desempeno_filtred <- reactive({
         )
       )
     })
+  
+  output$value_box_promedio_general_dese <- renderUI({
+    
+    promedio <- desempeno_num_filtred() %>% 
+      summarise(
+        "Profesionalismo del administrador en interacción con estudiantes y personal académico" = round(mean(valor1, na.rm = TRUE), 1),
+        "Eficiencia operativa en la gestión de recursos y mantenimiento de equipos" = round(mean(valor2, na.rm = TRUE), 1),
+        "Cumplimiento de horarios establecidos en el funcionamiento de la sala de cómputo" = round(mean(valor3, na.rm = TRUE), 1),
+        "Capacidad del administrador para resolver problemas técnicos e imprevistos" = round(mean(valor4, na.rm = TRUE), 1),
+        "Efectividad en la comunicación con los usuarios de la sala de cómputo" = round(mean(valor5, na.rm = TRUE), 1),
+        "Proactividad del administrador en la identificación y aplicación de mejoras" = round(mean(valor6, na.rm = TRUE), 1),
+        "Habilidad para trabajar en equipo y colaborar en iniciativas tecnológicas" = round(mean(valor7, na.rm = TRUE), 1),
+        "Conocimiento actualizado sobre tendencias y avances en tecnología informática" = round(mean(valor8, na.rm = TRUE), 1),
+        "Efectividad en mantener la seguridad de la información e integridad de los sistemas" = round(mean(valor9, na.rm = TRUE), 1),
+        "Desempeño del administrador en atención y soporte a usuarios" = round(mean(valor10, na.rm = TRUE), 1)) %>%
+      pivot_longer(cols = everything(), names_to = "Categoría", values_to = "Promedio") %>% 
+      summarise(promedio = mean(Promedio, na.rm = TRUE)) %>% 
+      pull(promedio)
+    
+    fluidRow(
+      column(
+        width = 12,
+        summaryBox2(
+          title = "Promedio general",
+          value = round(promedio, 2),
+          style = "success",
+          width = 12
+        )
+      )
+    )
+  })
   
   ### Botones de descarga ⬇️ ------------------------------------------------------
   
@@ -106,7 +160,7 @@ desempeno_filtred <- reactive({
     }
   )
   
-  output$ft_desempeño_dependencia <- renderUI({
+  output$ft_desempeno_dependencia <- renderUI({
     
     table <- desempeno_filtred() %>%
       filter(!is.na(dependencia_number_10)) %>% 
@@ -117,7 +171,7 @@ desempeno_filtred <- reactive({
   })
   
   
-  output$plot_desempeño_dependencia <- renderPlot({
+  output$plot_desempeno_dependencia <- renderPlot({
     
     desempeno_filtred() %>% 
       filter(!is.na(dependencia_number_10)) %>%
@@ -126,6 +180,198 @@ desempeno_filtred <- reactive({
     
   })
   
+  output$ft_desempeno_dependencia_cali <- renderUI({
+    
+    table <- desempeno_num_filtred() %>%  
+      tabla_prom(dependencia_number_10, "Departamento")
+    
+    flextable::htmltools_value(table)
+    
+  })
+  
+  
+  output$plot_desempeno_dependencia_cali <- renderPlot({
+    
+    desempeno_num_filtred() %>% 
+      plot_barras_prom(dependencia_number_10, "", "", "")
+    
+    
+  })
+  
+  output$ft_desempeno_cali_gene <- renderUI({
+    
+    promedios <- desempeno_num_filtred() %>% 
+      summarise(
+        "Profesionalismo del administrador en interacción con estudiantes y personal académico" =
+          round(mean(valor1, na.rm = TRUE), 1),
+        "Eficiencia operativa en la gestión de recursos y mantenimiento de equipos" =
+          round(mean(valor2, na.rm = TRUE), 1),
+        "Cumplimiento de horarios establecidos en el funcionamiento de la sala de cómputo" =
+          round(mean(valor3, na.rm = TRUE), 1),
+        "Capacidad del administrador para resolver problemas técnicos e imprevistos" =
+          round(mean(valor4, na.rm = TRUE), 1),
+        "Efectividad en la comunicación con los usuarios de la sala de cómputo" =
+          round(mean(valor5, na.rm = TRUE), 1),
+        "Proactividad del administrador en la identificación y aplicación de mejoras" =
+          round(mean(valor6, na.rm = TRUE), 1),
+        "Habilidad para trabajar en equipo y colaborar en iniciativas tecnológicas" =
+          round(mean(valor7, na.rm = TRUE), 1),
+        "Conocimiento actualizado sobre tendencias y avances en tecnología informática" =
+          round(mean(valor8, na.rm = TRUE), 1),
+        "Efectividad en mantener la seguridad de la información e integridad de los sistemas" =
+          round(mean(valor9, na.rm = TRUE), 1),
+        "Desempeño del administrador en atención y soporte a usuarios" = 
+          round(mean(valor10, na.rm = TRUE), 1)
+      ) %>%
+      pivot_longer(cols = everything(), names_to = "Categoría", values_to = "Promedio")
+    
+    desempeno_gene <- desempeno_filtred() %>% 
+      select(
+        como_evaluaria_el_profesionalismo_del_administrador_de_la_sala_de_computo_en_su_interaccion_con_estudiantes_y_personal_academico,
+        en_terminos_de_eficiencia_operativa_como_calificaria_el_desempeno_en_la_gestion_de_recursos_y_mantenimiento_de_equipos_number_10,
+        que_tan_satisfactorio_es_el_cumplimiento_de_los_horarios_establecidos_por_el_administrador_en_el_funcionamiento_de_la_sala_de_computo_number_10,
+        como_evaluaria_la_capacidad_del_administrador_para_resolver_problemas_tecnicos_y_situaciones_imprevistas_number_10,
+        en_terminos_de_comunicacion_con_los_usuarios_de_la_sala_de_computo_que_tan_efectivo_considera_al_administrador_number_10,
+        que_tan_proactivo_es_el_administrador_en_la_identificacion_y_aplicacion_de_mejoras_en_los_servicios_number_10,
+        como_calificaria_la_habilidad_del_administrador_para_trabajar_en_equipo_y_colaborar_en_iniciativas_relacionadas_con_la_tecnologia_number_10,
+        en_que_medida_el_administrador_demuestra_conocimiento_actualizado_sobre_las_ultimas_tendencias_y_avances_en_tecnologia_informatica_para_mejorar_el_rendimiento_de_la_sala_de_computo_number_10,
+        que_tan_efectivo_es_el_administrador_al_mantener_la_seguridad_de_la_informacion_y_la_integridad_de_los_sistemas_number_10,
+        en_terminos_de_atencion_y_soporte_a_los_usuarios_como_calificaria_el_desempeno_del_administrador_number_10) %>%
+      rename(
+        "Profesionalismo del administrador en interacción con estudiantes y personal académico" =
+          como_evaluaria_el_profesionalismo_del_administrador_de_la_sala_de_computo_en_su_interaccion_con_estudiantes_y_personal_academico,
+        "Eficiencia operativa en la gestión de recursos y mantenimiento de equipos" =
+          en_terminos_de_eficiencia_operativa_como_calificaria_el_desempeno_en_la_gestion_de_recursos_y_mantenimiento_de_equipos_number_10,
+        "Cumplimiento de horarios establecidos en el funcionamiento de la sala de cómputo" =
+          que_tan_satisfactorio_es_el_cumplimiento_de_los_horarios_establecidos_por_el_administrador_en_el_funcionamiento_de_la_sala_de_computo_number_10,
+        "Capacidad del administrador para resolver problemas técnicos e imprevistos" =
+          como_evaluaria_la_capacidad_del_administrador_para_resolver_problemas_tecnicos_y_situaciones_imprevistas_number_10,
+        "Efectividad en la comunicación con los usuarios de la sala de cómputo" =
+          en_terminos_de_comunicacion_con_los_usuarios_de_la_sala_de_computo_que_tan_efectivo_considera_al_administrador_number_10,
+        "Proactividad del administrador en la identificación y aplicación de mejoras" =
+          que_tan_proactivo_es_el_administrador_en_la_identificacion_y_aplicacion_de_mejoras_en_los_servicios_number_10,
+        "Habilidad para trabajar en equipo y colaborar en iniciativas tecnológicas" =
+          como_calificaria_la_habilidad_del_administrador_para_trabajar_en_equipo_y_colaborar_en_iniciativas_relacionadas_con_la_tecnologia_number_10,
+        "Conocimiento actualizado sobre tendencias y avances en tecnología informática" =
+          en_que_medida_el_administrador_demuestra_conocimiento_actualizado_sobre_las_ultimas_tendencias_y_avances_en_tecnologia_informatica_para_mejorar_el_rendimiento_de_la_sala_de_computo_number_10,
+        "Efectividad en mantener la seguridad de la información e integridad de los sistemas" =
+          que_tan_efectivo_es_el_administrador_al_mantener_la_seguridad_de_la_informacion_y_la_integridad_de_los_sistemas_number_10,
+        "Desempeño del administrador en atención y soporte a usuarios" =
+          en_terminos_de_atencion_y_soporte_a_los_usuarios_como_calificaria_el_desempeno_del_administrador_number_10) %>%
+      pivot_longer(cols = everything(), 
+                   names_to = "Categoria", 
+                   values_to = "Calificacion") %>% 
+      mutate(Calificacion = factor(Calificacion, levels = c("Excelente", "Bueno","Aceptable", "Necesita mejorar", "Insatisfactorio"))) %>%
+      count(Categoria, Calificacion)
+    
+    table <- desempeno_gene %>% 
+      rename("Calificación" = Calificacion, "Categoría" = Categoria) %>% 
+      pivot_wider(names_from = "Calificación", values_from = n, 
+                  values_fill = list(n = 0)) %>%
+      left_join(promedios, by = "Categoría") %>% 
+      ftable(encabezado = "Calificación por categoría") %>%
+      bg(i = nrow_part(.), bg = NA) %>%
+      bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+      color(i = nrow_part(.), color = "black") %>%
+      bold(i = nrow_part(.), bold = FALSE)
+    
+    flextable::htmltools_value(table)
+    
+  })
+  
+  
+  output$plot_desempeno_cali_gene <- renderPlot({
+    
+    promedios <- desempeno_num_filtred() %>% 
+      summarise(
+        "Profesionalismo del administrador en interacción con estudiantes y personal académico" =
+          round(mean(valor1, na.rm = TRUE), 1),
+        "Eficiencia operativa en la gestión de recursos y mantenimiento de equipos" =
+          round(mean(valor2, na.rm = TRUE), 1),
+        "Cumplimiento de horarios establecidos en el funcionamiento de la sala de cómputo" =
+          round(mean(valor3, na.rm = TRUE), 1),
+        "Capacidad del administrador para resolver problemas técnicos e imprevistos" =
+          round(mean(valor4, na.rm = TRUE), 1),
+        "Efectividad en la comunicación con los usuarios de la sala de cómputo" =
+          round(mean(valor5, na.rm = TRUE), 1),
+        "Proactividad del administrador en la identificación y aplicación de mejoras" =
+          round(mean(valor6, na.rm = TRUE), 1),
+        "Habilidad para trabajar en equipo y colaborar en iniciativas tecnológicas" =
+          round(mean(valor7, na.rm = TRUE), 1),
+        "Conocimiento actualizado sobre tendencias y avances en tecnología informática" =
+          round(mean(valor8, na.rm = TRUE), 1),
+        "Efectividad en mantener la seguridad de la información e integridad de los sistemas" =
+          round(mean(valor9, na.rm = TRUE), 1),
+        "Desempeño del administrador en atención y soporte a usuarios" = 
+          round(mean(valor10, na.rm = TRUE), 1)
+      ) %>%
+      pivot_longer(cols = everything(), names_to = "Categoría", values_to = "Promedio")
+    
+    desempeno_gene <- desempeno_filtred() %>% 
+      select(
+        como_evaluaria_el_profesionalismo_del_administrador_de_la_sala_de_computo_en_su_interaccion_con_estudiantes_y_personal_academico,
+        en_terminos_de_eficiencia_operativa_como_calificaria_el_desempeno_en_la_gestion_de_recursos_y_mantenimiento_de_equipos_number_10,
+        que_tan_satisfactorio_es_el_cumplimiento_de_los_horarios_establecidos_por_el_administrador_en_el_funcionamiento_de_la_sala_de_computo_number_10,
+        como_evaluaria_la_capacidad_del_administrador_para_resolver_problemas_tecnicos_y_situaciones_imprevistas_number_10,
+        en_terminos_de_comunicacion_con_los_usuarios_de_la_sala_de_computo_que_tan_efectivo_considera_al_administrador_number_10,
+        que_tan_proactivo_es_el_administrador_en_la_identificacion_y_aplicacion_de_mejoras_en_los_servicios_number_10,
+        como_calificaria_la_habilidad_del_administrador_para_trabajar_en_equipo_y_colaborar_en_iniciativas_relacionadas_con_la_tecnologia_number_10,
+        en_que_medida_el_administrador_demuestra_conocimiento_actualizado_sobre_las_ultimas_tendencias_y_avances_en_tecnologia_informatica_para_mejorar_el_rendimiento_de_la_sala_de_computo_number_10,
+        que_tan_efectivo_es_el_administrador_al_mantener_la_seguridad_de_la_informacion_y_la_integridad_de_los_sistemas_number_10,
+        en_terminos_de_atencion_y_soporte_a_los_usuarios_como_calificaria_el_desempeno_del_administrador_number_10) %>%
+      rename(
+        "Profesionalismo del administrador en interacción con estudiantes y personal académico" =
+          como_evaluaria_el_profesionalismo_del_administrador_de_la_sala_de_computo_en_su_interaccion_con_estudiantes_y_personal_academico,
+        "Eficiencia operativa en la gestión de recursos y mantenimiento de equipos" =
+          en_terminos_de_eficiencia_operativa_como_calificaria_el_desempeno_en_la_gestion_de_recursos_y_mantenimiento_de_equipos_number_10,
+        "Cumplimiento de horarios establecidos en el funcionamiento de la sala de cómputo" =
+          que_tan_satisfactorio_es_el_cumplimiento_de_los_horarios_establecidos_por_el_administrador_en_el_funcionamiento_de_la_sala_de_computo_number_10,
+        "Capacidad del administrador para resolver problemas técnicos e imprevistos" =
+          como_evaluaria_la_capacidad_del_administrador_para_resolver_problemas_tecnicos_y_situaciones_imprevistas_number_10,
+        "Efectividad en la comunicación con los usuarios de la sala de cómputo" =
+          en_terminos_de_comunicacion_con_los_usuarios_de_la_sala_de_computo_que_tan_efectivo_considera_al_administrador_number_10,
+        "Proactividad del administrador en la identificación y aplicación de mejoras" =
+          que_tan_proactivo_es_el_administrador_en_la_identificacion_y_aplicacion_de_mejoras_en_los_servicios_number_10,
+        "Habilidad para trabajar en equipo y colaborar en iniciativas tecnológicas" =
+          como_calificaria_la_habilidad_del_administrador_para_trabajar_en_equipo_y_colaborar_en_iniciativas_relacionadas_con_la_tecnologia_number_10,
+        "Conocimiento actualizado sobre tendencias y avances en tecnología informática" =
+          en_que_medida_el_administrador_demuestra_conocimiento_actualizado_sobre_las_ultimas_tendencias_y_avances_en_tecnologia_informatica_para_mejorar_el_rendimiento_de_la_sala_de_computo_number_10,
+        "Efectividad en mantener la seguridad de la información e integridad de los sistemas" =
+          que_tan_efectivo_es_el_administrador_al_mantener_la_seguridad_de_la_informacion_y_la_integridad_de_los_sistemas_number_10,
+        "Desempeño del administrador en atención y soporte a usuarios" =
+          en_terminos_de_atencion_y_soporte_a_los_usuarios_como_calificaria_el_desempeno_del_administrador_number_10) %>%
+      pivot_longer(cols = everything(), 
+                   names_to = "Categoria", 
+                   values_to = "Calificacion") %>% 
+      mutate(Calificacion = factor(Calificacion, levels = c("Excelente", "Bueno","Aceptable", "Necesita mejorar", "Insatisfactorio"))) %>%
+      count(Categoria, Calificacion)
+    
+    desempeno_gene %>% 
+      ggplot(aes(x = Categoria, 
+                 y= n, 
+                 fill = Calificacion, 
+                 label = n))+
+      geom_col(position = "dodge")+
+      geom_text(vjust = 0.5, hjust = -0.2 ,size = 2.5,position = position_dodge(width = 1))+
+      scale_y_continuous(limits = c(0, max(desempeno_gene$n)*1.1))+
+      labs(x = "", y = "", title = str_wrap("Calificación por categoría", width = 30))+ 
+      theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+      theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+      guides(fill = guide_legend(title = "", label.position = "right"
+                                 , nrow = 1, label.theme = element_text(size = 12)))+
+      theme(legend.position = "bottom",
+            axis.text.y = element_text(size = 13),
+            axis.text.x = element_text(size = 13)) +
+      theme(axis.text.y = element_text(size = 12))+
+      theme(axis.text.x = element_text(size = 8))+
+      theme(plot.title.position = "plot",
+            plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
+      scale_x_discrete(labels = function(x) str_wrap(x, width = 50))+
+      scale_fill_manual(values = c("#388E3C","#7CB342","#FBC02D","#FFA000", "#D32F2F"))+
+      coord_flip()
+    
+    
+  })
   
   categoria <- reactive({
     if (input$select_categoria_d == "¿Cómo evaluaría el profesionalismo del administrador de la sala de cómputo en su interacción con estudiantes y personal académico?") { 
@@ -189,7 +435,7 @@ desempeno_filtred <- reactive({
   
   
   ##### 📝 Calificación del desempeño -----------------------------------------------------
-  output$ft_califi_categoria_desempeño <-  renderUI({
+  output$ft_califi_categoria_desempeno <-  renderUI({
     
     if (input$select_categoria_d == "¿Cómo evaluaría el profesionalismo del administrador de la sala de cómputo en su interacción con estudiantes y personal académico?") {
       
@@ -278,7 +524,7 @@ desempeno_filtred <- reactive({
   
   #### 📊 Calificación de desempeño----------------
   
-  output$plot_califi_categoria_desempeño <- renderPlot({
+  output$plot_califi_categoria_desempeno <- renderPlot({
     
       
       if (input$select_categoria_d == "¿Cómo evaluaría el profesionalismo del administrador de la sala de cómputo en su interacción con estudiantes y personal académico?") {
@@ -689,7 +935,7 @@ desempeno_filtred <- reactive({
   output$ft_area_satis <- renderUI({
     
     table <- satis_filtred() %>%
-      categorica_1varft(area, "Área")
+      categorica_1var(area, "Área")
     
     flextable::htmltools_value(table)
     
@@ -713,7 +959,7 @@ desempeno_filtred <- reactive({
                                                                                                                            "Ni satisfecho ni insatisfecho",
                                                                                                                            "Insatisfecho",
                                                                                                                            "Muy insatisfecho"))) %>% 
-      categorica_1varft(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual, "Calificación general")
+      categorica_1var(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual, "Calificación general")
     
     
     flextable::htmltools_value(table)
@@ -735,10 +981,28 @@ desempeno_filtred <- reactive({
     
   })
   
+  output$ft_cali_general_area_satis <- renderUI({
+    
+    table <- satis_laboral_num_filtred() %>% 
+      tabla_prom_1var(area,como_calificaria_su_satisfaccion_general_con_su_trabajo_actual, "Área")
+    
+    flextable::htmltools_value(table)
+    
+  })
+  
+  
+  output$plot_cali_general_area_satis <- renderPlot({
+    
+    satis_laboral_num_filtred() %>% 
+      plot_barras_prom_1var(area, como_calificaria_su_satisfaccion_general_con_su_trabajo_actual, "", "", "")
+    
+    
+  })
+  
   output$ft_maltrato_satis <- renderUI({
     
     table <- satis_filtred() %>%
-      categorica_1varft(alguna_vez_ha_sufrido_o_presenciado_algun_tipo_de_maltrato_laboral_gritos_insultos_acoso_etc_por_parte_de_sus_superiores_o_companeros, "¿Ha sufrido de maltrato laboral?")
+      categorica_1var(alguna_vez_ha_sufrido_o_presenciado_algun_tipo_de_maltrato_laboral_gritos_insultos_acoso_etc_por_parte_de_sus_superiores_o_companeros, "¿Ha sufrido de maltrato laboral?")
     
     flextable::htmltools_value(table)
     
@@ -762,7 +1026,7 @@ desempeno_filtred <- reactive({
              = factor(
                con_que_frecuencia_se_le_asignan_tareas_que_no_forman_parte_de_su_descripcion_de_puesto_o_sus_objetivos_de_contrato,
                levels = c("Frecuentemente", "A veces", "Rara vez", "Nunca"))) %>% 
-      categorica_1varft(con_que_frecuencia_se_le_asignan_tareas_que_no_forman_parte_de_su_descripcion_de_puesto_o_sus_objetivos_de_contrato, "Frecuencia de tareas fuera de su rol")
+      categorica_1var(con_que_frecuencia_se_le_asignan_tareas_que_no_forman_parte_de_su_descripcion_de_puesto_o_sus_objetivos_de_contrato, "Frecuencia de tareas fuera de su rol")
     
     flextable::htmltools_value(table)
     
@@ -787,7 +1051,7 @@ desempeno_filtred <- reactive({
     
     table <- satis_filtred() %>%
       mutate(tareas_adicionales = if_else(tareas_adicionales == "1. Conexión de Video Beam 2. En los eventos realizados en el departamento en los caso en que las áreas encargadas no se presentaban en el espacio solicitado, toco realizar la validación con las personas del sonido porque aun no habían hechos las conexiones, función que debería realizar las personas que realizan la logística del evento  ", "1. Conexión de Video Beam. 2. En los eventos, al no presentarse los responsables, se validó porque los del sonido no habían hecho las conexiones, tarea que es de logística", tareas_adicionales)) %>% 
-      categorica_1varft(tareas_adicionales, "Tareas adicionales", wrap_width = 40)
+      categorica_1var(tareas_adicionales, "Tareas adicionales", wrap_width = 40)
     
     flextable::htmltools_value(table)
     
@@ -799,7 +1063,7 @@ desempeno_filtred <- reactive({
   output$ft_trabajo_adicional_satis <- renderUI({
     
     table <- satis_filtred() %>%
-      categorica_1varft(trabajo_adicional, "¿Le ha tocado trabajar fuera del horario laboral?")
+      categorica_1var(trabajo_adicional, "¿Le ha tocado trabajar fuera del horario laboral?")
     
     flextable::htmltools_value(table)
     
@@ -825,7 +1089,7 @@ desempeno_filtred <- reactive({
       mutate(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a = factor(
         como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a, levels = c("Excelente", "Bueno",
                                                                                                          "Regular"))) %>% 
-      categorica_1varft(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a, 
+      categorica_1var(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a, 
                       "Calificación del ambiente laboral")
     
     flextable::htmltools_value(table)
@@ -846,6 +1110,23 @@ desempeno_filtred <- reactive({
     
   })
   
+  output$ft_cali_ambiente_area_satis <- renderUI({
+    
+    table <- satis_laboral_num_filtred() %>%
+      tabla_prom_1var(area, como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a, "Área")
+    
+    flextable::htmltools_value(table)
+    
+  })
+  
+  
+  output$plot_cali_ambiente_area_satis <- renderPlot({
+    
+    satis_laboral_num_filtred() %>% 
+      plot_barras_prom_1var(area, como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a, "", "", "")
+    
+    
+  })
   
   output$ft_estres_satis <- renderUI({
     
@@ -853,7 +1134,7 @@ desempeno_filtred <- reactive({
       mutate(como_calificaria_su_nivel_actual_de_estres_en_el_trabajo =
                factor(como_calificaria_su_nivel_actual_de_estres_en_el_trabajo, levels = c("Algo estresante", "Poco estresante",
                                                                                            "Nada estresante"))) %>% 
-      categorica_1varft(como_calificaria_su_nivel_actual_de_estres_en_el_trabajo, "Calificación del nivel de estrés")
+      categorica_1var(como_calificaria_su_nivel_actual_de_estres_en_el_trabajo, "Calificación del nivel de estrés")
     
     flextable::htmltools_value(table)
     
@@ -875,7 +1156,7 @@ desempeno_filtred <- reactive({
   output$ft_cumplimiento_funyres_satis <- renderUI({
     
     table <- satis_filtred() %>%
-      categorica_1varft(siente_que_cumple_adecuadamente_con_todas_sus_funciones_y_responsabilidades_laborales_tal_como_se_espera_de_usted, "¿Siente que cumple adecuadamente sus funciones?")
+      categorica_1var(siente_que_cumple_adecuadamente_con_todas_sus_funciones_y_responsabilidades_laborales_tal_como_se_espera_de_usted, "¿Siente que cumple adecuadamente sus funciones?")
     
     flextable::htmltools_value(table)
     
@@ -900,7 +1181,7 @@ desempeno_filtred <- reactive({
         por_que == "Se promueve el trabajo en equipo y hay apoyo de compañeros de sistemas y del subdirector de biblioteca." |
           por_que == "Por lo general  cumplo con las responsabilidades que se me asignan, siempre estoy atento a lo que se requiera" | por_que == "porque hago parte de un grupo colaborativo." | por_que == "Apoyo de compañeros de sistemas y subdirector de biblioteca " ~ "Se tiene buena colaboración y trabajo en equipo",
         TRUE ~ por_que)) %>%
-      categorica_1varft(por_que, "¿Por qué considera que cumple adecuadamente sus funciones?")
+      categorica_1var(por_que, "¿Por qué considera que cumple adecuadamente sus funciones?")
     
     flextable::htmltools_value(table)
     
@@ -911,7 +1192,7 @@ desempeno_filtred <- reactive({
   output$ft_frecuencia_dt_satis <- renderUI({
     
     table <- satis_filtred() %>%
-      categorica_1varft(cuando_tiene_una_alta_carga_de_trabajo_con_que_frecuencia_delega_tareas_en_otros_companeros_para_aligerar_su_carga, "¿Con qué frecuencia delega tareas para aligerar su carga?")
+      categorica_1var(cuando_tiene_una_alta_carga_de_trabajo_con_que_frecuencia_delega_tareas_en_otros_companeros_para_aligerar_su_carga, "¿Con qué frecuencia delega tareas para aligerar su carga?")
     
     flextable::htmltools_value(table)
     
@@ -937,7 +1218,7 @@ desempeno_filtred <- reactive({
   output$ft_proactividad_satis <- renderUI({
     
     table <- satis_filtred() %>%
-      categorica_1varft(se_considera_proactivo_y_comprometido_con_la_mejora_continua_en_su_area_de_trabajo, "¿Se considera proactivo y quiere mejorar constantemente?")
+      categorica_1var(se_considera_proactivo_y_comprometido_con_la_mejora_continua_en_su_area_de_trabajo, "¿Se considera proactivo y quiere mejorar constantemente?")
     
     flextable::htmltools_value(table)
     
@@ -967,7 +1248,7 @@ desempeno_filtred <- reactive({
                                    ~ "Colaboración y compromiso con la excelencia",
                                    TRUE ~ por_que_1
       )) %>% 
-      categorica_1varft(por_que_1, "¿Por qué se considera proactivo y que quiera mejorar constantemente?")
+      categorica_1var(por_que_1, "¿Por qué se considera proactivo y que quiera mejorar constantemente?")
     
     flextable::htmltools_value(table)
     

@@ -29,166 +29,8 @@ colores_plot <- c(#"#2171b5",
   "#78c679","#c7e9b4","#edf8b1","#fee391","#fec44f",
   "#fe9929","#ec7014")
 
+#Funciones -------------------------------------------------------
 
-
-#Informe de desempeño de los administradores de las salas de cómputo
-
-desempeno <- read.xlsx("Encuesta de Evaluación de Desempeño - Administradores de Salas de Cómputo(1-8)(1).xlsx")
-
-desempeno <- desempeno %>% 
-  distinct()
-
-desempeno <- desempeno %>% 
-  clean_names()
-
-desempeno <- desempeno %>% 
-  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
-  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
-         mesdili = str_to_title(mesdili)) %>% 
-  mutate(anodili = year(hora_de_finalizacion))
-
-
-desempeno[] <- lapply(desempeno, function(x) gsub("^[a-e]\\)\\s+", "", x))
-
-#Informe de identificación de problemas de las salas de cómputo
-
-identi_problemas <- read.xlsx("Encuesta para la Identificación de Problemas Específicos en las Salas de Cómputo(1-19).xlsx")
-
-identi_problemas <- identi_problemas %>% 
-  distinct()
-
-identi_problemas <- identi_problemas %>% 
-  clean_names()
-
-identi_problemas <- identi_problemas %>% 
-  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
-  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
-         mesdili = str_to_title(mesdili)) %>% 
-  mutate(anodili = year(hora_de_finalizacion))
-
-identi_problemas <- identi_problemas %>%
-  mutate(
-    sede = fct_collapse(
-      sede, "Calle 72" = 
-        c("calle 72", "CALLE 72", "Calle 72", "CLL 72", "cll 72", "CLL 72", "cll 72 ", "CLL 72 ")
-    )
-  )
-
-identi_problemas <- identi_problemas %>% 
-  mutate(
-    sede = case_when(
-      str_detect(sede, "Parque Nacional") ~ "Parque Nacional",
-      TRUE ~ sede
-    )
-  )
-
-identi_problemas <- identi_problemas %>%
-  mutate(
-    edificio = case_when(
-      str_detect(edificio, "A") ~ "Edificio A",
-      str_detect(edificio, "B") ~ "Edificio B",
-      str_detect(edificio, "C") ~ "Edificio C",
-      str_detect(edificio, "E") ~ "Edificio E",
-      TRUE ~ edificio
-    )
-  )
-
-identi_problemas <- identi_problemas %>%
-  mutate(
-    facultad_o_area_administrativa = case_when(
-      str_detect(facultad_o_area_administrativa, "Facultad Educación") ~ "Facultad Educación Física",
-      TRUE ~ facultad_o_area_administrativa
-    )
-  )
-
-
-#Informe de satisfacción laboral 
-
-satis_laboral <- read.xlsx("Encuesta de Satisfacción Laboral(1-10).xlsx")
-
-satis_laboral <- satis_laboral %>% 
-  distinct()
-
-satis_laboral <- satis_laboral %>% 
-  clean_names()
-
-satis_laboral <- satis_laboral %>% 
-  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
-  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
-         mesdili = str_to_title(mesdili)) %>% 
-  mutate(anodili = year(hora_de_finalizacion))
-
-
-satis_laboral <- satis_laboral %>%
-  rename(tareas_adicionales = 
-           si_la_respuesta_anterior_fue_a_veces_o_frecuentemente_mencione_ejemplos_de_esas_tareas_adicionales,
-         trabajo_adicional = en_el_ultimo_mes_le_ha_tocado_trabajar_fuera_de_su_horario_laboral_noches_fines_de_semana_dias_festivos) 
-
-satis_laboral <- satis_laboral %>% 
-  mutate(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual =
-           trimws(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual)) %>% 
-  mutate(con_que_frecuencia_se_le_asignan_tareas_que_no_forman_parte_de_su_descripcion_de_puesto_o_sus_objetivos_de_contrato
-         = trimws(
-           con_que_frecuencia_se_le_asignan_tareas_que_no_forman_parte_de_su_descripcion_de_puesto_o_sus_objetivos_de_contrato))
-
-satis_laboral_num <- satis_laboral %>% 
-  mutate(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual = case_when(
-    como_calificaria_su_satisfaccion_general_con_su_trabajo_actual == "Muy satisfecho" ~ "5",
-    como_calificaria_su_satisfaccion_general_con_su_trabajo_actual == "Satisfecho" ~ "4",
-    como_calificaria_su_satisfaccion_general_con_su_trabajo_actual == "Ni satisfecho ni insatisfecho" ~ "3",
-    como_calificaria_su_satisfaccion_general_con_su_trabajo_actual == "Insatisfecho" ~ "2",
-    como_calificaria_su_satisfaccion_general_con_su_trabajo_actual == "Muy insatisfecho" ~ "1",
-    TRUE ~ como_calificaria_su_satisfaccion_general_con_su_trabajo_actual
-  )) %>% 
-  mutate(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a =
-           trimws(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a)) %>% 
-  mutate(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a =
-           case_when(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a ==
-                       "Excelente" ~ "3",
-                     como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a ==
-                       "Bueno" ~ "2",
-                     como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a ==
-                       "Regular" ~ "1",
-                     TRUE ~ como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a))
-
-satis_laboral <- satis_laboral %>% 
-  mutate(tareas_adicionales = case_when(
-    tareas_adicionales == "." | tareas_adicionales == "N/A" | tareas_adicionales == "NINGUNA" |
-      tareas_adicionales == "Na" | tareas_adicionales == "N.A" | tareas_adicionales == "nunca" |
-      tareas_adicionales == "No he tenido tareas adicionales" | is.na(tareas_adicionales) ~ "Ninguna",
-    TRUE ~ tareas_adicionales
-  )
-  )
-
-satis_laboral <- satis_laboral %>%
-  mutate(
-    trabajo_adicional = case_when(
-      trabajo_adicional == "N.A" ~ "No responde",
-      TRUE ~ trabajo_adicional
-    )
-  )
-
-satis_laboral <- satis_laboral %>%
-  mutate(
-    por_que = case_when(
-      por_que == "N.A" ~ "No responde",
-      TRUE ~ por_que
-    )
-  )
-
-satis_laboral <- satis_laboral %>%
-  mutate(
-    por_que_1 = case_when(
-      por_que_1 == "N.A" ~ "No responde",
-      TRUE ~ por_que_1
-    )
-  )
-
-
-
-
-
-#Funciones
 generate_html <- function(variable) {
   HTML(glue("<h2 style = 'color: #00609d'>{variable()}</h2>"))
 }
@@ -585,7 +427,7 @@ tabla_prom <- function(x, col, rename, encabezado = NULL, title = NULL, wrap_wid
     as.data.frame()  
   
   formatted_table <- ftable(table, encabezado, title) %>% 
-    bg(i = nrow_part(.), bg = "white") %>%
+    bg(i = nrow_part(.), bg = NA) %>%
     bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
     color(i = nrow_part(.), color = "black") %>%
     bold(i = nrow_part(.), bold = FALSE)
@@ -593,4 +435,266 @@ tabla_prom <- function(x, col, rename, encabezado = NULL, title = NULL, wrap_wid
   return(formatted_table)
   
 }
+
+transformar_cali <- function(x, col) {
+  col <- enquo(col)
+  
+  x %>%
+    mutate(!!col := case_when(
+      !!col == "Excelente" ~ "5",
+      !!col == "Bueno" ~ "4",
+      !!col == "Aceptable" ~ "3",
+      !!col == "Necesita mejorar" ~ "2",
+      !!col == "Insatisfactorio" ~ "1",
+      TRUE ~ !!col)) %>% 
+    mutate(!!col := as.numeric(!!col))
+  
+}
+
+tabla_prom_1var <- function(x, col, col_promedio,rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
+  
+  col <- enquo(col)
+  col_promedio <- enquo(col_promedio)
+  
+  if (is.null(wrap_width)) {
+    wrap_width <- 100
+  }
+  
+  table <- x %>% 
+    group_by(!!col) %>%
+    summarise(promedio_general = round(mean(!!col_promedio), 1)) %>%
+    ungroup() %>% 
+    #arrange(desc(promedio_general)) %>% 
+    rename("{rename}" := !!col,
+           "Promedio" = promedio_general) %>% 
+    as.data.frame()  
+  
+  formatted_table <- ftable(table, encabezado, title) %>% 
+    bg(i = nrow_part(.), bg = NA) %>%
+    bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+    color(i = nrow_part(.), color = "black") %>%
+    bold(i = nrow_part(.), bold = FALSE)
+  
+  return(formatted_table)
+  
+}
+
+plot_barras_prom_1var <- function(x, col,col_promedio, xlab, ylab, titulo = "", top = NULL) {
+  
+  col <- enquo(col)
+  col_promedio <- enquo(col_promedio)
+  
+  if (is.null(top)) {
+    top <- 11
+  }
+  
+  data <- x %>%  
+    group_by(!!col) %>%
+    summarise(promedio_general = round(mean(!!col_promedio), 1)) %>%
+    ungroup()
+  
+  data %>% 
+    arrange(desc(promedio_general)) %>% 
+    slice(1:top) %>% 
+    ggplot(aes(x = !!col, 
+               y= promedio_general, 
+               fill = !!col, 
+               label = promedio_general)) + 
+    geom_col()+
+    geom_text(vjust = 0.5, hjust = -0.5, size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$promedio_general)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
+    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+    theme(legend.position="none")+
+    theme(axis.text.y = element_text(size = 14))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
+    scale_fill_manual(values = colores_plot)+
+    coord_flip()
+  
+}
+
+
+#Informe de desempeño de los administradores de las salas de cómputo -------------------------------------
+
+desempeno <- read.xlsx("Encuesta de Evaluación de Desempeño - Administradores de Salas de Cómputo(1-8)(1).xlsx")
+
+desempeno <- desempeno %>% 
+  distinct()
+
+desempeno <- desempeno %>% 
+  clean_names()
+
+desempeno <- desempeno %>% 
+  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
+  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+         mesdili = str_to_title(mesdili)) %>% 
+  mutate(anodili = year(hora_de_finalizacion))
+
+
+desempeno[] <- lapply(desempeno, function(x) gsub("^[a-e]\\)\\s+", "", x))
+
+desempeno_num <- desempeno %>% 
+  rename(valor1 = como_evaluaria_el_profesionalismo_del_administrador_de_la_sala_de_computo_en_su_interaccion_con_estudiantes_y_personal_academico,
+         valor2 = en_terminos_de_eficiencia_operativa_como_calificaria_el_desempeno_en_la_gestion_de_recursos_y_mantenimiento_de_equipos_number_10,
+         valor3 = que_tan_satisfactorio_es_el_cumplimiento_de_los_horarios_establecidos_por_el_administrador_en_el_funcionamiento_de_la_sala_de_computo_number_10,
+         valor4 = como_evaluaria_la_capacidad_del_administrador_para_resolver_problemas_tecnicos_y_situaciones_imprevistas_number_10,
+         valor5 = en_terminos_de_comunicacion_con_los_usuarios_de_la_sala_de_computo_que_tan_efectivo_considera_al_administrador_number_10,
+         valor6 = que_tan_proactivo_es_el_administrador_en_la_identificacion_y_aplicacion_de_mejoras_en_los_servicios_number_10,
+         valor7 = como_calificaria_la_habilidad_del_administrador_para_trabajar_en_equipo_y_colaborar_en_iniciativas_relacionadas_con_la_tecnologia_number_10,
+         valor8 = en_que_medida_el_administrador_demuestra_conocimiento_actualizado_sobre_las_ultimas_tendencias_y_avances_en_tecnologia_informatica_para_mejorar_el_rendimiento_de_la_sala_de_computo_number_10,
+         valor9 = que_tan_efectivo_es_el_administrador_al_mantener_la_seguridad_de_la_informacion_y_la_integridad_de_los_sistemas_number_10,
+         valor10 = en_terminos_de_atencion_y_soporte_a_los_usuarios_como_calificaria_el_desempeno_del_administrador_number_10) %>% 
+  transformar_cali(valor1) %>% 
+  transformar_cali(valor2) %>% 
+  transformar_cali(valor3) %>% 
+  transformar_cali(valor4) %>% 
+  transformar_cali(valor5) %>% 
+  transformar_cali(valor6) %>% 
+  transformar_cali(valor7) %>% 
+  transformar_cali(valor8) %>% 
+  transformar_cali(valor9) %>% 
+  transformar_cali(valor10)
+
+
+#Informe de identificación de problemas de las salas de cómputo ---------------------------------------------
+
+identi_problemas <- read.xlsx("Encuesta para la Identificación de Problemas Específicos en las Salas de Cómputo(1-19).xlsx")
+
+identi_problemas <- identi_problemas %>% 
+  distinct()
+
+identi_problemas <- identi_problemas %>% 
+  clean_names()
+
+identi_problemas <- identi_problemas %>% 
+  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
+  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+         mesdili = str_to_title(mesdili)) %>% 
+  mutate(anodili = year(hora_de_finalizacion))
+
+identi_problemas <- identi_problemas %>%
+  mutate(
+    sede = fct_collapse(
+      sede, "Calle 72" = 
+        c("calle 72", "CALLE 72", "Calle 72", "CLL 72", "cll 72", "CLL 72", "cll 72 ", "CLL 72 ")
+    )
+  )
+
+identi_problemas <- identi_problemas %>% 
+  mutate(
+    sede = case_when(
+      str_detect(sede, "Parque Nacional") ~ "Parque Nacional",
+      TRUE ~ sede
+    )
+  )
+
+identi_problemas <- identi_problemas %>%
+  mutate(
+    edificio = case_when(
+      str_detect(edificio, "A") ~ "Edificio A",
+      str_detect(edificio, "B") ~ "Edificio B",
+      str_detect(edificio, "C") ~ "Edificio C",
+      str_detect(edificio, "E") ~ "Edificio E",
+      TRUE ~ edificio
+    )
+  )
+
+identi_problemas <- identi_problemas %>%
+  mutate(
+    facultad_o_area_administrativa = case_when(
+      str_detect(facultad_o_area_administrativa, "Facultad Educación") ~ "Facultad Educación Física",
+      TRUE ~ facultad_o_area_administrativa
+    )
+  )
+
+
+#Informe de satisfacción laboral -------------------------------------------------------------
+
+satis_laboral <- read.xlsx("Encuesta de Satisfacción Laboral(1-10).xlsx")
+
+satis_laboral <- satis_laboral %>% 
+  distinct()
+
+satis_laboral <- satis_laboral %>% 
+  clean_names()
+
+satis_laboral <- satis_laboral %>% 
+  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
+  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+         mesdili = str_to_title(mesdili)) %>% 
+  mutate(anodili = year(hora_de_finalizacion))
+
+
+satis_laboral <- satis_laboral %>%
+  rename(tareas_adicionales = 
+           si_la_respuesta_anterior_fue_a_veces_o_frecuentemente_mencione_ejemplos_de_esas_tareas_adicionales,
+         trabajo_adicional = en_el_ultimo_mes_le_ha_tocado_trabajar_fuera_de_su_horario_laboral_noches_fines_de_semana_dias_festivos) 
+
+satis_laboral <- satis_laboral %>% 
+  mutate(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual =
+           trimws(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual)) %>% 
+  mutate(con_que_frecuencia_se_le_asignan_tareas_que_no_forman_parte_de_su_descripcion_de_puesto_o_sus_objetivos_de_contrato
+         = trimws(
+           con_que_frecuencia_se_le_asignan_tareas_que_no_forman_parte_de_su_descripcion_de_puesto_o_sus_objetivos_de_contrato))
+
+satis_laboral_num <- satis_laboral %>% 
+  mutate(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual = case_when(
+    como_calificaria_su_satisfaccion_general_con_su_trabajo_actual == "Muy satisfecho" ~ "5",
+    como_calificaria_su_satisfaccion_general_con_su_trabajo_actual == "Satisfecho" ~ "4",
+    como_calificaria_su_satisfaccion_general_con_su_trabajo_actual == "Ni satisfecho ni insatisfecho" ~ "3",
+    como_calificaria_su_satisfaccion_general_con_su_trabajo_actual == "Insatisfecho" ~ "2",
+    como_calificaria_su_satisfaccion_general_con_su_trabajo_actual == "Muy insatisfecho" ~ "1",
+    TRUE ~ como_calificaria_su_satisfaccion_general_con_su_trabajo_actual
+  )) %>% 
+  mutate(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual =
+           as.numeric(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual)) %>% 
+  mutate(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a =
+           trimws(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a)) %>% 
+  mutate(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a =
+           case_when(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a ==
+                       "Excelente" ~ "3",
+                     como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a ==
+                       "Bueno" ~ "2",
+                     como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a ==
+                       "Regular" ~ "1",
+                     TRUE ~ como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a)) %>% 
+  mutate(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a =
+           as.numeric(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a))
+
+satis_laboral <- satis_laboral %>% 
+  mutate(tareas_adicionales = case_when(
+    tareas_adicionales == "." | tareas_adicionales == "N/A" | tareas_adicionales == "NINGUNA" |
+      tareas_adicionales == "Na" | tareas_adicionales == "N.A" | tareas_adicionales == "nunca" |
+      tareas_adicionales == "No he tenido tareas adicionales" | is.na(tareas_adicionales) ~ "Ninguna",
+    TRUE ~ tareas_adicionales
+  )
+  )
+
+satis_laboral <- satis_laboral %>%
+  mutate(
+    trabajo_adicional = case_when(
+      trabajo_adicional == "N.A" ~ "No responde",
+      TRUE ~ trabajo_adicional
+    )
+  )
+
+satis_laboral <- satis_laboral %>%
+  mutate(
+    por_que = case_when(
+      por_que == "N.A" ~ "No responde",
+      TRUE ~ por_que
+    )
+  )
+
+satis_laboral <- satis_laboral %>%
+  mutate(
+    por_que_1 = case_when(
+      por_que_1 == "N.A" ~ "No responde",
+      TRUE ~ por_que_1
+    )
+  )
+
 

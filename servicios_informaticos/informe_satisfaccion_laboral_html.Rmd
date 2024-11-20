@@ -287,6 +287,71 @@ wrap_text <- function(x, width) {
 }
 
 
+tabla_prom <- function(x, col, col_promedio,rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
+  
+  col <- enquo(col)
+  col_promedio <- enquo(col_promedio)
+  
+  if (is.null(wrap_width)) {
+    wrap_width <- 100
+  }
+  
+  table <- x %>% 
+  group_by(!!col) %>%
+  summarise(promedio_general = round(mean(!!col_promedio), 1)) %>%
+  ungroup() %>% 
+  #arrange(desc(promedio_general)) %>% 
+  rename("{rename}" := !!col,
+         "Promedio" = promedio_general) %>% 
+  as.data.frame()  
+  
+  formatted_table <- ftable(table, encabezado, title) %>% 
+  bg(i = nrow_part(.), bg = "white") %>%
+  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+  color(i = nrow_part(.), color = "black") %>%
+  bold(i = nrow_part(.), bold = FALSE)
+  
+  return(formatted_table)
+  
+}
+
+plot_barras_prom <- function(x, col,col_promedio, xlab, ylab, titulo = "", top = NULL) {
+  
+  col <- enquo(col)
+  col_promedio <- enquo(col_promedio)
+  
+  if (is.null(top)) {
+    top <- 11
+  }
+  
+  data <- x %>%  
+    group_by(!!col) %>%
+    summarise(promedio_general = round(mean(!!col_promedio), 1)) %>%
+    ungroup()
+  
+  data %>% 
+    arrange(desc(promedio_general)) %>% 
+    slice(1:top) %>% 
+    ggplot(aes(x = !!col, 
+               y= promedio_general, 
+               fill = !!col, 
+               label = promedio_general)) + 
+    geom_col()+
+    geom_text(vjust = 0.5, hjust = -0.5, size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$promedio_general)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
+    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+    theme(legend.position="none")+
+    theme(axis.text.y = element_text(size = 14))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
+    scale_fill_manual(values = colores_plot)+
+    coord_flip()
+  
+}
+
 ```
 
 ```{r}
@@ -325,6 +390,8 @@ satis_laboral_num <- satis_laboral %>%
     como_calificaria_su_satisfaccion_general_con_su_trabajo_actual == "Muy insatisfecho" ~ "1",
     TRUE ~ como_calificaria_su_satisfaccion_general_con_su_trabajo_actual
   )) %>% 
+  mutate(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual =
+           as.numeric(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual)) %>% 
   mutate(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a =
   trimws(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a)) %>% 
   mutate(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a =
@@ -334,7 +401,9 @@ satis_laboral_num <- satis_laboral %>%
               "Bueno" ~ "2",
             como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a ==
               "Regular" ~ "1",
-            TRUE ~ como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a))
+            TRUE ~ como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a)) %>% 
+  mutate(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a =
+           as.numeric(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a))
 
 satis_laboral <- satis_laboral %>% 
   mutate(tareas_adicionales = case_when(
@@ -394,7 +463,7 @@ satis_laboral %>%
 
 ```
 
-## Gráfica
+## Gráfico
 ```{r}
 
 satis_laboral %>% 
@@ -438,6 +507,31 @@ satis_laboral %>%
   plot_barras(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual, "", "", "")
 
 ```
+
+### Calificación general por área de los empleados
+
+En esta sección, se presenta un análisis sobre la calificación general otorgada por los empleados en diferentes áreas, proporcionando una visión detallada de sus percepciones y evaluaciones sobre el desempeño en cada área específica de trabajo.
+
+#### Tabla
+
+```{r}
+
+satis_laboral_num %>% 
+  tabla_prom(area,como_calificaria_su_satisfaccion_general_con_su_trabajo_actual, "Área")
+
+
+```
+
+
+#### Gráfico
+
+```{r}
+
+satis_laboral_num %>% 
+  plot_barras_prom(area, como_calificaria_su_satisfaccion_general_con_su_trabajo_actual, "", "", "")
+
+```
+
 
 # Experiencias de Maltrato Laboral
 
@@ -583,6 +677,29 @@ satis_laboral %>%
     como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a, levels = c("Regular", "Bueno",
                                                                                                      "Excelente"))) %>% 
   plot_barras(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a, "", "", "")
+
+```
+
+## Calificación del ambiente por área
+
+En este apartado, se analiza la calificación del ambiente laboral por área, teniendo en cuenta que es una calificación de 1 a 3, destacando la colaboración, el respeto entre compañeros y la relación con la dirección, elementos fundamentales para la satisfacción general de los empleados en su entorno de trabajo.
+
+### Tabla
+
+```{r}
+
+satis_laboral_num %>% 
+  tabla_prom(area, como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a, "Área")
+
+```
+
+
+### Grafico
+
+```{r}
+
+satis_laboral_num %>% 
+  plot_barras_prom(area, como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a, "", "", "")
 
 ```
 

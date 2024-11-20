@@ -105,13 +105,18 @@ dashboardPage(
                   
                 box(
                     title = "Introducción", width = 8, background = "light-blue",
-                    "Este informe muestra el análisis descriptivo de datos, correspondiente a la encuesta de evaluación de los servicios informáticos en la cuál los usuarios de las salas de cómputo evaluaron el desempeño de los administradores de las mismas"
+                    "El informe presenta tablas y gráficos que muestran respuestas sobre el desempeño de administradores en salas de cómputo, categorizando su eficiencia, profesionalismo, y capacidad de gestión."
                   ),
                 
                 column(
-                  offset = 1,
-                  width = 3,
+                  #offset = 1,
+                  width = 2,
                   uiOutput("value_box_desempeno") %>% withSpinner(type = 8, size = 0.5)
+                ),
+                column(
+                  #offset = 1,
+                  width = 2,
+                  uiOutput("value_box_promedio_general_dese") %>% withSpinner(type = 8, size = 0.5)
                 )
                   )
                 )
@@ -127,19 +132,12 @@ dashboardPage(
           #   )
           # ),
           
-          fluidRow(
-            align = "center",
-            div(
-              style = "max-width: 900px; margin: 0 auto;",
-              HTML("<h5 style='color: #393939;'><strong>A continuación, se presentan una serie de tablas y gráficas detalladas que muestran la distribución de la cantidad y porcentaje de respuestas relacionadas con el desempeño de los administradores de las salas de cómputo. Estos resultados están organizados en distintas categorías para proporcionar una visión clara y detallada del nivel de eficiencia, profesionalismo, y capacidad de gestión de los encargados de estos espacios.</strong></h5>")
-            )
-          ),
           
           br(),
           
           fluidRow(
             align = "center",
-            HTML("<h3 style = 'color: #00609d'><strong>Dependencia</strong></h3>"),
+            HTML("<h3 style = 'color: #00609d'><strong>Departamento</strong></h3>"),
           ),
           
           br(),
@@ -147,14 +145,60 @@ dashboardPage(
           fluidRow(
             column(
               width = 6,
-              uiOutput("ft_desempeño_dependencia") %>% withSpinner(type = 8, size = 0.5)
+              uiOutput("ft_desempeno_dependencia") %>% withSpinner(type = 8, size = 0.5)
             ),
             column(
               width = 6,
-              plotOutput("plot_desempeño_dependencia") %>% withSpinner(type = 8, size = 0.2)
+              plotOutput("plot_desempeno_dependencia") %>% withSpinner(type = 8, size = 0.5)
             )
-            
           ),
+          
+          br(),
+          br(),
+          
+          fluidRow(
+            align = "center",
+            HTML("<h4 style = 'color: #00609d'><strong>Calificación general por departamento</strong></h4>"),
+          ),
+          
+          br(),
+          
+          fluidRow(
+            column(
+              width = 6,
+              plotOutput("plot_desempeno_dependencia_cali") %>% withSpinner(type = 8, size = 0.5)
+            ),
+            column(
+              width = 6,
+              uiOutput("ft_desempeno_dependencia_cali") %>% withSpinner(type = 8, size = 0.5)
+            )
+          ),
+          
+          br(),
+          br(),
+          
+          fluidRow(
+            align = "center",
+            HTML("<h2 style = 'color: #00609d'><strong>Calificación general</strong></h3>"),
+          ),
+          
+          br(),
+          
+          fluidRow(
+            column(
+              width = 10,
+              offset = 1,
+              uiOutput("ft_desempeno_cali_gene") %>% withSpinner(type = 8, size = 0.5)
+            )),
+          
+          br(),
+          
+          fluidRow(
+            column(
+              width = 10,
+              offset = 1,
+              plotOutput("plot_desempeno_cali_gene") %>% withSpinner(type = 8, size = 0.5)
+            )),
           
           br(),
           br(),
@@ -214,15 +258,7 @@ dashboardPage(
             uiOutput("html_texto_categoria_d"),
           ),
           
-          br(),
           
-          fluidRow(
-            align = "center",
-            div(
-              style = "max-width: 900px; margin: 0 auto;",
-              uiOutput("html_output_texto_categoria_d")
-            )
-          ),
           
           br(),
           br(),
@@ -230,12 +266,12 @@ dashboardPage(
           fluidRow(
             column(
               width = 6,
-              uiOutput("ft_califi_categoria_desempeño") %>% withSpinner(type = 8, size = 0.5)
+              uiOutput("ft_califi_categoria_desempeno") %>% withSpinner(type = 8, size = 0.5)
             ),
             
             column(
               width = 6,
-              plotOutput("plot_califi_categoria_desempeño") %>% withSpinner(type = 8, size = 0.5)
+              plotOutput("plot_califi_categoria_desempeno") %>% withSpinner(type = 8, size = 0.5)
             )
             
           ),
@@ -338,7 +374,7 @@ dashboardPage(
                   
                   box(
                     title = "Introducción", width = 8, background = "light-blue",
-                    "Este informe muestra el análisis descriptivo de datos, correspondiente a la encuesta de evaluación de los servicios informáticos en la cuál los usuarios de las salas de cómputo evaluaron estado de las mismas con el fin de identificar problemas específicos"
+                    "El informe contiene gráficos sobre la frecuencia y porcentaje de problemas en salas de cómputo, categorizando áreas críticas para identificar desafíos y obtener una visión integral del estado actual."
                   ),
                   
                   column(
@@ -351,14 +387,6 @@ dashboardPage(
             )
           ),
           
-          
-          fluidRow(
-            align = "center",
-            div(
-              style = "max-width: 900px; margin: 0 auto;",
-              HTML("<h5 style='color: #393939;'><strong>Este informe contiene una serie de tablas y gráficas que ilustran la frecuencia y porcentaje de problemas identificados en las salas de cómputo. Los resultados están categorizados para facilitar la identificación de áreas críticas y ofrecer una perspectiva integral sobre los principales desafíos que enfrentan estos espacios.</strong></h5>")
-            )
-          ),
           
           br(),
           
@@ -376,7 +404,7 @@ dashboardPage(
             ),
             column(
               width = 6,
-              plotOutput("plot_facultad") %>% withSpinner(type = 8, size = 0.2)
+              plotOutput("plot_facultad") %>% withSpinner(type = 8, size = 0.5)
             )
             
           ),
@@ -455,15 +483,6 @@ dashboardPage(
             uiOutput("html_texto_categoria_ip"),
           ),
           
-          br(),
-          
-          fluidRow(
-            align = "center",
-            div(
-              style = "max-width: 900px; margin: 0 auto;",
-              uiOutput("html_output_texto_categoria_ip")
-            )
-          ),
           
           br(),
           br(),
@@ -577,7 +596,7 @@ dashboardPage(
                   
                   box(
                     title = "Introducción", width = 8, background = "light-blue",
-                    "Este informe presenta un análisis descriptivo de los datos correspondientes a la encuesta sobre los servicios informáticos, en la cual se mide la satisfacción laboral."
+                    "Este informe analiza la satisfacción laboral en salas de cómputo mediante gráficos, destacando fortalezas y áreas de mejora para proporcionar una visión completa de las experiencias de los empleados."
                   ),
                   
                   column(
@@ -593,15 +612,6 @@ dashboardPage(
           br(),
           br(),
           
-          fluidRow(
-            align = "center",
-            div(
-              style = "max-width: 900px; margin: 0 auto;",
-              HTML("<h5 style='color: #393939;'><strong>En las siguientes tablas y gráficas se muestra un análisis detallado sobre la satisfacción laboral de los empleados de las salas de cómputo. La información se organiza en varias categorías para ofrecer una visión completa y comprensiva de las experiencias y percepciones de los empleados, con el objetivo de identificar fortalezas y áreas de mejora en su entorno laboral.</strong></h5>")
-            )
-          ),
-          
-          br(),
           
           fluidRow(
             align = "center",
@@ -609,19 +619,18 @@ dashboardPage(
           ),
           
           
-        fluidRow(
-            align = "center",
-            div(
-              style = "max-width: 900px; margin: 0 auto;",
-              HTML("<h5 style='color: #393939;'>En este apartado se muestran las áreas a la que pertenecen las personas que contestaron la encuesta para saber la satisfacción laboral de los empleados de servicios informáticos.</h5>")
-            )
-          ),
-          
         br(),
         
         fluidRow(
           column(
             width = 6,
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
+            br(),
             uiOutput("ft_area_satis") %>% withSpinner(type = 8, size = 0.5)
           ),
           
@@ -631,6 +640,7 @@ dashboardPage(
           )
         ),
         
+        
         br(),
         br(),
         
@@ -639,13 +649,6 @@ dashboardPage(
           HTML("<h3 style = 'color: #00609d'><strong>Calificación general de satisfacción</strong></h3>"),
         ),
         
-        fluidRow(
-          align = "center",
-          div(
-            style = "max-width: 900px; margin: 0 auto;",
-            HTML("<h5 style='color: #393939;'>En este apartado se muestra la calificación general de la satisfacción laboral de los empleados de servicios informáticos.</h5>")
-          )
-        ),
         
         br(),
         
@@ -662,20 +665,19 @@ dashboardPage(
         ),
         
         br(),
-        br(),
-        
         
         fluidRow(
           align = "center",
-          HTML("<h3 style = 'color: #00609d'><strong>Experiencias de Maltrato Laboral</strong></h3>"),
+          HTML("<h4 style = 'color: #00609d'><strong>Calificación general por área de los empleados</strong></h4>"),
         ),
         
+        br(),
         
         fluidRow(
           align = "center",
           div(
             style = "max-width: 900px; margin: 0 auto;",
-            HTML("<h5 style='color: #393939;'>En esta sección, se exploran las experiencias de los empleados relacionadas con el trato recibido por parte de sus superiores o compañeros, incluyendo posibles incidentes de maltrato o acoso en el ambiente de trabajo.</h5>")
+            HTML("<h5 style='color: #393939;'>En esta sección, se presenta un análisis sobre la calificación general otorgada por los empleados en diferentes áreas, proporcionando una visión detallada de sus percepciones y evaluaciones sobre el desempeño en cada área específica de trabajo.</h5>")
           )
         ),
         
@@ -684,12 +686,35 @@ dashboardPage(
         fluidRow(
           column(
             width = 6,
-            uiOutput("ft_maltrato_satis") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("ft_cali_general_area_satis") %>% withSpinner(type = 8, size = 0.5)
           ),
           
           column(
             width = 6,
+            plotOutput("plot_cali_general_area_satis") %>% withSpinner(type = 8, size = 0.5)
+          )
+        ),
+        
+        br(),
+        br(),
+        
+        fluidRow(
+          align = "center",
+          HTML("<h3 style = 'color: #00609d'><strong>Experiencias de Maltrato Laboral</strong></h3>"),
+        ),
+        
+        
+        br(),
+        
+        fluidRow(
+          column(
+            width = 6,
             plotOutput("plot_maltrato_satis") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          
+          column(
+            width = 6,
+            uiOutput("ft_maltrato_satis") %>% withSpinner(type = 8, size = 0.5)
           )
         ),
         
@@ -701,25 +726,18 @@ dashboardPage(
           HTML("<h3 style = 'color: #00609d'><strong>Frecuencia de Asignación de Tareas Fuera de la Descripción del Puesto</strong></h3>"),
         ),
         
-        fluidRow(
-          align = "center",
-          div(
-            style = "max-width: 900px; margin: 0 auto;",
-            HTML("<h5 style='color: #393939;'>Aquí se investiga la frecuencia con la cual los empleados reciben tareas que no corresponden a su rol definido, lo que puede afectar su carga de trabajo y percepción de equidad en la asignación de responsabilidades.</h5>")
-          )
-        ),
         
         br(),
         
         fluidRow(
           column(
             width = 6,
-            plotOutput("plot_tareas_adicionales_satis") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("ft_tareas_adicionales_satis") %>% withSpinner(type = 8, size = 0.5)
           ),
           
           column(
             width = 6,
-            uiOutput("ft_tareas_adicionales_satis") %>% withSpinner(type = 8, size = 0.5)
+            plotOutput("plot_tareas_adicionales_satis") %>% withSpinner(type = 8, size = 0.5)
           )
         ),
         
@@ -759,14 +777,7 @@ dashboardPage(
           HTML("<h3 style = 'color: #00609d'><strong>Trabajo Fuera del Horario Laboral</strong></h3>"),
         ),
         
-        fluidRow(
-          align = "center",
-          div(
-            style = "max-width: 900px; margin: 0 auto;",
-            HTML("<h5 style='color: #393939;'>Se examina la frecuencia con la que los empleados han tenido que trabajar fuera de sus horas habituales, incluyendo noches, fines de semana y festivos, lo cual puede impactar en su bienestar y equilibrio entre trabajo y vida personal.</h5>")
-          )
-        ),
-        
+      
         br(),
         
         fluidRow(
@@ -790,14 +801,6 @@ dashboardPage(
         ),
         
         
-        fluidRow(
-          align = "center",
-          div(
-            style = "max-width: 900px; margin: 0 auto;",
-            HTML("<h5 style='color: #393939;'>En este apartado, los empleados evalúan la calidad del ambiente laboral, especialmente en relación con la colaboración y el respeto entre compañeros y con la dirección, un factor clave para su satisfacción en el trabajo.</h5>")
-          )
-        ),
-        
         br(),
         
         fluidRow(
@@ -813,18 +816,19 @@ dashboardPage(
         ),
         
         br(),
-        br(),
         
         fluidRow(
           align = "center",
-          HTML("<h3 style = 'color: #00609d'><strong>Nivel de Estrés Laboral</strong></h3>"),
+          HTML("<h4 style = 'color: #00609d'><strong>Calificación del ambiente por área</strong></h4>"),
         ),
+        
+        br(),
         
         fluidRow(
           align = "center",
           div(
             style = "max-width: 900px; margin: 0 auto;",
-            HTML("<h5 style='color: #393939;'>Esta sección recoge la percepción de los empleados sobre su nivel actual de estrés en el trabajo, con el objetivo de identificar factores estresantes y promover un entorno laboral saludable.</h5>")
+            HTML("<h5 style='color: #393939;'>En este apartado, se analiza la calificación del ambiente laboral por área, teniendo en cuenta que es una calificación de 1 a 3, destacando la colaboración, el respeto entre compañeros y la relación con la dirección, elementos fundamentales para la satisfacción general de los empleados en su entorno de trabajo.</h5>")
           )
         ),
         
@@ -833,12 +837,35 @@ dashboardPage(
         fluidRow(
           column(
             width = 6,
-            plotOutput("plot_estres_satis") %>% withSpinner(type = 8, size = 0.5)
+            plotOutput("plot_cali_ambiente_area_satis") %>% withSpinner(type = 8, size = 0.5)
           ),
           
           column(
             width = 6,
+            uiOutput("ft_cali_ambiente_area_satis") %>% withSpinner(type = 8, size = 0.5)
+          )
+        ),
+        
+        br(),
+        br(),
+        
+        fluidRow(
+          align = "center",
+          HTML("<h3 style = 'color: #00609d'><strong>Nivel de Estrés Laboral</strong></h3>"),
+        ),
+        
+        
+        br(),
+        
+        fluidRow(
+          column(
+            width = 6,
             uiOutput("ft_estres_satis") %>% withSpinner(type = 8, size = 0.5)
+          ),
+          
+          column(
+            width = 6,
+            plotOutput("plot_estres_satis") %>% withSpinner(type = 8, size = 0.5)
           )
         ),
         
@@ -851,25 +878,17 @@ dashboardPage(
         ),
         
         
-        fluidRow(
-          align = "center",
-          div(
-            style = "max-width: 900px; margin: 0 auto;",
-            HTML("<h5 style='color: #393939;'>Aquí se pregunta a los empleados si consideran que están cumpliendo adecuadamente con sus responsabilidades laborales, lo cual puede revelar barreras en el desempeño o la satisfacción con el rol.</h5>")
-          )
-        ),
-        
         br(),
         
         fluidRow(
           column(
             width = 6,
-            uiOutput("ft_cumplimiento_funyres_satis") %>% withSpinner(type = 8, size = 0.5)
+            plotOutput("plot_cumplimiento_funyres_satis") %>% withSpinner(type = 8, size = 0.5)
           ),
           
           column(
             width = 6,
-            plotOutput("plot_cumplimiento_funyres_satis") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("ft_cumplimiento_funyres_satis") %>% withSpinner(type = 8, size = 0.5)
           )
         ),
         
@@ -907,14 +926,7 @@ dashboardPage(
           HTML("<h3 style = 'color: #00609d'><strong>Frecuencia de Delegación de Tareas</strong></h3>"),
         ),
         
-        
-        fluidRow(
-          align = "center",
-          div(
-            style = "max-width: 900px; margin: 0 auto;",
-            HTML("<h5 style='color: #393939;'>Esta sección explora con qué frecuencia los empleados delegan tareas en otros compañeros en momentos de alta carga de trabajo, para comprender sus estrategias de gestión del tiempo y apoyo entre colegas.</h5>")
-          )
-        ),
+      
         
         br(),
         
@@ -938,13 +950,6 @@ dashboardPage(
           HTML("<h3 style = 'color: #00609d'><strong>Autopercepción de Proactividad y Compromiso con la Mejora Continua</strong></h3>"),
         ),
         
-        fluidRow(
-          align = "center",
-          div(
-            style = "max-width: 900px; margin: 0 auto;",
-            HTML("<h5 style='color: #393939;'>En este apartado, los empleados evalúan su nivel de proactividad y compromiso con la mejora continua en su área, un aspecto importante para el desarrollo de la cultura organizacional.</h5>")
-          )
-        ),
         
         br(),
         
