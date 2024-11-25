@@ -602,13 +602,6 @@ identi_problemas <- identi_problemas %>%
     )
   )
 
-identi_problemas <- identi_problemas %>%
-  mutate(
-    facultad_o_area_administrativa = case_when(
-      str_detect(facultad_o_area_administrativa, "Facultad Educación") ~ "Facultad Educación Física",
-      TRUE ~ facultad_o_area_administrativa
-    )
-  )
 
 
 #Informe de satisfacción laboral -------------------------------------------------------------
@@ -655,11 +648,15 @@ satis_laboral_num <- satis_laboral %>%
            trimws(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a)) %>% 
   mutate(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a =
            case_when(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a ==
-                       "Excelente" ~ "3",
+                       "Excelente" ~ "5",
                      como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a ==
-                       "Bueno" ~ "2",
+                       "Bueno" ~ "4",
                      como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a ==
-                       "Regular" ~ "1",
+                       "Regular" ~ "3",
+                     como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a ==
+                       "Deficiente" ~ "2",
+                     como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a ==
+                       "Muy deficiente" ~ "1",
                      TRUE ~ como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a)) %>% 
   mutate(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a =
            as.numeric(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a))

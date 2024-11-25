@@ -200,76 +200,75 @@ desempeno_num_filtred <- reactive({
   
   output$ft_desempeno_cali_gene <- renderUI({
     
-    promedios <- desempeno_num_filtred() %>% 
-      summarise(
-        "Profesionalismo del administrador en interacción con estudiantes y personal académico" =
-          round(mean(valor1, na.rm = TRUE), 1),
-        "Eficiencia operativa en la gestión de recursos y mantenimiento de equipos" =
-          round(mean(valor2, na.rm = TRUE), 1),
-        "Cumplimiento de horarios establecidos en el funcionamiento de la sala de cómputo" =
-          round(mean(valor3, na.rm = TRUE), 1),
-        "Capacidad del administrador para resolver problemas técnicos e imprevistos" =
-          round(mean(valor4, na.rm = TRUE), 1),
-        "Efectividad en la comunicación con los usuarios de la sala de cómputo" =
-          round(mean(valor5, na.rm = TRUE), 1),
-        "Proactividad del administrador en la identificación y aplicación de mejoras" =
-          round(mean(valor6, na.rm = TRUE), 1),
-        "Habilidad para trabajar en equipo y colaborar en iniciativas tecnológicas" =
-          round(mean(valor7, na.rm = TRUE), 1),
-        "Conocimiento actualizado sobre tendencias y avances en tecnología informática" =
-          round(mean(valor8, na.rm = TRUE), 1),
-        "Efectividad en mantener la seguridad de la información e integridad de los sistemas" =
-          round(mean(valor9, na.rm = TRUE), 1),
-        "Desempeño del administrador en atención y soporte a usuarios" = 
-          round(mean(valor10, na.rm = TRUE), 1)
-      ) %>%
-      pivot_longer(cols = everything(), names_to = "Categoría", values_to = "Promedio")
-    
-    desempeno_gene <- desempeno_filtred() %>% 
-      select(
-        como_evaluaria_el_profesionalismo_del_administrador_de_la_sala_de_computo_en_su_interaccion_con_estudiantes_y_personal_academico,
-        en_terminos_de_eficiencia_operativa_como_calificaria_el_desempeno_en_la_gestion_de_recursos_y_mantenimiento_de_equipos_number_10,
-        que_tan_satisfactorio_es_el_cumplimiento_de_los_horarios_establecidos_por_el_administrador_en_el_funcionamiento_de_la_sala_de_computo_number_10,
-        como_evaluaria_la_capacidad_del_administrador_para_resolver_problemas_tecnicos_y_situaciones_imprevistas_number_10,
-        en_terminos_de_comunicacion_con_los_usuarios_de_la_sala_de_computo_que_tan_efectivo_considera_al_administrador_number_10,
-        que_tan_proactivo_es_el_administrador_en_la_identificacion_y_aplicacion_de_mejoras_en_los_servicios_number_10,
-        como_calificaria_la_habilidad_del_administrador_para_trabajar_en_equipo_y_colaborar_en_iniciativas_relacionadas_con_la_tecnologia_number_10,
-        en_que_medida_el_administrador_demuestra_conocimiento_actualizado_sobre_las_ultimas_tendencias_y_avances_en_tecnologia_informatica_para_mejorar_el_rendimiento_de_la_sala_de_computo_number_10,
-        que_tan_efectivo_es_el_administrador_al_mantener_la_seguridad_de_la_informacion_y_la_integridad_de_los_sistemas_number_10,
-        en_terminos_de_atencion_y_soporte_a_los_usuarios_como_calificaria_el_desempeno_del_administrador_number_10) %>%
-      rename(
-        "Profesionalismo del administrador en interacción con estudiantes y personal académico" =
+      promedios <- desempeno_num_filtred() %>% 
+        summarise(
+          "Profesionalismo en interacción" =
+            round(mean(valor1, na.rm = TRUE), 1),
+          "Eficiencia en gestión de recursos" =
+            round(mean(valor2, na.rm = TRUE), 1),
+          "Cumplimiento de horarios" =
+            round(mean(valor3, na.rm = TRUE), 1),
+          "Resolución de problemas técnicos" =
+            round(mean(valor4, na.rm = TRUE), 1),
+          "Efectividad en comunicación" =
+            round(mean(valor5, na.rm = TRUE), 1),
+          "Proactividad en mejoras" =
+            round(mean(valor6, na.rm = TRUE), 1),
+          "Trabajo en equipo y colaboración" =
+            round(mean(valor7, na.rm = TRUE), 1),
+          "Conocimiento en tecnología" =
+            round(mean(valor8, na.rm = TRUE), 1),
+          "Seguridad de la información" =
+            round(mean(valor9, na.rm = TRUE), 1),
+          "Atención y soporte a usuarios" = 
+            round(mean(valor10, na.rm = TRUE), 1)) %>%
+        pivot_longer(cols = everything(), names_to = "Categoría", values_to = "Promedio")
+      
+      desempeno_gene <- desempeno_filtred() %>% 
+        select(
           como_evaluaria_el_profesionalismo_del_administrador_de_la_sala_de_computo_en_su_interaccion_con_estudiantes_y_personal_academico,
-        "Eficiencia operativa en la gestión de recursos y mantenimiento de equipos" =
           en_terminos_de_eficiencia_operativa_como_calificaria_el_desempeno_en_la_gestion_de_recursos_y_mantenimiento_de_equipos_number_10,
-        "Cumplimiento de horarios establecidos en el funcionamiento de la sala de cómputo" =
           que_tan_satisfactorio_es_el_cumplimiento_de_los_horarios_establecidos_por_el_administrador_en_el_funcionamiento_de_la_sala_de_computo_number_10,
-        "Capacidad del administrador para resolver problemas técnicos e imprevistos" =
           como_evaluaria_la_capacidad_del_administrador_para_resolver_problemas_tecnicos_y_situaciones_imprevistas_number_10,
-        "Efectividad en la comunicación con los usuarios de la sala de cómputo" =
           en_terminos_de_comunicacion_con_los_usuarios_de_la_sala_de_computo_que_tan_efectivo_considera_al_administrador_number_10,
-        "Proactividad del administrador en la identificación y aplicación de mejoras" =
           que_tan_proactivo_es_el_administrador_en_la_identificacion_y_aplicacion_de_mejoras_en_los_servicios_number_10,
-        "Habilidad para trabajar en equipo y colaborar en iniciativas tecnológicas" =
           como_calificaria_la_habilidad_del_administrador_para_trabajar_en_equipo_y_colaborar_en_iniciativas_relacionadas_con_la_tecnologia_number_10,
-        "Conocimiento actualizado sobre tendencias y avances en tecnología informática" =
           en_que_medida_el_administrador_demuestra_conocimiento_actualizado_sobre_las_ultimas_tendencias_y_avances_en_tecnologia_informatica_para_mejorar_el_rendimiento_de_la_sala_de_computo_number_10,
-        "Efectividad en mantener la seguridad de la información e integridad de los sistemas" =
           que_tan_efectivo_es_el_administrador_al_mantener_la_seguridad_de_la_informacion_y_la_integridad_de_los_sistemas_number_10,
-        "Desempeño del administrador en atención y soporte a usuarios" =
           en_terminos_de_atencion_y_soporte_a_los_usuarios_como_calificaria_el_desempeno_del_administrador_number_10) %>%
-      pivot_longer(cols = everything(), 
-                   names_to = "Categoria", 
-                   values_to = "Calificacion") %>% 
-      mutate(Calificacion = factor(Calificacion, levels = c("Excelente", "Bueno","Aceptable", "Necesita mejorar", "Insatisfactorio"))) %>%
-      count(Categoria, Calificacion)
+        rename(
+          "Profesionalismo en interacción" =
+            como_evaluaria_el_profesionalismo_del_administrador_de_la_sala_de_computo_en_su_interaccion_con_estudiantes_y_personal_academico,
+          "Eficiencia en gestión de recursos" =
+            en_terminos_de_eficiencia_operativa_como_calificaria_el_desempeno_en_la_gestion_de_recursos_y_mantenimiento_de_equipos_number_10,
+          "Cumplimiento de horarios" =
+            que_tan_satisfactorio_es_el_cumplimiento_de_los_horarios_establecidos_por_el_administrador_en_el_funcionamiento_de_la_sala_de_computo_number_10,
+          "Resolución de problemas técnicos" =
+            como_evaluaria_la_capacidad_del_administrador_para_resolver_problemas_tecnicos_y_situaciones_imprevistas_number_10,
+          "Efectividad en comunicación" =
+            en_terminos_de_comunicacion_con_los_usuarios_de_la_sala_de_computo_que_tan_efectivo_considera_al_administrador_number_10,
+          "Proactividad en mejoras" =
+            que_tan_proactivo_es_el_administrador_en_la_identificacion_y_aplicacion_de_mejoras_en_los_servicios_number_10,
+          "Trabajo en equipo y colaboración" =
+            como_calificaria_la_habilidad_del_administrador_para_trabajar_en_equipo_y_colaborar_en_iniciativas_relacionadas_con_la_tecnologia_number_10,
+          "Conocimiento en tecnología" =
+            en_que_medida_el_administrador_demuestra_conocimiento_actualizado_sobre_las_ultimas_tendencias_y_avances_en_tecnologia_informatica_para_mejorar_el_rendimiento_de_la_sala_de_computo_number_10,
+          "Seguridad de la información" =
+            que_tan_efectivo_es_el_administrador_al_mantener_la_seguridad_de_la_informacion_y_la_integridad_de_los_sistemas_number_10,
+          "Atención y soporte a usuarios" =
+            en_terminos_de_atencion_y_soporte_a_los_usuarios_como_calificaria_el_desempeno_del_administrador_number_10) %>%
+        pivot_longer(cols = everything(), 
+                     names_to = "Categoria", 
+                     values_to = "Calificacion") %>% 
+        mutate(Calificacion = factor(Calificacion, levels = c("Excelente", "Bueno","Aceptable", "Necesita mejorar", "Insatisfactorio"))) %>%
+        count(Categoria, Calificacion)
     
     table <- desempeno_gene %>% 
       rename("Calificación" = Calificacion, "Categoría" = Categoria) %>% 
       pivot_wider(names_from = "Calificación", values_from = n, 
                   values_fill = list(n = 0)) %>%
       left_join(promedios, by = "Categoría") %>% 
-      ftable(encabezado = "Calificación por categoría") %>%
+      ftable() %>%
       bg(i = nrow_part(.), bg = NA) %>%
       bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
       color(i = nrow_part(.), color = "black") %>%
@@ -284,27 +283,26 @@ desempeno_num_filtred <- reactive({
     
     promedios <- desempeno_num_filtred() %>% 
       summarise(
-        "Profesionalismo del administrador en interacción con estudiantes y personal académico" =
+        "Profesionalismo en interacción" =
           round(mean(valor1, na.rm = TRUE), 1),
-        "Eficiencia operativa en la gestión de recursos y mantenimiento de equipos" =
+        "Eficiencia en gestión de recursos" =
           round(mean(valor2, na.rm = TRUE), 1),
-        "Cumplimiento de horarios establecidos en el funcionamiento de la sala de cómputo" =
+        "Cumplimiento de horarios" =
           round(mean(valor3, na.rm = TRUE), 1),
-        "Capacidad del administrador para resolver problemas técnicos e imprevistos" =
+        "Resolución de problemas técnicos" =
           round(mean(valor4, na.rm = TRUE), 1),
-        "Efectividad en la comunicación con los usuarios de la sala de cómputo" =
+        "Efectividad en comunicación" =
           round(mean(valor5, na.rm = TRUE), 1),
-        "Proactividad del administrador en la identificación y aplicación de mejoras" =
+        "Proactividad en mejoras" =
           round(mean(valor6, na.rm = TRUE), 1),
-        "Habilidad para trabajar en equipo y colaborar en iniciativas tecnológicas" =
+        "Trabajo en equipo y colaboración" =
           round(mean(valor7, na.rm = TRUE), 1),
-        "Conocimiento actualizado sobre tendencias y avances en tecnología informática" =
+        "Conocimiento en tecnología" =
           round(mean(valor8, na.rm = TRUE), 1),
-        "Efectividad en mantener la seguridad de la información e integridad de los sistemas" =
+        "Seguridad de la información" =
           round(mean(valor9, na.rm = TRUE), 1),
-        "Desempeño del administrador en atención y soporte a usuarios" = 
-          round(mean(valor10, na.rm = TRUE), 1)
-      ) %>%
+        "Atención y soporte a usuarios" = 
+          round(mean(valor10, na.rm = TRUE), 1)) %>%
       pivot_longer(cols = everything(), names_to = "Categoría", values_to = "Promedio")
     
     desempeno_gene <- desempeno_filtred() %>% 
@@ -320,25 +318,25 @@ desempeno_num_filtred <- reactive({
         que_tan_efectivo_es_el_administrador_al_mantener_la_seguridad_de_la_informacion_y_la_integridad_de_los_sistemas_number_10,
         en_terminos_de_atencion_y_soporte_a_los_usuarios_como_calificaria_el_desempeno_del_administrador_number_10) %>%
       rename(
-        "Profesionalismo del administrador en interacción con estudiantes y personal académico" =
+        "Profesionalismo en interacción" =
           como_evaluaria_el_profesionalismo_del_administrador_de_la_sala_de_computo_en_su_interaccion_con_estudiantes_y_personal_academico,
-        "Eficiencia operativa en la gestión de recursos y mantenimiento de equipos" =
+        "Eficiencia en gestión de recursos" =
           en_terminos_de_eficiencia_operativa_como_calificaria_el_desempeno_en_la_gestion_de_recursos_y_mantenimiento_de_equipos_number_10,
-        "Cumplimiento de horarios establecidos en el funcionamiento de la sala de cómputo" =
+        "Cumplimiento de horarios" =
           que_tan_satisfactorio_es_el_cumplimiento_de_los_horarios_establecidos_por_el_administrador_en_el_funcionamiento_de_la_sala_de_computo_number_10,
-        "Capacidad del administrador para resolver problemas técnicos e imprevistos" =
+        "Resolución de problemas técnicos" =
           como_evaluaria_la_capacidad_del_administrador_para_resolver_problemas_tecnicos_y_situaciones_imprevistas_number_10,
-        "Efectividad en la comunicación con los usuarios de la sala de cómputo" =
+        "Efectividad en comunicación" =
           en_terminos_de_comunicacion_con_los_usuarios_de_la_sala_de_computo_que_tan_efectivo_considera_al_administrador_number_10,
-        "Proactividad del administrador en la identificación y aplicación de mejoras" =
+        "Proactividad en mejoras" =
           que_tan_proactivo_es_el_administrador_en_la_identificacion_y_aplicacion_de_mejoras_en_los_servicios_number_10,
-        "Habilidad para trabajar en equipo y colaborar en iniciativas tecnológicas" =
+        "Trabajo en equipo y colaboración" =
           como_calificaria_la_habilidad_del_administrador_para_trabajar_en_equipo_y_colaborar_en_iniciativas_relacionadas_con_la_tecnologia_number_10,
-        "Conocimiento actualizado sobre tendencias y avances en tecnología informática" =
+        "Conocimiento en tecnología" =
           en_que_medida_el_administrador_demuestra_conocimiento_actualizado_sobre_las_ultimas_tendencias_y_avances_en_tecnologia_informatica_para_mejorar_el_rendimiento_de_la_sala_de_computo_number_10,
-        "Efectividad en mantener la seguridad de la información e integridad de los sistemas" =
+        "Seguridad de la información" =
           que_tan_efectivo_es_el_administrador_al_mantener_la_seguridad_de_la_informacion_y_la_integridad_de_los_sistemas_number_10,
-        "Desempeño del administrador en atención y soporte a usuarios" =
+        "Atención y soporte a usuarios" =
           en_terminos_de_atencion_y_soporte_a_los_usuarios_como_calificaria_el_desempeno_del_administrador_number_10) %>%
       pivot_longer(cols = everything(), 
                    names_to = "Categoria", 
@@ -568,8 +566,8 @@ desempeno_num_filtred <- reactive({
         
         desempeno_filtred() %>% 
         mutate(como_calificaria_la_habilidad_del_administrador_para_trabajar_en_equipo_y_colaborar_en_iniciativas_relacionadas_con_la_tecnologia_number_10 =
-                 factor(como_calificaria_la_habilidad_del_administrador_para_trabajar_en_equipo_y_colaborar_en_iniciativas_relacionadas_con_la_tecnologia_number_10, levels = c("Excelente", "Bueno", "Aceptable", "Necesita mejorar", "Insatisfactorio"))) %>% 
-          categorica_1var(como_calificaria_la_habilidad_del_administrador_para_trabajar_en_equipo_y_colaborar_en_iniciativas_relacionadas_con_la_tecnologia_number_10, "Calificación")
+                 factor(como_calificaria_la_habilidad_del_administrador_para_trabajar_en_equipo_y_colaborar_en_iniciativas_relacionadas_con_la_tecnologia_number_10, levels = c("Insatisfactorio", "Necesita mejorar", "Aceptable", "Bueno", "Excelente"))) %>% 
+          plot_barras(como_calificaria_la_habilidad_del_administrador_para_trabajar_en_equipo_y_colaborar_en_iniciativas_relacionadas_con_la_tecnologia_number_10, "","", "")
         
       } else if (input$select_categoria_d == "¿En qué medida el administrador demuestra conocimiento actualizado sobre las últimas tendencias y avances en tecnología informática para mejorar el rendimiento de la sala de cómputo?") {
         
@@ -1050,7 +1048,7 @@ desempeno_num_filtred <- reactive({
   output$ft_algunas_tarea_satis <- renderUI({
     
     table <- satis_filtred() %>%
-      mutate(tareas_adicionales = if_else(tareas_adicionales == "1. Conexión de Video Beam 2. En los eventos realizados en el departamento en los caso en que las áreas encargadas no se presentaban en el espacio solicitado, toco realizar la validación con las personas del sonido porque aun no habían hechos las conexiones, función que debería realizar las personas que realizan la logística del evento  ", "1. Conexión de Video Beam. 2. En los eventos, al no presentarse los responsables, se validó porque los del sonido no habían hecho las conexiones, tarea que es de logística", tareas_adicionales)) %>% 
+      mutate(tareas_adicionales = if_else(tareas_adicionales == "1. Conexión de Video Beam 2. En los eventos realizados en el departamento en los caso en que las áreas encargadas no se presentaban en el espacio solicitado, toco realizar la validación con las personas del sonido porque aun no habían hechos las conexiones, función que debería realizar las personas que realizan la logística del evento  ", "1. Conexión de Video Beam. 2. En los eventos, al no presentarse los responsables, se verificó porque los del sonido no habían hecho las conexiones, tarea que es de logística", tareas_adicionales)) %>% 
       categorica_1var(tareas_adicionales, "Tareas adicionales", wrap_width = 40)
     
     flextable::htmltools_value(table)

@@ -475,13 +475,6 @@ identi_problemas <- identi_problemas %>%
     )
   )
 
-identi_problemas <- identi_problemas %>%
-  mutate(
-    facultad_o_area_administrativa = case_when(
-      str_detect(facultad_o_area_administrativa, "Facultad Educación") ~ "Facultad Educación Física",
-      TRUE ~ facultad_o_area_administrativa
-    )
-  )
 
 ```
 
@@ -574,6 +567,7 @@ if (params$rendered_by_shiny)
   shiny::setProgress(0.50)
 
 ```
+
 ## ¿La sala de cómputo cuenta con aire acondicionado? 
 
 ### Tabla
@@ -582,6 +576,7 @@ identi_problemas %>%
   mutate(la_sala_de_computo_cuenta_con_aire_acondicionado = factor(la_sala_de_computo_cuenta_con_aire_acondicionado, levels = c("Sí, y funciona correctamente. ", "Sí, pero no es suficiente para mantener una temperatura adecuada. ", "No, pero se utilizan ventiladores o sistemas alternativos de enfriamiento. ", "No, y no se cuenta con ningún sistema de enfriamiento."))) %>%
   categorica_1var(la_sala_de_computo_cuenta_con_aire_acondicionado, "Calificación")
 ```
+
 ### Gráfica
 ```{r}
 identi_problemas %>%
@@ -589,7 +584,7 @@ identi_problemas %>%
   plot_barras(la_sala_de_computo_cuenta_con_aire_acondicionado, "", "", "")
 ```
 
-## ¿Cómo evaluaría la ilumnicación en la sala de cómputo? 
+## ¿Cómo evaluaría la iluminación en la sala de cómputo? 
 
 ### Tabla
 ```{r}
