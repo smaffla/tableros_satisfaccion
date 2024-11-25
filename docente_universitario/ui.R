@@ -7,12 +7,12 @@ dashboardPage(
   
   #https://fontawesome.com/ pagina para iconos
   
-  dashboardSidebar(
+  dashboardSidebar( 
     sidebarMenu(
       tags$head(
         tags$style(HTML("
         .main-sidebar {
-          width: 250 px !important;
+          width: 250px !important;
         }
       "))
       ),

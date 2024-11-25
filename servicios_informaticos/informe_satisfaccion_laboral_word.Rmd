@@ -1,0 +1,876 @@
+---
+title: "ENCUESTA PARA LA SATISFACCIÓN LABORAL DE LOS EMPLEADOS DE SERVICIOS INFORMATICOS"
+author: "Oficina de Desarrollo y Planeación"
+output:
+  word_document:
+    fig_height: 7
+    fig_width: 10
+    toc: yes
+    toc_depth: '4'
+  html_document:
+    toc: yes
+    toc_depth: '4'
+    df_print: paged
+params:
+  mes: NA
+  anio: NA
+  semestre: NA
+  rendered_by_shiny: no
+subtitle: Universidad Pedagógica Nacional
+editor_options:
+  chunk_output_type: inline
+toc-title: Tabla de contenido
+---
+
+<!-- <div> -->
+<!-- <img src="https://estilos.upn.edu.co/userfiles/footer/footer.svg" alt="UPN" class="watermark"> -->
+<!-- </div> -->
+
+\newpage
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = FALSE,
+	message = FALSE,
+	warning = FALSE,
+	dpi = 300	)
+
+library(openxlsx)
+library(tidyverse)
+library(janitor)
+library(flextable)
+library(scales)
+library(lubridate)
+library(forcats)
+
+colores_plot <- c(#"#2171b5",
+                                              "#4292c6","#74a9cf",
+                                              "#41b6c4","#7fcdbb",#"#238b45","#41ab5d",
+                                              "#78c679","#c7e9b4","#edf8b1","#fee391","#fec44f",
+                                              "#fe9929","#ec7014")
+
+
+satis_laboral <- read.xlsx("Encuesta de Satisfacción Laboral(1-10).xlsx")
+
+# ciarp_s <-  if(params$semestre == 1){
+#   ciarp_s20231
+# } else if (params$semestre == 2){
+#   ciarp_s20232
+# } else if (params$semestre == 3){
+#   ciarp_s
+#
+
+```
+
+```{r}
+
+ftable <- function(x, encabezado = NULL, title = NULL) {
+  
+  table <- x %>% 
+    flextable() %>% 
+    set_caption(caption = title) %>%
+    align(part = "header", align = "center") %>% 
+    align(j = 2:ncol_keys(.), align = "center") %>% 
+    bg(part = "header", bg = "#2c7fb8") %>% 
+    color(part = "header", color = "white") %>% 
+    bg(j = 1, bg = "#D9D9D9") %>% 
+    bg(i = nrow_part(.), bg = "#2c7fb8") %>%
+    bold(part = "header") %>% 
+    bold(i = nrow_part(.)) %>%
+    color(i = nrow_part(.), color = "white") %>%
+    border(part = "all", border = fp_border_default(color="black", width = 1)) %>% 
+    autofit() %>%
+    fit_to_width(max_width = 8.5)
+  
+  if (!is.null(encabezado)) {
+    table <- table %>% 
+      add_header_row(colwidths = ncol_keys(.), values = encabezado)
+  }
+  
+  return(table)
+    
+}
+
+
+plot_donas <- function(x, col, titulo = "") {
+  
+  col <- enquo(col)
+  
+  data <- x %>%
+    count(!!col) %>% 
+    mutate(porcentaje = n / sum(n),
+           ymax = cumsum(porcentaje),
+           ymin = c(0, head(ymax, n = -1)),
+           labelpos = (ymax + ymin) / 2,
+           labelname = paste(n,"\n",percent(porcentaje, 0.1)))
+  #filter(porcentaje >= 0.005)
+  
+  ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 10, xmin = 1, fill = !!col)) +
+    geom_rect() +
+    geom_text(aes(x = -1.5, y = labelpos, label = labelname), size = 5, color = "black", fontface = "bold") +
+    labs(title = str_wrap(titulo, width = 30)) +
+    scale_fill_manual(values = colores_plot) +
+    coord_polar(theta = "y") +
+    xlim(c(20, -10)) +
+    theme_void() +
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
+    guides(fill = guide_legend(title = "", label.position = "right",
+                               label.theme = element_text(size = 18)))
+}
+
+## Función gráfico de barras para df caracterizacion
+plot_barras <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
+  col <- enquo(col)
+  
+  data <- x %>%
+    count(!!col )%>% 
+    mutate(perc = percent(n/sum(n), 0.1))
+  
+  if (is.null(top)) {
+    top <- 11
+  }
+  
+  data %>% 
+    arrange(desc(n)) %>% 
+    slice(1:top) %>% 
+    ggplot(aes(x = !!col, 
+               y= n, 
+               fill = !!col, 
+               label = paste(perc,"\n",n," "))) + 
+    geom_col()+
+    geom_text(vjust = 0.5, hjust = -0.1, size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$n)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
+    theme(legend.position="none")+
+    theme(axis.text.y = element_text(size = 14))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 40))+
+    scale_fill_manual(values = colores_plot) +
+    coord_flip()
+  
+}
+
+## Función gráfico de barras AGRUPADO para df caracterizacion
+plot_barras_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo = "") {
+  col <- enquo(col)
+  group <- enquo(group)
+  
+  data <- x %>%
+    count(!!group, !!col) %>% 
+    mutate(perc = percent(n/sum(n), 0.1))
+  
+  data %>% 
+    ggplot(aes(x = !!col, 
+               y= n, 
+               fill = !!group, 
+               label = paste(perc,"\n",n," "))) + 
+    geom_col(position = "dodge")+
+    geom_text(vjust = 0.5, hjust = -0.2 ,size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$n)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30))+ 
+    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+    guides(fill = guide_legend(title = leyenda, label.position = "right"
+                               , nrow = 2, label.theme = element_text(size = 12)))+
+    theme(legend.position = "bottom",
+          axis.text.y = element_text(size = 13),
+          axis.text.x = element_text(size = 13)) +
+    theme(axis.text.y = element_text(size = 12))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
+    scale_fill_manual(values = colores_plot) +
+    coord_flip()
+  
+}
+
+
+categorica_1var <- function(x, cat1, rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
+  cat1 <- enquo(cat1)
+  
+    if (is.null(wrap_width)) {
+    wrap_width <- 100
+    }
+  
+  table <- x %>% 
+    count(!!cat1) %>% 
+    adorn_totals(where = "row", name = "Total General") %>%
+    rename('{rename}' := !!cat1, "Cantidad" = n) %>% 
+    mutate('{rename}' := str_wrap(!!sym(rename), width = wrap_width)) %>%
+    ftable(encabezado, title)
+  
+  return(table)
+    
+}
+
+categorica_2var <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
+  cat1 <- enquo(cat1)
+  cat2 <- enquo(cat2)
+  
+  table <- x %>% 
+    count(!!cat1, !!cat2) %>% 
+    rbind(
+      x %>% 
+        filter(!is.na(!!cat2)) %>% 
+        count(!!cat2) %>% 
+        mutate(!!cat1 := "Total General")
+    ) %>% 
+    group_by(!!cat1) %>% 
+    #mutate(p = n/sum(n)) %>% 
+    #filter (p >= 0.0005) %>% 
+    #select(-n) %>% 
+    pivot_wider(names_from = !!cat2, values_from = n, values_fill = 0) %>%
+    adorn_totals(where = "col", name = "Total General") %>%
+    #mutate(across(where(is.numeric), ~ percent(.x, 0.01, decimal.mark = ","))) %>% 
+    rename("{rename}" := !!cat1)
+  
+      if (is.null(label_width)) {
+    label_width <- 10
+      
+  }
+  
+  # Personalizar el tamaño de las etiquetas de columna
+  colnames(table) <- str_wrap(colnames(table), width = label_width)
+  
+  table <- table %>%  ftable(encabezado, title)
+  
+  return(table)
+}
+
+
+categorica_2varp <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
+  cat1 <- enquo(cat1)
+  cat2 <- enquo(cat2)
+  
+  table <- x %>% 
+    count(!!cat1, !!cat2) %>% 
+    rbind(
+      x %>% 
+        filter(!is.na(!!cat2)) %>% 
+        count(!!cat2) %>% 
+        mutate(!!cat1 := "Total General")
+    ) %>% 
+    group_by(!!cat1) %>% 
+    mutate(p = n/sum(n)) %>% 
+    #filter (p >= 0.0005) %>% 
+    select(-n) %>% 
+    pivot_wider(names_from = !!cat2, values_from = p, values_fill = 0) %>% 
+    adorn_totals(where = "col", name = "Total General") %>%
+    mutate(across(where(is.numeric), ~ percent(.x, 0.1, decimal.mark = ","))) %>% 
+    rename("{rename}" := !!cat1)
+  
+      if (is.null(label_width)) {
+    label_width <- 10
+      
+  }
+  
+  # Personalizar el tamaño de las etiquetas de columna
+  colnames(table) <- str_wrap(colnames(table), width = label_width)
+  
+  table <- table %>%  ftable(encabezado, title)
+  
+  return(table)
+}
+
+wrap_text <- function(x, width) {
+  sapply(x, function(y) {
+    paste(strwrap(y, width = width), collapse = "\n")
+  })
+}
+
+
+tabla_prom <- function(x, col, col_promedio,rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
+  
+  col <- enquo(col)
+  col_promedio <- enquo(col_promedio)
+  
+  if (is.null(wrap_width)) {
+    wrap_width <- 100
+  }
+  
+  table <- x %>% 
+  group_by(!!col) %>%
+  summarise(promedio_general = round(mean(!!col_promedio), 1)) %>%
+  ungroup() %>% 
+  #arrange(desc(promedio_general)) %>% 
+  rename("{rename}" := !!col,
+         "Promedio" = promedio_general) %>% 
+  as.data.frame()  
+  
+  formatted_table <- ftable(table, encabezado, title) %>% 
+  bg(i = nrow_part(.), bg = "white") %>%
+  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+  color(i = nrow_part(.), color = "black") %>%
+  bold(i = nrow_part(.), bold = FALSE)
+  
+  return(formatted_table)
+  
+}
+
+plot_barras_prom <- function(x, col,col_promedio, xlab, ylab, titulo = "", top = NULL) {
+  
+  col <- enquo(col)
+  col_promedio <- enquo(col_promedio)
+  
+  if (is.null(top)) {
+    top <- 11
+  }
+  
+  data <- x %>%  
+    group_by(!!col) %>%
+    summarise(promedio_general = round(mean(!!col_promedio), 1)) %>%
+    ungroup()
+  
+  data %>% 
+    arrange(desc(promedio_general)) %>% 
+    slice(1:top) %>% 
+    ggplot(aes(x = !!col, 
+               y= promedio_general, 
+               fill = !!col, 
+               label = promedio_general)) + 
+    geom_col()+
+    geom_text(vjust = 0.5, hjust = -0.5, size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$promedio_general)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
+    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+    theme(legend.position="none")+
+    theme(axis.text.y = element_text(size = 14))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
+    scale_fill_manual(values = colores_plot)+
+    coord_flip()
+  
+}
+
+```
+
+```{r}
+
+satis_laboral <- satis_laboral %>% 
+  distinct()
+
+satis_laboral <- satis_laboral %>% 
+  clean_names()
+
+satis_laboral <- satis_laboral %>% 
+  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
+  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+         mesdili = str_to_title(mesdili)) %>% 
+  mutate(anodili = year(hora_de_finalizacion))
+
+
+satis_laboral <- satis_laboral %>%
+  rename(tareas_adicionales = 
+           si_la_respuesta_anterior_fue_a_veces_o_frecuentemente_mencione_ejemplos_de_esas_tareas_adicionales,
+         trabajo_adicional = en_el_ultimo_mes_le_ha_tocado_trabajar_fuera_de_su_horario_laboral_noches_fines_de_semana_dias_festivos) 
+
+satis_laboral <- satis_laboral %>% 
+    mutate(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual =
+           trimws(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual)) %>% 
+  mutate(con_que_frecuencia_se_le_asignan_tareas_que_no_forman_parte_de_su_descripcion_de_puesto_o_sus_objetivos_de_contrato
+         = trimws(
+        con_que_frecuencia_se_le_asignan_tareas_que_no_forman_parte_de_su_descripcion_de_puesto_o_sus_objetivos_de_contrato))
+
+satis_laboral_num <- satis_laboral %>% 
+  mutate(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual = case_when(
+    como_calificaria_su_satisfaccion_general_con_su_trabajo_actual == "Muy satisfecho" ~ "5",
+    como_calificaria_su_satisfaccion_general_con_su_trabajo_actual == "Satisfecho" ~ "4",
+    como_calificaria_su_satisfaccion_general_con_su_trabajo_actual == "Ni satisfecho ni insatisfecho" ~ "3",
+    como_calificaria_su_satisfaccion_general_con_su_trabajo_actual == "Insatisfecho" ~ "2",
+    como_calificaria_su_satisfaccion_general_con_su_trabajo_actual == "Muy insatisfecho" ~ "1",
+    TRUE ~ como_calificaria_su_satisfaccion_general_con_su_trabajo_actual
+  )) %>% 
+  mutate(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual =
+           as.numeric(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual)) %>% 
+  mutate(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a =
+  trimws(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a)) %>% 
+  mutate(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a =
+  case_when(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a ==
+              "Excelente" ~ "3",
+            como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a ==
+              "Bueno" ~ "2",
+            como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a ==
+              "Regular" ~ "1",
+            TRUE ~ como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a)) %>% 
+  mutate(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a =
+           as.numeric(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a))
+
+satis_laboral <- satis_laboral %>% 
+  mutate(tareas_adicionales = case_when(
+      tareas_adicionales == "." | tareas_adicionales == "N/A" | tareas_adicionales == "NINGUNA" |
+      tareas_adicionales == "Na" | tareas_adicionales == "N.A" | tareas_adicionales == "nunca" |
+      tareas_adicionales == "No he tenido tareas adicionales" | is.na(tareas_adicionales) ~ "Ninguna",
+      TRUE ~ tareas_adicionales
+    )
+  )
+
+satis_laboral <- satis_laboral %>%
+  mutate(
+    trabajo_adicional = case_when(
+      trabajo_adicional == "N.A" ~ "No responde",
+      TRUE ~ trabajo_adicional
+    )
+  )
+
+satis_laboral <- satis_laboral %>%
+  mutate(
+    por_que = case_when(
+      por_que == "N.A" ~ "No responde",
+      TRUE ~ por_que
+    )
+  )
+
+satis_laboral <- satis_laboral %>%
+  mutate(
+    por_que_1 = case_when(
+      por_que_1 == "N.A" ~ "No responde",
+      TRUE ~ por_que_1
+    )
+  )
+
+
+```
+
+
+
+```{r}
+total <- satis_laboral %>% count() %>% pull()
+```
+
+
+La encuesta realizada para saber la satisfacción laboral de los empleados de servicios informáticos fue contestada por **`r total`** personas.
+
+# Área
+
+En este apartado se muestran las áreas a la que pertenecen las personas que contestaron la encuesta para saber la satisfacción laboral de los empleados de servicios informáticos.
+
+## Tabla
+```{r}
+
+satis_laboral %>% 
+  filter(!is.na(area)) %>% 
+  categorica_1var(area, "Área")
+
+```
+
+## Gráfico
+```{r}
+
+satis_laboral %>% 
+  filter(!is.na(area)) %>%
+  plot_barras(area, "", "", "")
+  
+```
+
+# Calificación general de satisfacción
+
+En este apartado se muestra la calificación general de la satisfacción laboral de los empleados de servicios informáticos.
+
+
+## Tabla
+```{r}
+
+satis_laboral %>%
+  filter(!is.na(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual)) %>% 
+  mutate(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual =
+           factor(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual, levels = c("Muy satisfecho",
+                                                                                             "Satisfecho",
+                                                                                             "Ni satisfecho ni insatisfecho",
+                                                                                             "Insatisfecho",
+                                                                                             "Muy insatisfecho"))) %>% 
+  categorica_1var(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual, "Calificación general")
+
+```
+
+## Gráfico
+
+```{r}
+
+satis_laboral %>%
+  filter(!is.na(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual)) %>% 
+  mutate(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual =
+           factor(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual, levels = c("Muy insatisfecho",
+                                                                                             "Insatisfecho",
+                                                                                             "Ni satisfecho ni insatisfecho",
+                                                                                             "Satisfecho",
+                                                                                             "Muy satisfecho"))) %>% 
+  plot_barras(como_calificaria_su_satisfaccion_general_con_su_trabajo_actual, "", "", "")
+
+```
+
+### Calificación general por área de los empleados
+
+En esta sección, se presenta un análisis sobre la calificación general otorgada por los empleados en diferentes áreas, proporcionando una visión detallada de sus percepciones y evaluaciones sobre el desempeño en cada área específica de trabajo.
+
+#### Tabla
+
+```{r}
+
+satis_laboral_num %>% 
+  tabla_prom(area,como_calificaria_su_satisfaccion_general_con_su_trabajo_actual, "Área")
+
+
+```
+
+
+#### Gráfico
+
+```{r}
+
+satis_laboral_num %>% 
+  plot_barras_prom(area, como_calificaria_su_satisfaccion_general_con_su_trabajo_actual, "", "", "")
+
+```
+
+
+# Experiencias de Maltrato Laboral
+
+En esta sección, se exploran las experiencias de los empleados relacionadas con el trato recibido por parte de sus superiores o compañeros, incluyendo posibles incidentes de maltrato o acoso en el ambiente de trabajo.
+
+## Tabla
+
+```{r}
+
+satis_laboral %>% 
+  categorica_1var(alguna_vez_ha_sufrido_o_presenciado_algun_tipo_de_maltrato_laboral_gritos_insultos_acoso_etc_por_parte_de_sus_superiores_o_companeros, "¿Ha sufrido de maltrato laboral?")
+
+```
+
+
+## Gráfico
+
+```{r}
+
+satis_laboral %>% 
+  plot_donas(alguna_vez_ha_sufrido_o_presenciado_algun_tipo_de_maltrato_laboral_gritos_insultos_acoso_etc_por_parte_de_sus_superiores_o_companeros, "")
+
+```
+
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.25)
+
+```
+
+# Frecuencia de Asignación de Tareas Fuera de la Descripción del Puesto
+
+Aquí se investiga la frecuencia con la cual los empleados reciben tareas que no corresponden a su rol definido, lo que puede afectar su carga de trabajo y percepción de equidad en la asignación de responsabilidades.
+
+## Tabla
+
+```{r}
+
+satis_laboral %>% 
+  mutate(con_que_frecuencia_se_le_asignan_tareas_que_no_forman_parte_de_su_descripcion_de_puesto_o_sus_objetivos_de_contrato
+         = factor(
+    con_que_frecuencia_se_le_asignan_tareas_que_no_forman_parte_de_su_descripcion_de_puesto_o_sus_objetivos_de_contrato,
+    levels = c("Frecuentemente", "A veces", "Rara vez", "Nunca"))) %>% 
+  categorica_1var(con_que_frecuencia_se_le_asignan_tareas_que_no_forman_parte_de_su_descripcion_de_puesto_o_sus_objetivos_de_contrato, "Frecuencia de tareas fuera de su rol")
+
+```
+
+
+## Gráfico
+
+```{r}
+
+satis_laboral %>% 
+  mutate(con_que_frecuencia_se_le_asignan_tareas_que_no_forman_parte_de_su_descripcion_de_puesto_o_sus_objetivos_de_contrato
+         = factor(
+    con_que_frecuencia_se_le_asignan_tareas_que_no_forman_parte_de_su_descripcion_de_puesto_o_sus_objetivos_de_contrato,
+    levels = c("Nunca", "Rara vez", "A veces",  "Frecuentemente" ))) %>% 
+  plot_barras(
+    con_que_frecuencia_se_le_asignan_tareas_que_no_forman_parte_de_su_descripcion_de_puesto_o_sus_objetivos_de_contrato,
+    "", "", "")
+
+
+```
+
+## Tareas Adicionales
+
+Esta sección solicita a los empleados que proporcionen ejemplos específicos de tareas adicionales asignadas fuera de sus funciones principales, teniendo en cuenta que en la pregunta anterior respondieron algo diferente a Nunca.
+
+### Tabla
+
+```{r}
+
+satis_laboral %>% 
+  mutate(tareas_adicionales = if_else(tareas_adicionales == "1. Conexión de Video Beam 2. En los eventos realizados en el departamento en los caso en que las áreas encargadas no se presentaban en el espacio solicitado, toco realizar la validación con las personas del sonido porque aun no habían hechos las conexiones, función que debería realizar las personas que realizan la logística del evento  ", "1. Conexión de Video Beam. 2. En los eventos, al no presentarse los responsables, se validó porque los del sonido no habían hecho las conexiones, tarea que es de logística", tareas_adicionales)) %>% 
+  categorica_1var(tareas_adicionales, "Tareas adicionales", wrap_width = 40)
+
+```
+
+
+# Trabajo Fuera del Horario Laboral
+
+Se examina la frecuencia con la que los empleados han tenido que trabajar fuera de sus horas habituales, incluyendo noches, fines de semana y festivos, lo cual puede impactar en su bienestar y equilibrio entre trabajo y vida personal.
+
+## Tabla
+
+```{r}
+
+satis_laboral %>% 
+  categorica_1var(trabajo_adicional, "¿Le ha tocado trabajar fuera del horario laboral?")
+
+```
+
+
+## Gráfico
+
+```{r}
+
+satis_laboral %>% 
+  mutate(trabajo_adicional = trimws(trabajo_adicional)) %>% 
+  mutate(trabajo_adicional = factor(trabajo_adicional, levels = c("No responde", "Nunca", "1-3 veces al mes"))) %>% 
+  plot_barras(trabajo_adicional, "", "", "")
+
+```
+
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.50)
+
+```
+
+# Calificación del Ambiente Laboral
+
+En este apartado, los empleados evalúan la calidad del ambiente laboral, especialmente en relación con la colaboración y el respeto entre compañeros y con la dirección, un factor clave para su satisfacción en el trabajo.
+
+## Tabla 
+
+```{r}
+
+satis_laboral %>% 
+  mutate(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a = trimws(
+     como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a)) %>% 
+  mutate(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a = factor(
+    como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a, levels = c("Excelente", "Bueno",
+                                                                                                     "Regular"))) %>% 
+  categorica_1var(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a, 
+                  "Calificación del ambiente laboral")
+
+```
+
+
+## Gráfico
+
+```{r}
+
+satis_laboral %>% 
+  mutate(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a = trimws(
+     como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a)) %>% 
+  mutate(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a = factor(
+    como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a, levels = c("Regular", "Bueno",
+                                                                                                     "Excelente"))) %>% 
+  plot_barras(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a, "", "", "")
+
+```
+
+## Calificación del ambiente por área
+
+En este apartado, se analiza la calificación del ambiente laboral por área, teniendo en cuenta que es una calificación de 1 a 3, destacando la colaboración, el respeto entre compañeros y la relación con la dirección, elementos fundamentales para la satisfacción general de los empleados en su entorno de trabajo.
+
+### Tabla
+
+```{r}
+
+satis_laboral_num %>% 
+  tabla_prom(area, como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a, "Área")
+
+```
+
+
+### Grafico
+
+```{r}
+
+satis_laboral_num %>% 
+  plot_barras_prom(area, como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a, "", "", "")
+
+```
+
+
+# Nivel de Estrés Laboral
+
+Esta sección recoge la percepción de los empleados sobre su nivel actual de estrés en el trabajo, con el objetivo de identificar factores estresantes y promover un entorno laboral saludable.
+
+## Tabla
+
+```{r}
+
+satis_laboral %>% 
+  # mutate(como_calificaria_su_nivel_actual_de_estres_en_el_trabajo =
+  #          trimws(como_calificaria_su_nivel_actual_de_estres_en_el_trabajo)) %>% 
+  mutate(como_calificaria_su_nivel_actual_de_estres_en_el_trabajo =
+           factor(como_calificaria_su_nivel_actual_de_estres_en_el_trabajo, levels = c("Algo estresante", "Poco estresante",
+                                                                                       "Nada estresante"))) %>% 
+  categorica_1var(como_calificaria_su_nivel_actual_de_estres_en_el_trabajo, "Calificación del nivel de estrés")
+
+```
+
+
+## Gráfico
+
+```{r}
+
+satis_laboral %>% 
+  # mutate(como_calificaria_su_nivel_actual_de_estres_en_el_trabajo =
+  #          trimws(como_calificaria_su_nivel_actual_de_estres_en_el_trabajo)) %>% 
+  mutate(como_calificaria_su_nivel_actual_de_estres_en_el_trabajo =
+           factor(como_calificaria_su_nivel_actual_de_estres_en_el_trabajo, levels = c("Nada estresante", "Poco estresante",
+                                                                                       "Algo estresante"))) %>% 
+  plot_barras(como_calificaria_su_nivel_actual_de_estres_en_el_trabajo, "", "", "")
+
+
+```
+
+
+
+# Percepción de Cumplimiento de Funciones y Responsabilidades
+
+Aquí se pregunta a los empleados si consideran que están cumpliendo adecuadamente con sus responsabilidades laborales, lo cual puede revelar barreras en el desempeño o la satisfacción con el rol.
+
+## Tabla
+
+```{r}
+
+satis_laboral %>% 
+  categorica_1var(siente_que_cumple_adecuadamente_con_todas_sus_funciones_y_responsabilidades_laborales_tal_como_se_espera_de_usted, "¿Siente que cumple adecuadamente sus funciones?")
+
+```
+
+
+## Gráfico
+
+```{r}
+
+satis_laboral %>% 
+  plot_donas(siente_que_cumple_adecuadamente_con_todas_sus_funciones_y_responsabilidades_laborales_tal_como_se_espera_de_usted, "")
+
+```
+
+
+## Justificación del Cumplimiento de Responsabilidades
+
+En esta parte, se invita a los empleados a explicar su percepción sobre el cumplimiento de sus responsabilidades, proporcionando un contexto adicional para su respuesta anterior.
+
+### Tabla
+
+```{r}
+
+satis_laboral %>% 
+  mutate(por_que = case_when(
+    por_que == "Se mantiene control de la sala con revisión diaria, se tienen esquemas de mantenimiento de software semanal y limpieza general semestral, se responde a correos y tareas de mesa de ayuda dentro de los plazos establecidos y se promueve el trabajo en equipo" | por_que == "Cumplo mis horarios y administro bien los espacios de la salas que tengo a cargo." ~ "Se administra y se mantiene bien las salas a cargo",
+    por_que == "Sí, me siento satisfecha con mi desempeño en el trabajo. He estado cumpliendo con mis responsabilidades de manera efectiva y he logrado alcanzar los objetivos establecidos. Estoy comprometida con mi trabajo y continúo esforzándome para mejorar." | por_que == "Se cumplió en los tiempos los requerimientos solicitados de soporte técnico, los docentes y departamento hacen reconocimiento del buen trabajo realizado, se innovan en diferentes procesos de soporte técnico mejorando el resultado   " | por_que == "Las personas me lo hacen saber, con su gratitud." | por_que == "Soy respinsable, puntual,disciplinado,colabirador ,proactivo " ~ "Se tiene un buen desempeño y se reconoce el buen trabajo realizado",
+    por_que == "Se promueve el trabajo en equipo y hay apoyo de compañeros de sistemas y del subdirector de biblioteca." |
+  por_que == "Por lo general  cumplo con las responsabilidades que se me asignan, siempre estoy atento a lo que se requiera" | por_que == "porque hago parte de un grupo colaborativo." | por_que == "Apoyo de compañeros de sistemas y subdirector de biblioteca " ~ "Se tiene buena colaboración y trabajo en equipo",
+    TRUE ~ por_que)) %>%
+  categorica_1var(por_que, "¿Por qué considera que cumple adecuadamente sus funciones?")
+
+```
+
+
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.75)
+
+```
+
+# Frecuencia de Delegación de Tareas
+
+Esta sección explora con qué frecuencia los empleados delegan tareas en otros compañeros en momentos de alta carga de trabajo, para comprender sus estrategias de gestión del tiempo y apoyo entre colegas.
+
+## Tabla
+
+```{r}
+
+satis_laboral %>% 
+  categorica_1var(cuando_tiene_una_alta_carga_de_trabajo_con_que_frecuencia_delega_tareas_en_otros_companeros_para_aligerar_su_carga, "¿Con qué frecuencia delega tareas para aligerar su carga?")
+
+```
+
+
+## Gráfico
+
+```{r}
+
+satis_laboral %>% 
+  mutate(cuando_tiene_una_alta_carga_de_trabajo_con_que_frecuencia_delega_tareas_en_otros_companeros_para_aligerar_su_carga
+         = trimws(
+    cuando_tiene_una_alta_carga_de_trabajo_con_que_frecuencia_delega_tareas_en_otros_companeros_para_aligerar_su_carga)) %>% 
+  mutate(cuando_tiene_una_alta_carga_de_trabajo_con_que_frecuencia_delega_tareas_en_otros_companeros_para_aligerar_su_carga 
+         = factor(
+          cuando_tiene_una_alta_carga_de_trabajo_con_que_frecuencia_delega_tareas_en_otros_companeros_para_aligerar_su_carga,
+           levels = c("Nunca", "Casi nunca", "A veces"))) %>% 
+  plot_barras(cuando_tiene_una_alta_carga_de_trabajo_con_que_frecuencia_delega_tareas_en_otros_companeros_para_aligerar_su_carga, "", "", "")
+
+```
+
+
+# Autopercepción de Proactividad y Compromiso con la Mejora Continua
+
+En este apartado, los empleados evalúan su nivel de proactividad y compromiso con la mejora continua en su área, un aspecto importante para el desarrollo de la cultura organizacional.
+
+## Tabla
+
+```{r}
+
+satis_laboral %>% 
+  categorica_1var(se_considera_proactivo_y_comprometido_con_la_mejora_continua_en_su_area_de_trabajo, "¿Se considera proactivo y quiere mejorar constantemente?")
+
+
+```
+
+
+## Gráfico
+
+```{r}
+
+satis_laboral %>% 
+  plot_donas(se_considera_proactivo_y_comprometido_con_la_mejora_continua_en_su_area_de_trabajo, "")
+
+```
+
+
+## Justificación de la Percepción de Proactividad y Compromiso
+
+Aquí se da a los empleados la oportunidad de explicar su percepción de proactividad y compromiso, ofreciendo una perspectiva más detallada sobre su motivación y actitud hacia el trabajo.
+
+### Tabla
+
+```{r}
+
+satis_laboral %>% 
+  mutate(por_que_1 = case_when(por_que_1 == "Las mejoras que se encuentran y se aplican en la sala (software/hardware) se comparten con el grupo de trabajo, se está en constante actualización mediante lectura de foros y videos" | por_que_1 == "Soy una persona en continuo aprendizaje." ~ "Actualización y aprendizaje continuo",
+    por_que_1 == "Presto a dar soluciones y plantear nuevas para el departamento y sus usuarios" |
+    por_que_1 == "Sí, me considero proactiva y altamente comprometida con la mejora continua en mi área de trabajo. Siempre estoy buscando oportunidades para contribuir de manera positiva, tomando la iniciativa en proyectos y proponiendo soluciones innovadoras. Además, estoy comprometiva con el aprendizaje constante y la adaptación a nuevas metodologías para asegurar el éxito a largo plazo en mi rol." ~ "Iniciativa y soluciones proactivas",
+    por_que_1 == "Se lleva acabo estrategias e innovaciones en los procesos de soporte y administración de la sala de sistemas, como digitalizando procesos de registro y control que se llevaban a cabo de forma manual, al igual que brindando nuevas herramientas de ayuda para los docentes como manuales de usuario, también se realizo estrategias de prevención de soporte lo que permitió prevenir que los docentes o estudiantes presentaran algún incidente técnico    "
+    ~ "Innovación y mejora en procesos",
+    por_que_1 == "Siempre hago mi trabajo de la mejor forma posible y en los tiempos establecidos, adquiero conocimiento a diario para resolver casos referente al área de sistemas" |
+    por_que_1 == "propongo ideas para poder mejorar el trabajo y a su vez, colaboro en momentos de necesidad" |
+    por_que_1 == "prestando un mejor servicio a los profesore y administrativos de la facultad de humanidades"
+      ~ "Colaboración y compromiso con la excelencia",
+    TRUE ~ por_que_1
+  )) %>% 
+  categorica_1var(por_que_1, "¿Por qué se considera proactivo y que quiera mejorar constantemente?")
+
+```
+
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(1)
+
+```
