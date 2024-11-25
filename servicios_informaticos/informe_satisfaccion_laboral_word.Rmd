@@ -391,11 +391,15 @@ satis_laboral_num <- satis_laboral %>%
   trimws(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a)) %>% 
   mutate(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a =
   case_when(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a ==
-              "Excelente" ~ "3",
+              "Excelente" ~ "5",
             como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a ==
-              "Bueno" ~ "2",
+              "Bueno" ~ "4",
             como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a ==
-              "Regular" ~ "1",
+              "Regular" ~ "3",
+            como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a ==
+              "Deficiente" ~ "2",
+            como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a ==
+              "Muy deficiente" ~ "1",
             TRUE ~ como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a)) %>% 
   mutate(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a =
            as.numeric(como_calificaria_el_ambiente_laboral_con_sus_companeros_y_director_a_o_subdirector_a))
@@ -443,7 +447,7 @@ total <- satis_laboral %>% count() %>% pull()
 ```
 
 
-La encuesta realizada para saber la satisfacción laboral de los empleados de servicios informáticos fue contestada por **`r total`** personas.
+La encuesta sobre la satisfacción laboral de los empleados de servicios informáticos fue respondida por **`r total`** personas.
 
 # Área
 
@@ -468,8 +472,6 @@ satis_laboral %>%
 ```
 
 # Calificación general de satisfacción
-
-En este apartado se muestra la calificación general de la satisfacción laboral de los empleados de servicios informáticos.
 
 
 ## Tabla
@@ -561,8 +563,6 @@ if (params$rendered_by_shiny)
 
 # Frecuencia de Asignación de Tareas Fuera de la Descripción del Puesto
 
-Aquí se investiga la frecuencia con la cual los empleados reciben tareas que no corresponden a su rol definido, lo que puede afectar su carga de trabajo y percepción de equidad en la asignación de responsabilidades.
-
 ## Tabla
 
 ```{r}
@@ -602,7 +602,7 @@ Esta sección solicita a los empleados que proporcionen ejemplos específicos de
 ```{r}
 
 satis_laboral %>% 
-  mutate(tareas_adicionales = if_else(tareas_adicionales == "1. Conexión de Video Beam 2. En los eventos realizados en el departamento en los caso en que las áreas encargadas no se presentaban en el espacio solicitado, toco realizar la validación con las personas del sonido porque aun no habían hechos las conexiones, función que debería realizar las personas que realizan la logística del evento  ", "1. Conexión de Video Beam. 2. En los eventos, al no presentarse los responsables, se validó porque los del sonido no habían hecho las conexiones, tarea que es de logística", tareas_adicionales)) %>% 
+  mutate(tareas_adicionales = if_else(tareas_adicionales == "1. Conexión de Video Beam 2. En los eventos realizados en el departamento en los caso en que las áreas encargadas no se presentaban en el espacio solicitado, toco realizar la validación con las personas del sonido porque aun no habían hechos las conexiones, función que debería realizar las personas que realizan la logística del evento  ", "1. Conexión de Video Beam. 2. En los eventos, al no presentarse los responsables, se verificó porque los del sonido no habían hecho las conexiones, tarea que es de logística", tareas_adicionales)) %>% 
   categorica_1var(tareas_adicionales, "Tareas adicionales", wrap_width = 40)
 
 ```
@@ -610,7 +610,6 @@ satis_laboral %>%
 
 # Trabajo Fuera del Horario Laboral
 
-Se examina la frecuencia con la que los empleados han tenido que trabajar fuera de sus horas habituales, incluyendo noches, fines de semana y festivos, lo cual puede impactar en su bienestar y equilibrio entre trabajo y vida personal.
 
 ## Tabla
 
@@ -643,7 +642,6 @@ if (params$rendered_by_shiny)
 
 # Calificación del Ambiente Laboral
 
-En este apartado, los empleados evalúan la calidad del ambiente laboral, especialmente en relación con la colaboración y el respeto entre compañeros y con la dirección, un factor clave para su satisfacción en el trabajo.
 
 ## Tabla 
 
@@ -677,7 +675,7 @@ satis_laboral %>%
 
 ## Calificación del ambiente por área
 
-En este apartado, se analiza la calificación del ambiente laboral por área, teniendo en cuenta que es una calificación de 1 a 3, destacando la colaboración, el respeto entre compañeros y la relación con la dirección, elementos fundamentales para la satisfacción general de los empleados en su entorno de trabajo.
+En este apartado, se analiza la calificación del ambiente laboral por área, destacando la colaboración, el respeto entre compañeros y la relación con la dirección, elementos fundamentales para la satisfacción general de los empleados en su entorno de trabajo.
 
 ### Tabla
 
@@ -689,7 +687,7 @@ satis_laboral_num %>%
 ```
 
 
-### Grafico
+### Gráfico
 
 ```{r}
 
@@ -701,7 +699,6 @@ satis_laboral_num %>%
 
 # Nivel de Estrés Laboral
 
-Esta sección recoge la percepción de los empleados sobre su nivel actual de estrés en el trabajo, con el objetivo de identificar factores estresantes y promover un entorno laboral saludable.
 
 ## Tabla
 

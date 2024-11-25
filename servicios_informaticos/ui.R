@@ -624,13 +624,6 @@ dashboardPage(
         fluidRow(
           column(
             width = 6,
-            br(),
-            br(),
-            br(),
-            br(),
-            br(),
-            br(),
-            br(),
             uiOutput("ft_area_satis") %>% withSpinner(type = 8, size = 0.5)
           ),
           
@@ -828,7 +821,7 @@ dashboardPage(
           align = "center",
           div(
             style = "max-width: 900px; margin: 0 auto;",
-            HTML("<h5 style='color: #393939;'>En este apartado, se analiza la calificación del ambiente laboral por área, teniendo en cuenta que es una calificación de 1 a 3, destacando la colaboración, el respeto entre compañeros y la relación con la dirección, elementos fundamentales para la satisfacción general de los empleados en su entorno de trabajo.</h5>")
+            HTML("<h5 style='color: #393939;'>En este apartado, se analiza la calificación del ambiente laboral por área, destacando la colaboración, el respeto entre compañeros y la relación con la dirección, elementos fundamentales para la satisfacción general de los empleados en su entorno de trabajo.</h5>")
           )
         ),
         

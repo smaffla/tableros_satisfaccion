@@ -480,13 +480,6 @@ identi_problemas <- identi_problemas %>%
     )
   )
 
-identi_problemas <- identi_problemas %>%
-  mutate(
-    facultad_o_area_administrativa = case_when(
-      str_detect(facultad_o_area_administrativa, "Facultad Educación") ~ "Facultad Educación Física",
-      TRUE ~ facultad_o_area_administrativa
-    )
-  )
 
 ```
 
@@ -594,7 +587,7 @@ identi_problemas %>%
   plot_barras(la_sala_de_computo_cuenta_con_aire_acondicionado, "", "", "")
 ```
 
-## ¿Cómo evaluaría la ilumnicación en la sala de cómputo? 
+## ¿Cómo evaluaría la iluminación en la sala de cómputo? 
 
 ### Tabla
 ```{r}
