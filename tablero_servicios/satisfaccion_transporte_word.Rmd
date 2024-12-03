@@ -80,7 +80,8 @@ ftable <- function(x, encabezado = NULL, title = NULL) {
   return(table)
     
 }
-transformar_calificacion <- function(x, col) {
+
+transformar_calificacion_plot <- function(x, col) {
  
   col <- enquo(col)
   
@@ -92,17 +93,36 @@ transformar_calificacion <- function(x, col) {
              !!col == "3" ~ "Aceptable",
              !!col == "4" ~ "Bueno",
              !!col == "5" ~ "Excelente",
-             TRUE ~ !!col))
+             TRUE ~ !!col)) %>% 
+    mutate(!!col := factor(!!col, levels = c("Muy deficiente", "Deficiente", "Aceptable", "Bueno", "Excelente")))
+
+   }
+
+transformar_calificacion_ft <- function(x, col) {
+  
+  col <- enquo(col)
+  
+  x %>% 
+    mutate(!!col := as.character(!!col)) %>% 
+    mutate(!!col := case_when(
+      !!col == "1" ~ "Muy deficiente",
+      !!col == "2" ~ "Deficiente",
+      !!col == "3" ~ "Aceptable",
+      !!col == "4" ~ "Bueno",
+      !!col == "5" ~ "Excelente",
+      TRUE ~ !!col)) %>% 
+    mutate(!!col := factor(!!col, levels = c("Excelente", "Bueno", "Aceptable", "Deficiente", "Muy deficiente")))
+  
 }
 
-plot_donas <- function(x, col, group, titulo = "") {
+plot_donas_as <- function(x, col, titulo = "") {
   
-  group <- enquo(group)
   col <- enquo(col)
   
   data <- x %>%
     filter(autoriza_datos == "Si") %>% 
-    count(!!group, !!col) %>% 
+    mutate(!!col := factor(!!col, levels = c("Si", "No"))) %>% 
+    count(!!col) %>% 
     mutate(porcentaje = n / sum(n),
            ymax = cumsum(porcentaje),
            ymin = c(0, head(ymax, n = -1)),
@@ -110,7 +130,35 @@ plot_donas <- function(x, col, group, titulo = "") {
            labelname = paste(n,"\n",percent(porcentaje, 0.1)))
   #filter(porcentaje >= 0.005)
   
-  ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 10, xmin = 1, fill = !!group)) +
+  ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 10, xmin = 1, fill = !!col)) +
+    geom_rect() +
+    geom_text(aes(x = -1.5, y = labelpos, label = labelname), size = 5, color = "black", fontface = "bold") +
+    labs(title = str_wrap(titulo, width = 30)) +
+    scale_fill_manual(values = c("#3690c0", "#fc9272")) +
+    coord_polar(theta = "y") +
+    xlim(c(20, -10)) +
+    theme_void() +
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
+    guides(fill = guide_legend(title = "", label.position = "right",
+                               label.theme = element_text(size = 18)))
+}
+
+plot_donas <- function(x, col, titulo = "") {
+  
+  col <- enquo(col)
+  
+  data <- x %>%
+    filter(autoriza_datos == "Si") %>% 
+    count(!!col) %>% 
+    mutate(porcentaje = n / sum(n),
+           ymax = cumsum(porcentaje),
+           ymin = c(0, head(ymax, n = -1)),
+           labelpos = (ymax + ymin) / 2,
+           labelname = paste(n,"\n",percent(porcentaje, 0.1)))
+  #filter(porcentaje >= 0.005)
+  
+  ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 10, xmin = 1, fill = !!col)) +
     geom_rect() +
     geom_text(aes(x = -1.5, y = labelpos, label = labelname), size = 5, color = "black", fontface = "bold") +
     labs(title = str_wrap(titulo, width = 30)) +
@@ -159,36 +207,6 @@ plot_barras <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
   
 }
 
-
-## Función gráfico de columnas para df caracterizacion
-plot_cols <- function(x, col, xlab, ylab, titulo = "") {
-  col <- enquo(col)
-  
-  data <- x %>%
-    filter(autoriza_datos == "Si") %>% 
-    count(!!col) %>% 
-    mutate(perc = percent(n/sum(n), 0.1))
-  
-  data %>% 
-    ggplot(aes(x = !!col, 
-               y= n, 
-               fill = !!col, 
-               label = paste(perc,"\n",n," "))) + 
-    geom_col()+
-    geom_text(vjust = 0.5, size = 4,position = position_dodge(width = 1))+
-    scale_y_continuous(limits = c(0, max(data$n)*1.1))+
-    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30))+ 
-    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
-    theme(legend.position="none")+
-    theme(axis.text.y = element_text(size = 12))+
-    theme(axis.text.x = element_text(size = 8))+
-    theme(plot.title.position = "plot",
-          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
-    scale_fill_manual(values = colores_plot)
-  
-}
-
 ## Función gráfico de barras AGRUPADO para df caracterizacion
 plot_barras_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo = "") {
   col <- enquo(col)
@@ -224,40 +242,6 @@ plot_barras_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo
   
 }
 
-
-## Función gráfico de columnas AGRUPADO para df caracterizacion
-plot_cols_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo = "") {
-  col <- enquo(col)
-  group <- enquo(group)
-  
-  data <- x %>%
-    filter(autoriza_datos == "Si") %>% 
-    count(!!group, !!col) %>% 
-    mutate(perc = percent(n/sum(n), 0.1))
-  
-  data %>% 
-    ggplot(aes(x = !!col, 
-               y= n, 
-               fill = !!group, 
-               label = paste(perc,"\n",n," "))) + 
-    geom_col(position = "dodge")+
-    geom_text(vjust = 0.5,hjust = -0.5 , size = 4,position = position_dodge(width = 1))+
-    scale_y_continuous(limits = c(0, max(data$n)*1.1))+
-    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30))+ 
-    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
-    guides(fill = guide_legend(title = leyenda, label.position = "right"
-                               , nrow = 2, label.theme = element_text(size = 12)))+
-    theme(legend.position = "bottom",
-          axis.text.y = element_text(size = 13),
-          axis.text.x = element_text(size = 13)) +
-    theme(axis.text.y = element_text(size = 12))+
-    theme(axis.text.x = element_text(size = 8))+
-    theme(plot.title.position = "plot",
-          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
-    scale_fill_manual(values = colores_plot)
-  
-}
 
 plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
   
@@ -296,18 +280,6 @@ plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
   
 }
 
-
-# Separar respuestas preguntas MRQ
-MRQ <- function(x, col) {
-  col <- enquo(col)
-  
-  x %>% 
-    separate_rows(!!col,sep = " , ", convert = FALSE) %>%
-    mutate(!!col := gsub("(^[[:space:]]+|[[:space:]]+$)", 
-                        "",
-                        !!col)) %>% 
-    count(!!col)
-}
 
 categorica_1var <- function(x, cat1, rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
   cat1 <- enquo(cat1)
@@ -417,7 +389,7 @@ tabla_prom <- function(x, col, rename, encabezado = NULL, title = NULL, wrap_wid
   group_by(!!col) %>%
   summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
   ungroup() %>% 
-  arrange(desc(promedio_general)) %>% 
+  #arrange(desc(promedio_general)) %>% 
   rename("{rename}" := !!col,
          "Promedio" = promedio_general) %>% 
   as.data.frame()  
@@ -451,9 +423,8 @@ transporte <- transporte %>%
          mesdili = str_to_title(mesdili)) %>% 
   mutate(anodili = year(hora_de_finalizacion))
 
-
-# transporte <- transporte %>% 
-#   filter(mesdili %in% params$mes)
+transporte <- transporte %>%
+  filter(mesdili %in% params$mes)
 
 
 ```
@@ -490,7 +461,6 @@ trans <- transporte %>%
     valor4 = nivel_de_atencion_mientras_conduce,
     valor5 = capacidad_de_comunicacion)
 
-
 transporte <- transporte %>% 
   mutate(mes = factor(mes, levels = c("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"), ordered = TRUE))
 
@@ -506,7 +476,7 @@ total <- transporte %>% filter(autoriza_datos == "Si") %>% count() %>% pull()
 
 La encuesta de satisfacción del servicio de transporte fue respondida por **`r total`** personas.
 
-# Tipo de vinculacion de los encuestados
+# Tipo de vinculación de los encuestados
 
 Esta parte describe las diferentes formas de vinculación que tienen los encuestados con la institución, como estudiantes, empleados, o contratistas.
 
@@ -515,7 +485,7 @@ Esta parte describe las diferentes formas de vinculación que tienen los encuest
 ```{r}
 
 transporte %>% 
-  categorica_1var(tipo_de_vinculacion, "Tipo de vinculacion")
+  categorica_1var(tipo_de_vinculacion, "Tipo de vinculación")
 
 ```
 
@@ -548,7 +518,7 @@ transporte %>%
 
 transporte %>% 
   plot_barras(en_que_instalaciones_de_la_upn_universidad_pedagogica_nacional_desarrolla_sus_actividades_y_o_labores,
-              "", "", titulo = "Instalaciones en donde trabaja los encuestados")
+              "", "", titulo = "Instalaciones donde trabajan los encuestados")
 
 ```
 
@@ -570,9 +540,15 @@ transporte %>%
 ```{r}
 
 transporte %>% 
-  plot_donas(cual_es_su_identidad_de_genero, cual_es_su_identidad_de_genero, 
+  plot_donas(cual_es_su_identidad_de_genero, 
              titulo = "Identidad de género de los encuestados")
 
+```
+
+```{r}
+# Este chunk es solo para aumentar el progreso de descarga en el shiny
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.25)  # set progress to 25%
 ```
 
 # Rango de edad de los encuestados
@@ -584,6 +560,8 @@ Se analiza la distribución de los encuestados en diferentes rangos de edad.
 ```{r}
 
 transporte %>% 
+  mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, levels = c("18 a 28 años", "28 a 40 años",	
+              "40 a 60 años", "Mayor de 60 años"))) %>% 
   categorica_1var(cual_es_su_rango_de_edad, "Rango de edad")
 
 ```
@@ -593,6 +571,8 @@ transporte %>%
 ```{r}
 
 transporte %>% 
+  mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, levels = c("Mayor de 60 años","40 a 60 años",
+                                            "28 a 40 años","18 a 28 años"))) %>% 
   plot_barras(cual_es_su_rango_de_edad, "", "", "Rango de edad de los encuestados")
 
 ```
@@ -610,11 +590,11 @@ grupo_poblacional <- transporte %>%
 
 ```
 
-El grupo poblaciona o sector social al que la mayoria de los encuestados pertenecen es **`r grupo_poblacional`**
+El grupo poblacional o sector social al que la mayoria de los encuestados pertenecen es **`r grupo_poblacional`**
 
 # Étnias a la que pertenecen los encuestados
 
-Se analizan los datos sobre las diversas etnias representadas entre los encuestados.
+Se analizan los datos sobre las diversas etnias representadas por los encuestados.
 
 ## Tabla
 
@@ -679,7 +659,7 @@ transporte %>%
 
 transporte %>%
       mutate(mes = factor(mes, levels = c("Diciembre", "Noviembre", "Octubre", "Septiembre", "Agosto", "Julio", "Junio", "Mayo", "Abril", "Marzo", "Febrero", "Enero"), ordered = TRUE)) %>% 
-  plot_barras(mes, "", "", titulo = "Meses en los que se utilizo el servicio de transporte")
+  plot_barras(mes, "", "", titulo = "Meses en los que se calificó el servicio de transporte")
 
 ```
 
@@ -708,13 +688,13 @@ transporte %>%
 
 ```
 
-# Calificacion general
+# CALIFICACIÓN GENERAL
 
 Se recopila y analiza la calificación general del servicio de transporte proporcionada por los encuestados.
 
 ## Por conductor
 
-Se examinan las calificaciones generales otorgadas a cada conductor. Teniendo en cuenta que se hace un promedio primero por cada categoría de calificación y luego se hace un promedio general por cada conductor. 
+Se examinan las calificaciones generales otorgadas a cada conductor, teniendo en cuenta que se hace un promedio primero por cada categoría de calificación y luego se hace un promedio general por cada conductor. 
 
 ### Tabla
 
@@ -735,6 +715,11 @@ trans %>%
 
 ```
 
+```{r}
+# Este chunk es solo para aumentar el progreso de descarga en el shiny
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.50)  # set progress to 25%
+```
 ## Por tipo de vinculación
 
 Se analiza la calificación del servicio según el tipo de vinculación de los encuestados con la institución, teniendo en cuenta que se hace con el promedio de las calificaciones por categoría.
@@ -822,19 +807,15 @@ trans %>%
 
 ```
 
-
-### Gráfico
-
 ```{r}
 
-trans %>% 
-  plot_barras_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, " ", "", 
-             titulo = "Calificación promedio por unidad o dependencia")
+# trans %>% 
+#   plot_barras_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, " ", "", 
+#              titulo = "Calificación promedio por unidad o dependencia")
 
 ```
 
-
-# Calificacion por categoría
+# CALIFICACIÓN POR CATEGORÍA
 
 Se ofrece una visión global de la calificación del servicio de transporte por categoría evaluada
 
@@ -847,9 +828,9 @@ Se analiza el estado mecánico de los vehículos utilizados en el servicio de tr
 ```{r}
 
 transporte %>%
-  transformar_calificacion(estado_mecanico_de_los_vehiculo) %>%
+  transformar_calificacion_plot(estado_mecanico_de_los_vehiculo) %>%
   plot_barras(estado_mecanico_de_los_vehiculo, "", "", 
-              titulo = "Calificación del estado mecánico de los vehículo")
+              titulo = "Calificación del estado mecánico de los vehículos")
 
 ```
 
@@ -884,7 +865,7 @@ Se examina la limpieza y presentación general de los vehículos de transporte.
 ```{r}
 
 transporte %>% 
-transformar_calificacion(limpieza_y_presentacion_general_de_los_vehiculos) %>%  
+transformar_calificacion_plot(limpieza_y_presentacion_general_de_los_vehiculos) %>%  
   plot_barras(limpieza_y_presentacion_general_de_los_vehiculos, "", "", 
               titulo = "Calificación de la limpieza y presentación general de los vehículos")
 
@@ -920,7 +901,7 @@ Se analiza la amabilidad y cortesía de los conductores del servicio de transpor
 ```{r}
 
 transporte %>% 
-  transformar_calificacion(amabilidad_y_cortesia) %>% 
+  transformar_calificacion_plot(amabilidad_y_cortesia) %>% 
   plot_barras(amabilidad_y_cortesia, "", "", 
               titulo = "Calificación de la amabilidad y cortesía")
 
@@ -956,9 +937,9 @@ Se examina el nivel de atención de los conductores mientras prestan el servicio
 ```{r}
 
 transporte %>% 
-  transformar_calificacion(nivel_de_atencion_mientras_conduce) %>%  
+  transformar_calificacion_plot(nivel_de_atencion_mientras_conduce) %>%  
   plot_barras(nivel_de_atencion_mientras_conduce, "", "", 
-              titulo = "Calificación del nivel de atención mientras conduce")
+              titulo = "Calificación del nivel de atención de los conductores")
 
 ```
 
@@ -974,7 +955,7 @@ transporte %>%
   rename(
     "Promedio" = prom, 
     "Nombre del conductor" = nombre_del_conductor_que_presto_el_servicio) %>% 
-  ftable(encabezado = "Calificación del nivel de atención mientras conduce de los conductores") %>%
+  ftable(encabezado = "Calificación del nivel de atención de los conductores") %>%
   bg(i = nrow_part(.), bg = "white") %>%
   bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
   color(i = nrow_part(.), color = "black") %>%
@@ -992,7 +973,7 @@ Se analiza la capacidad de comunicación de los conductores del servicio de tran
 ```{r}
 
 transporte %>% 
-  transformar_calificacion(capacidad_de_comunicacion) %>% 
+  transformar_calificacion_plot(capacidad_de_comunicacion) %>% 
   plot_barras(capacidad_de_comunicacion, "", "", 
               titulo = "Calificación de la capacidad de comunicación")
 
@@ -1027,15 +1008,14 @@ Se evalúa si los conductores cumplieron con los itinerarios solicitados por los
 ```{r}
 
 transporte %>% 
-  plot_donas(se_dio_cumplimiento_de_los_itinerarios_solicitados,
-             se_dio_cumplimiento_de_los_itinerarios_solicitados, 
+  plot_donas_as(se_dio_cumplimiento_de_los_itinerarios_solicitados, 
              titulo = "¿Se dio cumplimiento de los itinerarios solicitados?")
 
 ```
 
 ## Tabla por conductor
 
-### Por cantidad
+### Cantidad
 
 ```{r}
 
@@ -1045,7 +1025,7 @@ transporte %>%
 
 ```
 
-### Por porcentaje
+### Porcentaje
 
 ```{r}
 
@@ -1065,15 +1045,19 @@ Se evalúa si los conductores cumplieron con los horarios solicitados por los us
 ```{r}
 
 transporte %>% 
-  plot_donas(se_dio_cumplimiento_de_los_horarios_solicitados,
-             se_dio_cumplimiento_de_los_horarios_solicitados,
+  plot_donas_as(se_dio_cumplimiento_de_los_horarios_solicitados,
              titulo = "¿Se dio cumplimiento de los horarios solicitados?")
 
 ```
 
+```{r}
+# Este chunk es solo para aumentar el progreso de descarga en el shiny
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.75)  # set progress to 25%
+```
 ## Tabla por conductor
 
-### Por cantidad
+### Cantidad
 
 ```{r}
 
@@ -1083,7 +1067,7 @@ transporte %>%
 
 ```
 
-### Por porcentaje
+### Porcentaje
 
 ```{r}
 
@@ -1102,15 +1086,14 @@ Se analiza si los conductores cumplieron con las normas de tránsito durante los
 ```{r}
 
 transporte %>% 
-  plot_donas(durante_el_recorrido_se_acataron_las_normas_de_transito,
-             durante_el_recorrido_se_acataron_las_normas_de_transito,
+  plot_donas_as(durante_el_recorrido_se_acataron_las_normas_de_transito,
              titulo = "¿Durante el recorrido se acataron las normas de tránsito?")
 
 ```
 
 ## Tabla por conductor
 
-### Por cantidad
+### Cantidad
 
 ```{r}
 
@@ -1120,7 +1103,7 @@ transporte %>%
 
 ```
 
-### Por porcentaje
+### Porcentaje
 
 ```{r}
 
@@ -1130,7 +1113,7 @@ transporte %>%
 
 ```
 
-# ¿Durante el recorrido se presento algún incidente o accidente?
+# ¿Durante el recorrido se presentó algún incidente o accidente?
 
 Se examina si se presentaron incidentes o accidentes durante los recorridos.
 
@@ -1139,16 +1122,15 @@ Se examina si se presentaron incidentes o accidentes durante los recorridos.
 ```{r}
 
 transporte %>% 
-  plot_donas(durante_el_recorrido_se_presento_algun_incidente_o_accidente,
-             durante_el_recorrido_se_presento_algun_incidente_o_accidente,
-             titulo = "¿Durante el recorrido se presento algún incidente o accidente?")
-
+  plot_donas_as(durante_el_recorrido_se_presento_algun_incidente_o_accidente,
+             titulo = "¿Durante el recorrido se presento algún incidente o accidente?")+
+  scale_fill_manual(values = c("#fc9272","#3690c0"))
 
 ```
 
 ## Tabla por conductor
 
-### Por cantidad
+### Cantidad
 
 ```{r}
 
@@ -1158,7 +1140,7 @@ transporte %>%
 
 ```
 
-### Por porcentaje
+### Porcentaje
 
 ```{r}
 
@@ -1168,7 +1150,7 @@ transporte %>%
 
 ```
 
-# ¿Recomendaría los servicios del área de transportes a mas miembros de la comunidad de Universitaria?
+# ¿Recomendaría los servicios del área de transportes a más miembros de la comunidad de Universitaria?
 
 Se evalúa la disposición de los usuarios para recomendar los servicios de transporte a otros miembros de la comunidad universitaria.
 
@@ -1177,14 +1159,14 @@ Se evalúa la disposición de los usuarios para recomendar los servicios de tran
 ```{r}
 
 transporte %>% 
-  plot_donas(recomendaria_los_servicios_del_area_de_transportes_a_mas_miembros_de_la_comunidad_de_universitaria, recomendaria_los_servicios_del_area_de_transportes_a_mas_miembros_de_la_comunidad_de_universitaria,
-titulo = "¿Recomendaría los servicios del área de transportes a mas miembros de la comunidad de Universitaria?")
+  plot_donas_as(recomendaria_los_servicios_del_area_de_transportes_a_mas_miembros_de_la_comunidad_de_universitaria,
+titulo = "¿Recomendaría los servicios del área de transportes a más miembros de la comunidad de Universitaria?")
 
 ```
 
 ## Tabla por conductor
 
-### Por cantidad
+### Cantidad
 
 ```{r}
 
@@ -1195,7 +1177,7 @@ transporte %>%
 
 ```
 
-### Por porcentaje
+### Porcentaje
 
 ```{r}
 
@@ -1206,6 +1188,10 @@ transporte %>%
 
 ```
 
-
+```{r}
+# Este chunk es solo para aumentar el progreso de descarga en el shiny
+if (params$rendered_by_shiny)
+  shiny::setProgress(1)  # set progress to 25%
+```
 
 

@@ -667,7 +667,7 @@ server <- function(input, output, session) {
           valor3 = amabilidad_y_cortesia,
           valor4 = nivel_de_atencion_mientras_conduce,
           valor5 = capacidad_de_comunicacion) %>%
-        tabla_prom(nombre_del_conductor_que_presto_el_servicio, "Nombre del conductor", titulo = "Calificación general por conductor")
+        tabla_prom(nombre_del_conductor_que_presto_el_servicio, "Nombre del conductor")
       
       
     })
@@ -729,56 +729,7 @@ server <- function(input, output, session) {
     
     ##### 📝 ---------------------------------------------------
     
-    output$dt_calificacion_categoria_trans <- renderDataTable({
       
-      if (input$select_categoria_trans == "Tipo de vinculación"){
-        
-        transporte %>% 
-          filter(anodili %in% input$select_anio_trans, 
-                 mesdili %in% input$select_mes_trans) %>%  
-          rename(valor1 = estado_mecanico_de_los_vehiculo, 
-                 valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
-                 valor3 = amabilidad_y_cortesia,
-                 valor4 = nivel_de_atencion_mientras_conduce,
-                 valor5 = capacidad_de_comunicacion) %>%
-          tabla_prom(tipo_de_vinculacion, "Tipo de vinculacion", titulo = "Calificación promedio por tipo de vinculación")
-        
-      } else if (input$select_categoria_trans == "Edad"){
-        transporte %>%
-          filter(anodili %in% input$select_anio_trans, 
-                 mesdili %in% input$select_mes_trans) %>% 
-          filter(!is.na(cual_es_su_rango_de_edad)) %>% 
-          rename(valor1 = estado_mecanico_de_los_vehiculo, 
-                 valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
-                 valor3 = amabilidad_y_cortesia,
-                 valor4 = nivel_de_atencion_mientras_conduce,
-                 valor5 = capacidad_de_comunicacion) %>%
-          mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, levels = c("18 a 28 años", "28 a 40 años",	
-                                                                                        "40 a 60 años", "Mayor de 60 años"))) %>% 
-          tabla_prom(cual_es_su_rango_de_edad, "Rango de edad", titulo = "Calificación promedio por rango de edad" )
-        
-      } else if (input$select_categoria_trans == "Identidad de género") {
-        transporte %>%
-          filter(anodili %in% input$select_anio_trans, 
-                 mesdili %in% input$select_mes_trans) %>% 
-          filter(!is.na(cual_es_su_identidad_de_genero)) %>% 
-          rename(valor1 = estado_mecanico_de_los_vehiculo, 
-                 valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
-                 valor3 = amabilidad_y_cortesia,
-                 valor4 = nivel_de_atencion_mientras_conduce,
-                 valor5 = capacidad_de_comunicacion) %>%
-          tabla_prom(cual_es_su_identidad_de_genero, "Género", titulo = "Calificación promedio por identidad de género")
-        
-      } else if (input$select_categoria_trans == "Unidad o dependencia de la UPN"){
-        transporte %>% 
-          rename(valor1 = estado_mecanico_de_los_vehiculo, 
-                 valor2 = limpieza_y_presentacion_general_de_los_vehiculos,
-                 valor3 = amabilidad_y_cortesia,
-                 valor4 = nivel_de_atencion_mientras_conduce,
-                 valor5 = capacidad_de_comunicacion) %>%
-          tabla_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, "Encabezado", titulo = "titulo")     
-      }
-    })
     
     ##### 📊 -----------------------------------------
     
@@ -834,7 +785,9 @@ server <- function(input, output, session) {
                  valor3 = amabilidad_y_cortesia,
                  valor4 = nivel_de_atencion_mientras_conduce,
                  valor5 = capacidad_de_comunicacion) %>%
-          plot_barras_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces, "", "", titulo = "Calificación promedio por dependencia de la UPN", top = 10)
+          plot_barras_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_perteneces,
+                           "", "", titulo = "Calificación promedio por dependencia de la UPN", top = 10)+
+          labs(caption = "Se muestran las 10 dependencias con mejores promedios")
       }
       
     })
@@ -1029,20 +982,20 @@ server <- function(input, output, session) {
     texto_aspecto <- reactive({
       if (input$select_aspecto == "Cumplimiento de itinerarios solicitados") {
         
-        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por conductor, donde se refleja la percepción del encuestado de acuerdo al conductor que lo transportó'
+        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si, a percepción del encuestado, el conductor cumplió o no con este aspecto de evaluación.'
         
       } else if (input$select_aspecto == "Cumplimiento de horarios solicitados") {
         
-        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por conductor, donde se refleja la percepción del encuestado de acuerdo al conductor que lo transportó'
+        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si, a percepción del encuestado, el conductor cumplió o no con este aspecto de evaluación.'
       } else if (input$select_aspecto == "Cumplimiento de normas de tránsito") {
         
-        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por conductor, donde se refleja la percepción del encuestado de acuerdo al conductor que lo transportó'
+        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si, a percepción del encuestado, el conductor cumplió o no con este aspecto de evaluación.'
       } else if (input$select_aspecto == "¿Se presentó algún incidente o accidente?"){
         
-        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por conductor, donde se refleja la percepción del encuestado de acuerdo al conductor que lo transportó'
+        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si, a percepción del encuestado, el conductor cumplió o no con este aspecto de evaluación.'
       } else { 
         
-        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por conductor, donde se refleja la percepción del encuestado de acuerdo al conductor que lo transportó'
+        'Se ilustra, a través de una gráfica general, la distribución porcentual de las respuestas (Sí/No) de los encuestados. También se muestra una tabla que clasifica dichas respuestas por cada conductor, donde se refleja si, a percepción del encuestado, el conductor cumplió o no con este aspecto de evaluación.'
       }
     })
     
@@ -1125,12 +1078,13 @@ server <- function(input, output, session) {
                  mesdili %in% input$select_mes_trans) %>% 
           plot_donas_as(durante_el_recorrido_se_acataron_las_normas_de_transito)
         
-      } else if (input$select_aspecto == "Se presento algun incidente o accidente"){
+      } else if (input$select_aspecto == "¿Se presentó algún incidente o accidente?"){
         
         transporte %>% 
           filter(anodili %in% input$select_anio_trans, 
                  mesdili %in% input$select_mes_trans) %>% 
-          plot_donas_as(durante_el_recorrido_se_presento_algun_incidente_o_accidente)
+          plot_donas_as(durante_el_recorrido_se_presento_algun_incidente_o_accidente) +
+          scale_fill_manual(values = c("#fc9272", "#3690c0"))
         
       } else { 
         
@@ -1160,10 +1114,10 @@ server <- function(input, output, session) {
     ##### 📝 --------------------------------
     
     output$dt_califi_gene_aseocafe <- renderDataTable({
-      promedios <- aseo_cafeteria %>% 
+      promedios <- aseo_cafeteria %>%
         filter(anodili %in% input$select_anio_ac, 
                mesdili %in% input$select_mes_ac,
-               autoriza_datos == "Si") %>% 
+               autoriza_datos == "Si") %>%
         summarise(
           "Calidad del tinto y aromatica ofrecida" = round(mean(calidad_de_tinto_y_aromatica_ofrecida, na.rm = TRUE), 1),
           "Oportunidad en el servicio de preparación" = round(mean(oportunidad_en_el_servicio_de_preparacion, na.rm = TRUE), 1),
@@ -1184,7 +1138,7 @@ server <- function(input, output, session) {
       aseocafe <- aseo_cafeteria %>%
         filter(anodili %in% input$select_anio_ac, 
                mesdili %in% input$select_mes_ac,
-               autoriza_datos == "Si") %>% 
+               autoriza_datos == "Si") %>%
         mutate(
           calidad_de_tinto_y_aromatica_ofrecida = recode(calidad_de_tinto_y_aromatica_ofrecida,
                                                          "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),
@@ -1223,16 +1177,13 @@ server <- function(input, output, session) {
         pivot_longer(cols = everything(), 
                      names_to = "Categoria", 
                      values_to = "Calificacion") %>% 
+        mutate(Calificacion = factor(Calificacion, levels = c("Excelente", "Bueno","Aceptable", 
+                                                              "Deficiente", "Muy deficiente"))) %>% 
         count(Categoria, Calificacion) 
       
       
       aseocafe %>% 
         pivot_wider(names_from = Calificacion, values_from = n, values_fill = list(n = 0)) %>% 
-        relocate(Excelente, .after = 1) %>% 
-        relocate(Bueno, .after = 2) %>% 
-        relocate(Aceptable, .after = 3) %>% 
-        # relocate(Deficiente, .after = 4) %>% 
-        # relocate("Muy deficiente", .after = 5)
         left_join(promedios, by = "Categoria") %>%
         styled_dt(title =  "Tabla general")
       
@@ -1242,7 +1193,10 @@ server <- function(input, output, session) {
     
     output$plot_califi_gene_aseocafe <- renderPlot({
       
-      promedios <- aseo_cafeteria %>% 
+      promedios <- aseo_cafeteria %>%
+        filter(anodili %in% input$select_anio_ac, 
+               mesdili %in% input$select_mes_ac,
+               autoriza_datos == "Si") %>%
         summarise(
           "Calidad del tinto y aromatica ofrecida" = round(mean(calidad_de_tinto_y_aromatica_ofrecida, na.rm = TRUE), 1),
           "Oportunidad en el servicio de preparación" = round(mean(oportunidad_en_el_servicio_de_preparacion, na.rm = TRUE), 1),
@@ -1261,6 +1215,9 @@ server <- function(input, output, session) {
       
       
       aseocafe <- aseo_cafeteria %>%
+        filter(anodili %in% input$select_anio_ac, 
+               mesdili %in% input$select_mes_ac,
+               autoriza_datos == "Si") %>%
         mutate(
           calidad_de_tinto_y_aromatica_ofrecida = recode(calidad_de_tinto_y_aromatica_ofrecida,
                                                          "1" = "Muy deficiente", "2" = "Deficiente", "3" = "Aceptable", "4" = "Bueno", "5" = "Excelente"),

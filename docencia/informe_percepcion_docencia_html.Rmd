@@ -1,0 +1,1032 @@
+---
+title: "ENCUESTA DE SATISFACCIÓN DE USUARIOS EN LAS SOLICITUDES A LA VICERRECTORÍA ACADÉMICA"
+author: "Oficina de Desarrollo y Planeación"
+output:
+  html_document:
+    fig_height: 7
+    fig_width: 10
+    highlight: tango
+    keep_md: no
+    number_sections: no
+    theme: cerulean
+    toc: yes
+    css: "corp-styles.css"
+    toc_depth: 4
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+  word_document:
+    toc: yes
+    toc_depth: '4'
+params:
+  anio: NA
+  semestre: NA
+  rendered_by_shiny: no
+subtitle: Universidad Pedagógica Nacional
+editor_options:
+  chunk_output_type: inline
+---
+
+
+<div>
+<img src="https://estilos.upn.edu.co/userfiles/footer/footer.svg" alt="UPN" class="watermark">
+</div>
+
+\newpage
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = FALSE,
+	message = FALSE,
+	warning = FALSE,
+	dpi = 300	)
+
+library(openxlsx)
+library(tidyverse)
+library(janitor)
+library(flextable)
+library(scales)
+library(lubridate)
+library(forcats)
+
+colores_plot <- c(#"#2171b5",
+                                              "#4292c6","#74a9cf",
+                                              "#41b6c4","#7fcdbb",#"#238b45","#41ab5d",
+                                              "#78c679","#c7e9b4","#edf8b1","#fee391","#fec44f",
+                                              "#fe9929","#ec7014")
+
+
+docencia <- read.xlsx("Encuesta de percepción (2024-I)(1-6).xlsx", sheet = "Sheet1")
+
+
+```
+
+```{r}
+ftable <- function(x, encabezado = NULL, title = NULL) {
+  
+  table <- x %>% 
+    flextable() %>% 
+    set_caption(caption = title) %>%
+    align(part = "header", align = "center") %>% 
+    align(j = 2:ncol_keys(.), align = "center") %>% 
+    bg(part = "header", bg = "#2c7fb8") %>% 
+    color(part = "header", color = "white") %>% 
+    bg(j = 1, bg = "#D9D9D9") %>% 
+    bg(i = nrow_part(.), bg = "#2c7fb8") %>%
+    bold(part = "header") %>% 
+    bold(i = nrow_part(.)) %>%
+    color(i = nrow_part(.), color = "white") %>%
+    border(part = "all", border = fp_border_default(color="black", width = 1)) %>% 
+    autofit() %>%
+    fit_to_width(max_width = 8.5)
+  
+  if (!is.null(encabezado)) {
+    table <- table %>% 
+      add_header_row(colwidths = ncol_keys(.), values = encabezado)
+  }
+  
+  return(table)
+    
+}
+
+plot_donas_as <- function(x, col, titulo = "") {
+  
+  col <- enquo(col)
+  
+  data <- x %>%
+    mutate(!!col := factor(!!col, levels = c("Si", "No"))) %>% 
+    count(!!col) %>% 
+    mutate(porcentaje = n / sum(n),
+           ymax = cumsum(porcentaje),
+           ymin = c(0, head(ymax, n = -1)),
+           labelpos = (ymax + ymin) / 2,
+           labelname = paste(n,"\n",percent(porcentaje, 0.1)))
+  #filter(porcentaje >= 0.005)
+  
+  ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 10, xmin = 1, fill = !!col)) +
+    geom_rect() +
+    geom_text(aes(x = -1.5, y = labelpos, label = labelname), size = 5, color = "black", fontface = "bold") +
+    labs(title = str_wrap(titulo, width = 30)) +
+    scale_fill_manual(values = c("#3690c0", "#fc9272")) +
+    coord_polar(theta = "y") +
+    xlim(c(20, -10)) +
+    theme_void() +
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
+    guides(fill = guide_legend(title = "", label.position = "right",
+                               label.theme = element_text(size = 18)))
+}
+
+plot_donas <- function(x, col, titulo = "") {
+  
+  col <- enquo(col)
+  
+  data <- x %>%
+    count(!!col) %>% 
+    mutate(porcentaje = n / sum(n),
+           ymax = cumsum(porcentaje),
+           ymin = c(0, head(ymax, n = -1)),
+           labelpos = (ymax + ymin) / 2,
+           labelname = paste(n,"\n",percent(porcentaje, 0.1)))
+  #filter(porcentaje >= 0.005)
+  
+  ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 10, xmin = 1, fill = !!col)) +
+    geom_rect() +
+    geom_text(aes(x = -1.5, y = labelpos, label = labelname), size = 5, color = "black", fontface = "bold") +
+    labs(title = str_wrap(titulo, width = 30)) +
+    scale_fill_manual(values = colores_plot) +
+    coord_polar(theta = "y") +
+    xlim(c(20, -10)) +
+    theme_void() +
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
+    guides(fill = guide_legend(title = "", label.position = "right",
+                               label.theme = element_text(size = 18)))
+}
+
+## Función gráfico de barras para df caracterizacion
+plot_barras <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
+  col <- enquo(col)
+  
+  data <- x %>%
+    count(!!col )%>% 
+    mutate(perc = percent(n/sum(n), 0.1))
+  
+  if (is.null(top)) {
+    top <- 11
+  }
+  
+  data %>% 
+    arrange(desc(n)) %>% 
+    slice(1:top) %>% 
+    ggplot(aes(x = !!col, 
+               y= n, 
+               fill = !!col, 
+               label = paste(perc,"\n",n," "))) + 
+    geom_col()+
+    geom_text(vjust = 0.5, hjust = -0.1, size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$n)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
+    theme(legend.position="none")+
+    theme(axis.text.y = element_text(size = 14))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 40))+
+    scale_fill_manual(values = colores_plot) +
+    coord_flip()
+  
+}
+
+## Función gráfico de barras AGRUPADO para df caracterizacion
+plot_barras_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo = "") {
+  col <- enquo(col)
+  group <- enquo(group)
+  
+  data <- x %>%
+    count(!!group, !!col) %>% 
+    mutate(perc = percent(n/sum(n), 0.1))
+  
+  data %>% 
+    ggplot(aes(x = !!col, 
+               y= n, 
+               fill = !!group, 
+               label = paste(perc,"\n",n," "))) + 
+    geom_col(position = "dodge")+
+    geom_text(vjust = 0.5, hjust = -0.2 ,size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$n)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30))+ 
+    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+    guides(fill = guide_legend(title = leyenda, label.position = "right"
+                               , nrow = 2, label.theme = element_text(size = 12)))+
+    theme(legend.position = "bottom",
+          axis.text.y = element_text(size = 13),
+          axis.text.x = element_text(size = 13)) +
+    theme(axis.text.y = element_text(size = 12))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
+    scale_fill_manual(values = colores_plot) +
+    coord_flip()
+  
+}
+
+
+plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
+  
+  col <- enquo(col)
+  
+  if (is.null(top)) {
+    top <- 11
+  }
+  
+  data <- x %>%  
+    group_by(!!col) %>%
+    summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
+    ungroup()
+  
+  data %>% 
+    arrange(desc(promedio_general)) %>% 
+    slice(1:top) %>% 
+    ggplot(aes(x = !!col, 
+               y= promedio_general, 
+               fill = !!col, 
+               label = promedio_general)) + 
+    geom_col()+
+    geom_text(vjust = 0.5, hjust = -0.5, size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$promedio_general)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
+    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+    theme(legend.position="none")+
+    theme(axis.text.y = element_text(size = 14))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
+    scale_fill_manual(values = colores_plot)+
+    coord_flip()
+  
+}
+
+
+categorica_1var <- function(x, cat1, rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
+  cat1 <- enquo(cat1)
+  
+    if (is.null(wrap_width)) {
+    wrap_width <- 100
+    }
+  
+  table <- x %>% 
+    count(!!cat1) %>% 
+    adorn_totals(where = "row", name = "Total General") %>%
+    rename('{rename}' := !!cat1, "Cantidad" = n) %>% 
+    mutate('{rename}' := str_wrap(!!sym(rename), width = wrap_width)) %>%
+    ftable(encabezado, title)
+  
+  return(table)
+    
+}
+
+categorica_2var <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
+  cat1 <- enquo(cat1)
+  cat2 <- enquo(cat2)
+  
+  table <- x %>% 
+    count(!!cat1, !!cat2) %>% 
+    rbind(
+      x %>% 
+        filter(!is.na(!!cat2)) %>% 
+        count(!!cat2) %>% 
+        mutate(!!cat1 := "Total General")
+    ) %>% 
+    group_by(!!cat1) %>% 
+    #mutate(p = n/sum(n)) %>% 
+    #filter (p >= 0.0005) %>% 
+    #select(-n) %>% 
+    pivot_wider(names_from = !!cat2, values_from = n, values_fill = 0) %>%
+    adorn_totals(where = "col", name = "Total General") %>%
+    #mutate(across(where(is.numeric), ~ percent(.x, 0.01, decimal.mark = ","))) %>% 
+    rename("{rename}" := !!cat1)
+  
+      if (is.null(label_width)) {
+    label_width <- 10
+      
+  }
+  
+  # Personalizar el tamaño de las etiquetas de columna
+  colnames(table) <- str_wrap(colnames(table), width = label_width)
+  
+  table <- table %>%  ftable(encabezado, title)
+  
+  return(table)
+}
+
+categorica_2var_escala <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
+  cat1 <- enquo(cat1)
+  cat2 <- enquo(cat2)
+  
+  # Definir el orden fijo de las categorías
+  orden_categorias <- c("Excelente", "Muy bueno", "Bueno", "Aceptable", "Por mejorar")
+  
+  table <- x %>% 
+    count(!!cat1, !!cat2) %>% 
+    rbind(
+      x %>% 
+        filter(!is.na(!!cat2)) %>% 
+        count(!!cat2) %>% 
+        mutate(!!cat1 := "Total General")
+    ) %>% 
+    group_by(!!cat1) %>% 
+    pivot_wider(names_from = !!cat2, values_from = n, values_fill = 0) %>%
+    # Asegurar que todas las categorías estén presentes y en el orden correcto
+    mutate(across(all_of(orden_categorias), ~if_else(is.na(.), 0, .))) %>%
+    select(1, all_of(orden_categorias), everything()) %>%
+    adorn_totals(where = "col", name = "Total General") %>%
+    rename("{rename}" := !!cat1)
+  
+  if (is.null(label_width)) {
+    label_width <- 10
+  }
+  
+  table <- table %>%  ftable(encabezado, title)
+  
+  return(table)
+}
+
+categorica_vinculacion_modalidad <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
+  cat1 <- enquo(cat1)
+  cat2 <- enquo(cat2)
+  
+  # Definir el orden fijo de las categorías
+  orden_categorias <- c("Contrato de prestación de servicios", "Resolución de incentivos", "Otra")
+  
+  table <- x %>% 
+    count(!!cat1, !!cat2) %>% 
+    rbind(
+      x %>% 
+        filter(!is.na(!!cat2)) %>% 
+        count(!!cat2) %>% 
+        mutate(!!cat1 := "Total General")
+    ) %>% 
+    group_by(!!cat1) %>% 
+    pivot_wider(names_from = !!cat2, values_from = n, values_fill = 0) %>%
+    # Asegurar que todas las categorías estén presentes y en el orden correcto
+    mutate(across(all_of(orden_categorias), ~if_else(is.na(.), 0, .))) %>%
+    select(1, all_of(orden_categorias), everything()) %>%
+    adorn_totals(where = "col", name = "Total General") %>%
+    rename("{rename}" := !!cat1)
+  
+  if (is.null(label_width)) {
+    label_width <- 10
+  }
+  
+  table <- table %>%  ftable(encabezado, title)
+  
+  return(table)
+}
+
+categorica_2varp <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
+  cat1 <- enquo(cat1)
+  cat2 <- enquo(cat2)
+  
+  table <- x %>% 
+    count(!!cat1, !!cat2) %>% 
+    rbind(
+      x %>% 
+        filter(!is.na(!!cat2)) %>% 
+        count(!!cat2) %>% 
+        mutate(!!cat1 := "Total General")
+    ) %>% 
+    group_by(!!cat1) %>% 
+    mutate(p = n/sum(n)) %>% 
+    #filter (p >= 0.0005) %>% 
+    select(-n) %>% 
+    pivot_wider(names_from = !!cat2, values_from = p, values_fill = 0) %>% 
+    adorn_totals(where = "col", name = "Total General") %>%
+    mutate(across(where(is.numeric), ~ percent(.x, 0.1, decimal.mark = ","))) %>% 
+    rename("{rename}" := !!cat1)
+  
+      if (is.null(label_width)) {
+    label_width <- 10
+      
+  }
+  
+  # Personalizar el tamaño de las etiquetas de columna
+  colnames(table) <- str_wrap(colnames(table), width = label_width)
+  
+  table <- table %>%  ftable(encabezado, title)
+  
+  return(table)
+}
+
+wrap_text <- function(x, width) {
+  sapply(x, function(y) {
+    paste(strwrap(y, width = width), collapse = "\n")
+  })
+}
+
+tabla_prom <- function(x, col, rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
+  
+  col <- enquo(col)
+  
+  if (is.null(wrap_width)) {
+    wrap_width <- 100
+  }
+  
+  table <- x %>% 
+  group_by(!!col) %>%
+  summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
+  ungroup() %>% 
+  #arrange(desc(promedio_general)) %>% 
+  rename("{rename}" := !!col,
+         "Promedio" = promedio_general) %>% 
+  as.data.frame()  
+  
+  formatted_table <- ftable(table, encabezado, title) %>% 
+  bg(i = nrow_part(.), bg = "white") %>%
+  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+  color(i = nrow_part(.), color = "black") %>%
+  bold(i = nrow_part(.), bold = FALSE)
+  
+  return(formatted_table)
+  
+}
+
+excepciones <- c("de", "DE", "De")
+
+ajustar_mayusculas <- function(texto, excepciones) {
+  # Convierte todo el texto a "Title Case"
+  texto_titulo <- str_to_title(texto)
+  
+  # Divide el texto en palabras
+  palabras <- unlist(strsplit(texto_titulo, " "))
+  
+  # Reemplaza las palabras que están en excepciones con su versión en minúscula
+  palabras <- sapply(palabras, function(palabra) {
+    if (tolower(palabra) %in% excepciones) {
+      tolower(palabra)
+    } else {
+      palabra
+    }
+  })
+  
+  # Une las palabras de nuevo en una cadena de texto
+  texto_ajustado <- paste(palabras, collapse = " ")
+  
+  return(texto_ajustado)
+}
+
+
+transformar_cali <- function(x) {
+  case_when(
+    x == "Excelente" ~ 5,
+    x == "Bueno" ~ 4,
+    x == "Aceptable" ~ 3,
+    x == "Necesita mejorar" ~ 2,
+    x == "Insatisfactorio" ~ 1,
+    TRUE ~ NA_real_  # Valor predeterminado en caso de que no coincida con ninguna categoría
+  )
+}
+
+```
+
+```{r}
+docencia <- docencia %>% 
+  distinct()
+
+docencia <- docencia %>% 
+  clean_names()
+
+docencia <- docencia %>% 
+  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
+  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+         mesdili = str_to_title(mesdili)) %>% 
+  mutate(anodili = year(hora_de_finalizacion))
+
+docencia <- docencia %>% 
+  select(-contains("puntos"), -contains("comentarios"), -hora_de_la_ultima_modificacion)
+
+docencia <- docencia %>%
+  mutate(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece =
+           sapply(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece,
+                  ajustar_mayusculas, excepciones = excepciones))%>% 
+  mutate(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece = trimws(
+    a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece)) %>% 
+  mutate(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece = case_when(
+    a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece == "Fct" ~ "Facultad de Ciencia y Tecnología",
+    a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece == "Facultad de Educacion Fisica" ~ 
+      "Facultad de Educación Física",
+    TRUE~a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece))
+
+docencia <- docencia %>% 
+  mutate(cual_es_el_tipo_de_vinculacion_o_relacion_que_tiene_con_la_upn_universidad_pedagogica_nacional =
+           trimws(cual_es_el_tipo_de_vinculacion_o_relacion_que_tiene_con_la_upn_universidad_pedagogica_nacional))
+
+docencia <- docencia %>% 
+  mutate(en_que_instalaciones_de_la_upn_universidad_pedagogica_nacional_desarrolla_sus_actividades_y_o_labores =
+           str_replace_all(en_que_instalaciones_de_la_upn_universidad_pedagogica_nacional_desarrolla_sus_actividades_y_o_labores,
+                           ";", ""))
+
+docencia <- docencia %>% 
+  mutate(a_que_grupo_poblacional_o_sector_social_pertenece =
+           str_replace_all(a_que_grupo_poblacional_o_sector_social_pertenece, ";", ""))
+
+docencia <- docencia %>% 
+  mutate(across(c(los_medios_utilizados_para_atender_las_solicitudes_correo_electronico_llamadas_mesas_de_trabajo,
+                  la_oportunidad_en_la_respuesta_a_los_requerimientos_atendiendo_los_tiempos_establecidos,
+                  el_respeto_y_cordialidad_de_la_persona_que_atendio_su_solicitud,
+                  la_eficacia_de_la_respuesta_dada_por_la_vicerrectoria_academica_solucion_a_su_requerimiento,
+                  los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud), 
+                ~ str_replace_all(., "\\s*\\(\\d+\\)", "")))
+
+docencia_num <- docencia %>% 
+  mutate(across(c(los_medios_utilizados_para_atender_las_solicitudes_correo_electronico_llamadas_mesas_de_trabajo,
+      la_oportunidad_en_la_respuesta_a_los_requerimientos_atendiendo_los_tiempos_establecidos,
+      el_respeto_y_cordialidad_de_la_persona_que_atendio_su_solicitud,
+      la_eficacia_de_la_respuesta_dada_por_la_vicerrectoria_academica_solucion_a_su_requerimiento,
+      los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud), ~ transformar_cali(.))) %>% 
+  rename(valor1 = los_medios_utilizados_para_atender_las_solicitudes_correo_electronico_llamadas_mesas_de_trabajo,
+         valor2 = la_oportunidad_en_la_respuesta_a_los_requerimientos_atendiendo_los_tiempos_establecidos,
+         valor3 = el_respeto_y_cordialidad_de_la_persona_que_atendio_su_solicitud,
+         valor4 = la_eficacia_de_la_respuesta_dada_por_la_vicerrectoria_academica_solucion_a_su_requerimiento,
+         valor5 = los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud)
+
+# beneficiarios <- beneficiarios %>%
+#   filter(mesdili %in% params$mes)
+```
+
+
+```{r}
+total <- docencia %>% count() %>% pull() 
+```
+
+
+La encuesta de satisfacción y percepción sobre las solicitudes a la Vicerrectoría Académica fue respondida por **`r total`** docentes.
+
+# Unidad o dependencia
+
+## Tabla
+
+```{r}
+
+docencia %>% 
+  categorica_1var(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece, "Dependencia")
+
+```
+
+## Gráfico
+
+```{r}
+
+docencia %>% 
+  plot_barras(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece, "", "", "")
+
+```
+
+# Tipo de vinculación con la UPN
+
+## Tabla
+
+```{r}
+
+docencia %>% 
+  categorica_1var(cual_es_el_tipo_de_vinculacion_o_relacion_que_tiene_con_la_upn_universidad_pedagogica_nacional, "Tipo de vinculación")
+
+```
+
+## Gráfico
+
+```{r}
+
+docencia %>% 
+  plot_barras(cual_es_el_tipo_de_vinculacion_o_relacion_que_tiene_con_la_upn_universidad_pedagogica_nacional, "", "", "")
+
+```
+
+# Instalaciones donde desarrolla actividades
+
+## Tabla
+
+```{r}
+
+docencia %>% 
+  categorica_1var(en_que_instalaciones_de_la_upn_universidad_pedagogica_nacional_desarrolla_sus_actividades_y_o_labores,
+                  "Sede")
+
+```
+
+## Gráfico
+
+```{r}
+
+docencia %>% 
+  plot_barras(en_que_instalaciones_de_la_upn_universidad_pedagogica_nacional_desarrolla_sus_actividades_y_o_labores, "", "", "")
+
+```
+
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.25)
+
+```
+
+# Identidad de género
+
+## Tabla
+
+```{r}
+
+docencia %>% 
+  categorica_1var(cual_es_su_identidad_de_genero, "Identidad de género")
+
+```
+
+## Gráfico
+
+```{r}
+
+docencia %>% 
+  plot_donas(cual_es_su_identidad_de_genero, "")
+
+```
+
+# Rango de edad
+
+## Tabla
+
+```{r}
+
+docencia %>% 
+  mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, levels = c("28 a 40 años", "40 a 60 años"))) %>% 
+  categorica_1var(cual_es_su_rango_de_edad, "Rango de edad")
+
+```
+
+## Gráfico
+
+```{r}
+
+docencia %>% 
+  mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, levels = c("40 a 60 años", "28 a 40 años"))) %>% 
+  plot_barras(cual_es_su_rango_de_edad, "", "", "")
+
+```
+
+# Grupo poblacional o sector social 
+
+## Tabla
+
+```{r}
+
+docencia %>% 
+  categorica_1var(a_que_grupo_poblacional_o_sector_social_pertenece, "Grupo poblacional")
+
+```
+
+# Grupo étnico
+
+## Tabla
+
+```{r}
+
+docencia %>% 
+  categorica_1var(a_que_grupo_de_pertenencia_etnica_pertenece, "Grupo étnico")
+
+```
+
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.50)
+
+```
+
+# Calificación y/o aporte por criterio de evaluación
+
+## Tabla general
+
+```{r}
+
+promedios <- docencia_num %>% 
+  summarise(
+    "Medios utilizados para atender solicitudes" =
+      round(mean(valor1, na.rm = TRUE), 1),
+    "Oportunidad en la respuesta a los requerimientos" =
+      round(mean(valor2, na.rm = TRUE), 1),
+    "Respeto y cordialidad de quien atendió" =
+      round(mean(valor3, na.rm = TRUE), 1),
+    "Eficacia de la respuesta de la vicerrectoría" =
+      round(mean(valor4, na.rm = TRUE), 1),
+    "Conocimientos y habilidades de quien atendió" =
+      round(mean(valor5, na.rm = TRUE), 1)) %>%
+  pivot_longer(cols = everything(), names_to = "Categoría", values_to = "Promedio")
+
+docencia_gene <- docencia %>% 
+  select(los_medios_utilizados_para_atender_las_solicitudes_correo_electronico_llamadas_mesas_de_trabajo,
+         la_oportunidad_en_la_respuesta_a_los_requerimientos_atendiendo_los_tiempos_establecidos,
+         el_respeto_y_cordialidad_de_la_persona_que_atendio_su_solicitud,
+         la_eficacia_de_la_respuesta_dada_por_la_vicerrectoria_academica_solucion_a_su_requerimiento,
+         los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud) %>%
+  rename(
+    "Medios utilizados para atender solicitudes" =
+      los_medios_utilizados_para_atender_las_solicitudes_correo_electronico_llamadas_mesas_de_trabajo,
+    "Oportunidad en la respuesta a los requerimientos" =
+      la_oportunidad_en_la_respuesta_a_los_requerimientos_atendiendo_los_tiempos_establecidos,
+    "Respeto y cordialidad de quien atendió" =
+      el_respeto_y_cordialidad_de_la_persona_que_atendio_su_solicitud,
+    "Eficacia de la respuesta de la vicerrectoría" =
+      la_eficacia_de_la_respuesta_dada_por_la_vicerrectoria_academica_solucion_a_su_requerimiento,
+    "Conocimientos y habilidades de quien atendió" =
+      los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud) %>%
+  pivot_longer(cols = everything(), 
+               names_to = "Categoria", 
+               values_to = "Calificacion") %>% 
+  mutate(Calificacion = factor(Calificacion, levels = c("Excelente", "Bueno","Aceptable", "Necesita mejorar", "Insatisfactorio"))) %>%
+  count(Categoria, Calificacion)
+
+docencia_gene %>% 
+  rename("Calificación" = Calificacion, "Categoría" = Categoria) %>% 
+  pivot_wider(names_from = "Calificación", values_from = n, 
+              values_fill = list(n = 0)) %>%
+  left_join(promedios, by = "Categoría") %>% 
+  ftable() %>%
+  bg(i = nrow_part(.), bg = "white") %>%
+  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+  color(i = nrow_part(.), color = "black") %>%
+  bold(i = nrow_part(.), bold = FALSE)
+
+```
+
+
+## Gráfico general
+
+```{r}
+
+docencia_gene %>% 
+    ggplot(aes(x = Categoria, 
+               y= n, 
+               fill = Calificacion, 
+               label = n))+
+    geom_col(position = "dodge")+
+    geom_text(vjust = 0.5, hjust = -0.2 ,size = 2.5,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(docencia_gene$n)*1.1))+
+    labs(x = "", y = "", title = str_wrap("Calificación por categoría", width = 30))+ 
+    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+     theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+        guides(fill = guide_legend(title = "", label.position = "right"
+                     , nrow = 1, label.theme = element_text(size = 12)))+
+        theme(legend.position = "bottom",
+          axis.text.y = element_text(size = 13),
+          axis.text.x = element_text(size = 13)) +
+    theme(axis.text.y = element_text(size = 12))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 50))+
+    scale_fill_manual(values = c("#388E3C","#7CB342","#FBC02D","#FFA000", "#D32F2F"))+
+    coord_flip()
+
+```
+
+## Medios utilizados para atender solicitudes
+
+### Tabla
+
+```{r}
+
+docencia %>% 
+  mutate(los_medios_utilizados_para_atender_las_solicitudes_correo_electronico_llamadas_mesas_de_trabajo =
+           factor(los_medios_utilizados_para_atender_las_solicitudes_correo_electronico_llamadas_mesas_de_trabajo, levels =
+                    c("Excelente", "Bueno", "Aceptable", "Deficiente", "Muy deficiente"))) %>% 
+  categorica_1var(los_medios_utilizados_para_atender_las_solicitudes_correo_electronico_llamadas_mesas_de_trabajo, 
+                  "Calificación")
+
+```
+
+### Gráfico
+
+```{r}
+
+docencia %>% 
+  mutate(los_medios_utilizados_para_atender_las_solicitudes_correo_electronico_llamadas_mesas_de_trabajo =
+           factor(los_medios_utilizados_para_atender_las_solicitudes_correo_electronico_llamadas_mesas_de_trabajo, levels =
+                    c("Muy deficiente", "Deficiente", "Aceptable", "Bueno", "Excelente"))) %>% 
+  plot_barras(los_medios_utilizados_para_atender_las_solicitudes_correo_electronico_llamadas_mesas_de_trabajo, "", "", "")
+
+```
+
+## Oportunidad en la respuesta a los requerimientos
+
+### Tabla
+
+```{r}
+
+docencia %>% 
+  mutate(la_oportunidad_en_la_respuesta_a_los_requerimientos_atendiendo_los_tiempos_establecidos =
+           factor(la_oportunidad_en_la_respuesta_a_los_requerimientos_atendiendo_los_tiempos_establecidos, levels =
+                    c("Excelente", "Bueno", "Aceptable", "Deficiente", "Muy deficiente"))) %>% 
+  categorica_1var(la_oportunidad_en_la_respuesta_a_los_requerimientos_atendiendo_los_tiempos_establecidos, 
+                  "Calificación")
+
+```
+
+### Gráfico
+
+```{r}
+
+docencia %>% 
+  mutate(la_oportunidad_en_la_respuesta_a_los_requerimientos_atendiendo_los_tiempos_establecidos =
+           factor(la_oportunidad_en_la_respuesta_a_los_requerimientos_atendiendo_los_tiempos_establecidos, levels =
+                    c("Muy deficiente", "Deficiente", "Aceptable", "Bueno", "Excelente"))) %>% 
+  plot_barras(la_oportunidad_en_la_respuesta_a_los_requerimientos_atendiendo_los_tiempos_establecidos, "", "", "")
+
+```
+
+## Respeto y cordialidad de quien atendió
+
+### Tabla
+
+```{r}
+
+docencia %>% 
+  mutate(el_respeto_y_cordialidad_de_la_persona_que_atendio_su_solicitud =
+           factor(el_respeto_y_cordialidad_de_la_persona_que_atendio_su_solicitud, levels =
+                    c("Excelente", "Bueno", "Aceptable", "Deficiente", "Muy deficiente"))) %>% 
+  categorica_1var(el_respeto_y_cordialidad_de_la_persona_que_atendio_su_solicitud, 
+                  "Calificación")
+
+```
+
+### Gráfico
+
+```{r}
+
+docencia %>% 
+  mutate(el_respeto_y_cordialidad_de_la_persona_que_atendio_su_solicitud =
+           factor(el_respeto_y_cordialidad_de_la_persona_que_atendio_su_solicitud, levels =
+                    c("Muy deficiente", "Deficiente", "Aceptable", "Bueno", "Excelente"))) %>% 
+  plot_barras(el_respeto_y_cordialidad_de_la_persona_que_atendio_su_solicitud, "", "", "")
+
+```
+
+## Eficacia de la respuesta de la vicerrectoría
+
+### Tabla
+
+```{r}
+
+docencia %>% 
+  mutate(la_eficacia_de_la_respuesta_dada_por_la_vicerrectoria_academica_solucion_a_su_requerimiento =
+           factor(la_eficacia_de_la_respuesta_dada_por_la_vicerrectoria_academica_solucion_a_su_requerimiento, levels =
+                    c("Excelente", "Bueno", "Aceptable", "Deficiente", "Muy deficiente"))) %>% 
+  categorica_1var(la_eficacia_de_la_respuesta_dada_por_la_vicerrectoria_academica_solucion_a_su_requerimiento, 
+                  "Calificación")
+
+```
+
+### Gráfico
+
+```{r}
+
+docencia %>% 
+  mutate(la_eficacia_de_la_respuesta_dada_por_la_vicerrectoria_academica_solucion_a_su_requerimiento =
+           factor(la_eficacia_de_la_respuesta_dada_por_la_vicerrectoria_academica_solucion_a_su_requerimiento, levels =
+                    c("Muy deficiente", "Deficiente", "Aceptable", "Bueno", "Excelente"))) %>% 
+  plot_barras(la_eficacia_de_la_respuesta_dada_por_la_vicerrectoria_academica_solucion_a_su_requerimiento, "", "", "")
+
+```
+
+## Conocimientos y habilidades de quien atendió
+
+### Tabla
+
+```{r}
+
+docencia %>% 
+  mutate(los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud =
+           factor(los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud, levels =
+                    c("Excelente", "Bueno", "Aceptable", "Deficiente", "Muy deficiente"))) %>% 
+  categorica_1var(los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud, 
+                  "Calificación")
+
+```
+
+### Gráfico
+
+```{r}
+
+docencia %>% 
+  mutate(los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud =
+           factor(los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud, levels =
+                    c("Muy deficiente", "Deficiente", "Aceptable", "Bueno", "Excelente"))) %>% 
+  plot_barras(los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud, "", "", "")
+
+```
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.75)
+
+```
+
+# Calificación y/o aporte por categoría (del encuestado)
+
+## Por unidad o dependencia 
+
+### Tabla
+
+```{r}
+
+docencia_num %>% 
+  tabla_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece, 
+             "Unidad o dependencia")
+
+```
+
+### Gráfico
+
+```{r}
+
+docencia_num %>% 
+  plot_barras_prom(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece, "", "", "")
+
+```
+
+## Por tipo de vinculación
+
+### Tabla
+
+```{r}
+
+docencia_num %>% 
+  tabla_prom(cual_es_el_tipo_de_vinculacion_o_relacion_que_tiene_con_la_upn_universidad_pedagogica_nacional,
+             "Tipo de vinculación")
+
+```
+
+### Gráfico
+
+```{r}
+
+docencia_num %>% 
+  plot_barras_prom(cual_es_el_tipo_de_vinculacion_o_relacion_que_tiene_con_la_upn_universidad_pedagogica_nacional, "", "", "")
+
+```
+
+## Por identidad de género
+
+### Tabla
+
+```{r}
+
+docencia_num %>% 
+  tabla_prom(cual_es_su_identidad_de_genero, "Identidad de género")
+
+```
+
+### Gráfico
+
+```{r}
+
+docencia_num %>% 
+  plot_barras_prom(cual_es_su_identidad_de_genero, "", "", "")
+
+```
+
+## Por rango de edad
+
+### Tabla
+
+```{r}
+
+docencia_num %>% 
+  mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, levels = c("28 a 40 años", "40 a 60 años"))) %>% 
+  tabla_prom(cual_es_su_rango_de_edad, "Rango de edad")
+
+```
+
+### Gráfico
+
+```{r}
+
+docencia_num %>% 
+  mutate(cual_es_su_rango_de_edad = factor(cual_es_su_rango_de_edad, levels = c("40 a 60 años", "28 a 40 años"))) %>% 
+  plot_barras_prom(cual_es_su_rango_de_edad, "", "", "")
+
+```
+
+## Por grupo poblacional
+
+### Tabla
+
+```{r}
+
+docencia_num %>% 
+  tabla_prom(a_que_grupo_poblacional_o_sector_social_pertenece, "Grupo poblacional")
+
+```
+
+## Por grupo étnico
+
+### Tabla
+
+```{r}
+
+docencia_num %>% 
+  tabla_prom(a_que_grupo_de_pertenencia_etnica_pertenece, "Grupo étnico")
+
+```
+
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(1)
+
+```
+

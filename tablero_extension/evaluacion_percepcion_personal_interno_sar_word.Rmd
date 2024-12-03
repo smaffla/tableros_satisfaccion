@@ -1,0 +1,908 @@
+---
+title: "ANÁLISIS DESCRIPTIVO DE LA ENCUESTA DE EVALUACIÓN Y PERCEPCIÓN DIRIGIDA AL PERSONAL INTERNO DEL PROYECTO SAR"
+author: "Oficina de Desarrollo y Planeación"
+output:
+  word_document:
+    fig_height: 7
+    fig_width: 10
+    toc: yes
+    toc_depth: '4'
+  html_document:
+    toc: yes
+    toc_depth: '4'
+    df_print: paged
+params:
+  mes: NA
+  anio: NA
+  rendered_by_shiny: no
+subtitle: Universidad Pedagógica Nacional
+editor_options:
+  chunk_output_type: inline
+toc-title: Tabla de contenido
+---
+
+<!-- <div> -->
+<!-- <img src="https://estilos.upn.edu.co/userfiles/footer/footer.svg" alt="UPN" class="watermark"> -->
+<!-- </div> -->
+
+\newpage
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = FALSE,
+	message = FALSE,
+	warning = FALSE,
+	dpi = 300	)
+
+library(openxlsx)
+library(tidyverse)
+library(janitor)
+library(flextable)
+library(scales)
+library(lubridate)
+library(forcats)
+
+colores_plot <- c(#"#2171b5",
+                                              "#4292c6","#74a9cf",
+                                              "#41b6c4","#7fcdbb",#"#238b45","#41ab5d",
+                                              "#78c679","#c7e9b4","#edf8b1","#fee391","#fec44f",
+                                              "#fe9929","#ec7014")
+
+
+sar <- read.xlsx("ENCUESTA DE EVALUACIÓN Y PERCEPCIÓN DIRIGIDA AL PERSONAL INTERNO DEL PROYECTO SAR 2023.xlsx")
+
+
+```
+
+
+```{r}
+ftable <- function(x, encabezado = NULL, title = NULL) {
+  
+  table <- x %>% 
+    flextable() %>% 
+    set_caption(caption = title) %>%
+    align(part = "header", align = "center") %>% 
+    align(j = 2:ncol_keys(.), align = "center") %>% 
+    bg(part = "header", bg = "#2c7fb8") %>% 
+    color(part = "header", color = "white") %>% 
+    bg(j = 1, bg = "#D9D9D9") %>% 
+    bg(i = nrow_part(.), bg = "#2c7fb8") %>%
+    bold(part = "header") %>% 
+    bold(i = nrow_part(.)) %>%
+    color(i = nrow_part(.), color = "white") %>%
+    border(part = "all", border = fp_border_default(color="black", width = 1)) %>% 
+    autofit() %>%
+    fit_to_width(max_width = 8.5)
+  
+  if (!is.null(encabezado)) {
+    table <- table %>% 
+      add_header_row(colwidths = ncol_keys(.), values = encabezado)
+  }
+  
+  return(table)
+    
+}
+
+
+plot_donas_as <- function(x, col, titulo = "") {
+  
+  col <- enquo(col)
+  
+  data <- x %>%
+    filter(autoriza_datos == "Acepto") %>% 
+    mutate(!!col := factor(!!col, levels = c("Si", "No"))) %>% 
+    count(!!col) %>% 
+    mutate(porcentaje = n / sum(n),
+           ymax = cumsum(porcentaje),
+           ymin = c(0, head(ymax, n = -1)),
+           labelpos = (ymax + ymin) / 2,
+           labelname = paste(n,"\n",percent(porcentaje, 0.1)))
+  #filter(porcentaje >= 0.005)
+  
+  ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 10, xmin = 1, fill = !!col)) +
+    geom_rect() +
+    geom_text(aes(x = -1.5, y = labelpos, label = labelname), size = 5, color = "black", fontface = "bold") +
+    labs(title = str_wrap(titulo, width = 30)) +
+    scale_fill_manual(values = c("#3690c0", "#fc9272")) +
+    coord_polar(theta = "y") +
+    xlim(c(20, -10)) +
+    theme_void() +
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
+    guides(fill = guide_legend(title = "", label.position = "right",
+                               label.theme = element_text(size = 18)))
+}
+
+plot_donas <- function(x, col, titulo = "") {
+  
+  col <- enquo(col)
+  
+  data <- x %>%
+    filter(autoriza_datos == "Acepto") %>% 
+    count(!!col) %>% 
+    mutate(porcentaje = n / sum(n),
+           ymax = cumsum(porcentaje),
+           ymin = c(0, head(ymax, n = -1)),
+           labelpos = (ymax + ymin) / 2,
+           labelname = paste(n,"\n",percent(porcentaje, 0.1)))
+  #filter(porcentaje >= 0.005)
+  
+  ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 10, xmin = 1, fill = !!col)) +
+    geom_rect() +
+    geom_text(aes(x = -1.5, y = labelpos, label = labelname), size = 5, color = "black", fontface = "bold") +
+    labs(title = str_wrap(titulo, width = 30)) +
+    scale_fill_manual(values = colores_plot) +
+    coord_polar(theta = "y") +
+    xlim(c(20, -10)) +
+    theme_void() +
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
+    guides(fill = guide_legend(title = "", label.position = "right",
+                               label.theme = element_text(size = 18)))
+}
+
+## Función gráfico de barras para df caracterizacion
+plot_barras <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
+  col <- enquo(col)
+  
+  data <- x %>%
+    filter(autoriza_datos == "Acepto") %>% 
+    count(!!col )%>% 
+    mutate(perc = percent(n/sum(n), 0.1))
+  
+  if (is.null(top)) {
+    top <- 11
+  }
+  
+  data %>% 
+    arrange(desc(n)) %>% 
+    slice(1:top) %>% 
+    ggplot(aes(x = !!col, 
+               y= n, 
+               fill = !!col, 
+               label = paste(perc,"\n",n," "))) + 
+    geom_col()+
+    geom_text(vjust = 0.5, hjust = -0.1, size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$n)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
+    theme(legend.position="none")+
+    theme(axis.text.y = element_text(size = 14))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
+    scale_fill_manual(values = colores_plot)+
+    coord_flip()
+  
+}
+
+## Función gráfico de barras AGRUPADO para df caracterizacion
+plot_barras_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo = "") {
+  col <- enquo(col)
+  group <- enquo(group)
+  
+  data <- x %>%
+    filter(autoriza_datos == "Acepto") %>% 
+    count(!!group, !!col) %>% 
+    mutate(perc = percent(n/sum(n), 0.1))
+  
+  data %>% 
+    ggplot(aes(x = !!col, 
+               y= n, 
+               fill = !!group, 
+               label = paste(perc,"\n",n," "))) + 
+    geom_col(position = "dodge")+
+    geom_text(vjust = 0.5, hjust = -0.2 ,size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$n)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30))+ 
+    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+    guides(fill = guide_legend(title = leyenda, label.position = "right"
+                               , nrow = 2, label.theme = element_text(size = 12)))+
+    theme(legend.position = "bottom",
+          axis.text.y = element_text(size = 13),
+          axis.text.x = element_text(size = 13)) +
+    theme(axis.text.y = element_text(size = 12))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
+    scale_fill_manual(values = colores_plot)+
+    coord_flip()
+  
+}
+
+
+plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
+  
+  col <- enquo(col)
+  
+  if (is.null(top)) {
+    top <- 11
+  }
+  
+  data <- x %>%  
+    filter(autoriza_datos == "Si") %>% 
+    group_by(!!col) %>%
+    summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
+    ungroup()
+  
+  data %>% 
+    arrange(desc(promedio_general)) %>% 
+    slice(1:top) %>% 
+    ggplot(aes(x = !!col, 
+               y= promedio_general, 
+               fill = !!col, 
+               label = promedio_general)) + 
+    geom_col()+
+    geom_text(vjust = 0.5, hjust = -0.5, size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$promedio_general)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
+    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+    theme(legend.position="none")+
+    theme(axis.text.y = element_text(size = 14))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
+    scale_fill_manual(values = colores_plot)+
+    coord_flip()
+  
+}
+
+
+categorica_1var <- function(x, cat1, rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
+  cat1 <- enquo(cat1)
+  
+    if (is.null(wrap_width)) {
+    wrap_width <- 100
+    }
+  
+  table <- x %>% 
+    filter(autoriza_datos == "Acepto") %>% 
+    count(!!cat1) %>% 
+    adorn_totals(where = "row", name = "Total General") %>%
+    rename('{rename}' := !!cat1, "Cantidad" = n) %>% 
+    mutate('{rename}' := str_wrap(!!sym(rename), width = wrap_width)) %>%
+    ftable(encabezado, title)
+  
+  return(table)
+    
+}
+
+categorica_2var <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
+  cat1 <- enquo(cat1)
+  cat2 <- enquo(cat2)
+  
+  table <- x %>% 
+    filter(autoriza_datos == "Acepto") %>% 
+    count(!!cat1, !!cat2) %>% 
+    rbind(
+      x %>% 
+        filter(!is.na(!!cat2)) %>% 
+        count(!!cat2) %>% 
+        mutate(!!cat1 := "Total General")
+    ) %>% 
+    group_by(!!cat1) %>% 
+    #mutate(p = n/sum(n)) %>% 
+    #filter (p >= 0.0005) %>% 
+    #select(-n) %>% 
+    pivot_wider(names_from = !!cat2, values_from = n, values_fill = 0) %>%
+    adorn_totals(where = "col", name = "Total General") %>%
+    #mutate(across(where(is.numeric), ~ percent(.x, 0.01, decimal.mark = ","))) %>% 
+    rename("{rename}" := !!cat1)
+  
+      if (is.null(label_width)) {
+    label_width <- 10
+      
+  }
+  
+  # Personalizar el tamaño de las etiquetas de columna
+  colnames(table) <- str_wrap(colnames(table), width = label_width)
+  
+  table <- table %>%  ftable(encabezado, title)
+  
+  return(table)
+}
+
+categorica_2var_escala <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
+  cat1 <- enquo(cat1)
+  cat2 <- enquo(cat2)
+  
+  # Definir el orden fijo de las categorías
+  orden_categorias <- c("Excelente", "Muy bueno", "Bueno", "Aceptable", "Por mejorar")
+  
+  table <- x %>% 
+    filter(autoriza_datos == "Acepto") %>% 
+    count(!!cat1, !!cat2) %>% 
+    rbind(
+      x %>% 
+        filter(!is.na(!!cat2)) %>% 
+        count(!!cat2) %>% 
+        mutate(!!cat1 := "Total General")
+    ) %>% 
+    group_by(!!cat1) %>% 
+    pivot_wider(names_from = !!cat2, values_from = n, values_fill = 0)
+  
+  # Obtener las categorías que realmente existen en los datos
+  categorias_existentes <- intersect(orden_categorias, colnames(table))
+  
+  # Reordenar columnas solo si existen las categorías
+  if (length(categorias_existentes) > 0) {
+    table <- table %>%
+      select(1, all_of(categorias_existentes), everything())
+  }
+  
+  table <- table %>%
+    adorn_totals(where = "col", name = "Total General") %>%
+    rename("{rename}" := !!cat1)
+  
+  if (is.null(label_width)) {
+    label_width <- 10
+  }
+  
+  table <- table %>%  ftable(encabezado, title)
+  
+  return(table)
+}
+
+categorica_vinculacion_modalidad <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
+  cat1 <- enquo(cat1)
+  cat2 <- enquo(cat2)
+  
+  # Definir el orden fijo de las categorías
+  orden_categorias <- c("Contrato de prestación de servicios", "Resolución de incentivos", "Otra")
+  
+  table <- x %>% 
+    filter(autoriza_datos == "Acepto") %>% 
+    count(!!cat1, !!cat2) %>% 
+    rbind(
+      x %>% 
+        filter(!is.na(!!cat2)) %>% 
+        count(!!cat2) %>% 
+        mutate(!!cat1 := "Total General")
+    ) %>% 
+    group_by(!!cat1) %>% 
+    pivot_wider(names_from = !!cat2, values_from = n, values_fill = 0)
+  
+  # Obtener las categorías que realmente existen en los datos
+  categorias_existentes <- intersect(orden_categorias, colnames(table))
+  
+  # Reordenar columnas solo si existen las categorías
+  if (length(categorias_existentes) > 0) {
+    table <- table %>%
+      select(1, all_of(categorias_existentes), everything())
+  }
+  
+  table <- table %>%
+    adorn_totals(where = "col", name = "Total General") %>%
+    rename("{rename}" := !!cat1)
+  
+  if (is.null(label_width)) {
+    label_width <- 10
+  }
+  
+  table <- table %>% ftable(encabezado, title)
+  
+  return(table)
+}
+
+categorica_2varp <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
+  cat1 <- enquo(cat1)
+  cat2 <- enquo(cat2)
+  
+  table <- x %>% 
+    filter(autoriza_datos == "Acepto") %>% 
+    count(!!cat1, !!cat2) %>% 
+    rbind(
+      x %>% 
+        filter(!is.na(!!cat2)) %>% 
+        count(!!cat2) %>% 
+        mutate(!!cat1 := "Total General")
+    ) %>% 
+    group_by(!!cat1) %>% 
+    mutate(p = n/sum(n)) %>% 
+    #filter (p >= 0.0005) %>% 
+    select(-n) %>% 
+    pivot_wider(names_from = !!cat2, values_from = p, values_fill = 0) %>% 
+    adorn_totals(where = "col", name = "Total General") %>%
+    mutate(across(where(is.numeric), ~ percent(.x, 0.1, decimal.mark = ","))) %>% 
+    rename("{rename}" := !!cat1)
+  
+      if (is.null(label_width)) {
+    label_width <- 10
+      
+  }
+  
+  # Personalizar el tamaño de las etiquetas de columna
+  colnames(table) <- str_wrap(colnames(table), width = label_width)
+  
+  table <- table %>%  ftable(encabezado, title)
+  
+  return(table)
+}
+
+wrap_text <- function(x, width) {
+  sapply(x, function(y) {
+    paste(strwrap(y, width = width), collapse = "\n")
+  })
+}
+
+tabla_prom <- function(x, col, rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
+  
+  col <- enquo(col)
+  
+  if (is.null(wrap_width)) {
+    wrap_width <- 100
+  }
+  
+  table <- x %>% 
+  filter(autoriza_datos == "Acepto") %>% 
+  group_by(!!col) %>%
+  summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
+  ungroup() %>% 
+  #arrange(desc(promedio_general)) %>% 
+  rename("{rename}" := !!col,
+         "Promedio" = promedio_general) %>% 
+  as.data.frame()  
+  
+  formatted_table <- ftable(table, encabezado, title) %>% 
+  bg(i = nrow_part(.), bg = "white") %>%
+  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+  color(i = nrow_part(.), color = "black") %>%
+  bold(i = nrow_part(.), bold = FALSE)
+  
+  return(formatted_table)
+  
+}
+```
+
+```{r}
+sar <- sar %>% 
+  distinct()
+
+sar <- sar %>% 
+  clean_names()
+
+sar <- sar %>% 
+  rename(autoriza_datos = autorizacion_tratamiento_de_datos_personales_declaro_que_he_sido_informado_por_la_universidad_pedagogica_nacional_en_adelante_la_upn_identificada_con_nit_899_999_124_4_con_domicilio_en_la_c)
+
+sar <- sar %>% 
+  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
+  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+         mesdili = str_to_title(mesdili)) %>% 
+  mutate(anodili = year(hora_de_finalizacion))
+
+sar <- sar %>%
+  mutate(modalidad_de_participacion_en_el_proyecto_sar = factor(modalidad_de_participacion_en_el_proyecto_sar, levels = c("Otra", "Contrato de prestación de servicios", "Resolución de incentivos"), ordered = TRUE))
+
+sar <- sar %>% 
+  rename(el_apoyo_para_la_formulacion = seleccione_solo_una_opcion_en_las_siguientes_preguntas_asesoria_operativa_y_administrativa_para_la_ejecucion_del_proyecto_1_el_apoyo_para_la_formulacion_y_ejecucion_de_la_propuesta_fue)
+
+sar <- sar %>% 
+  rename(claridad_en_la_informacion = asesoria_financiera_para_la_ejecucion_del_proyecto_9_la_claridad_en_la_informacion_para_la_ejecucion_financiera_presupuesto_y_plan_de_compras_fue)
+
+sar <- sar %>% 
+  rename(disponibilidad_de_espacios = aspecto_logistico_14_la_disponibilidad_de_espacios_fisico_o_virtual_para_la_ejecucion_del_proyecto_fue)
+
+
+sar <- sar %>% 
+  mutate(x11_la_calidad_de_las_respuestas_recibidas_sobre_las_dudas_presentadas_de_tipo_financiero_fueron= if_else(x11_la_calidad_de_las_respuestas_recibidas_sobre_las_dudas_presentadas_de_tipo_financiero_fueron == "Bueno ", "Bueno",x11_la_calidad_de_las_respuestas_recibidas_sobre_las_dudas_presentadas_de_tipo_financiero_fueron))
+
+sar <- sar %>%
+  #filter(!is.na(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica)) %>% 
+  mutate(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica = trimws(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica)) %>% 
+  mutate(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica = fct_collapse(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica,
+               "Alcaldía de Bosa" = c("ALCALDIA DE BOSA", "ALCALDIA LOCA DE BOSA", "ALCALDIA LOCAL DE BOSA", "Alcaldia Local de Bosa", "Alcaldia local de Bosa","Alcaldía de Bosq", "Alcaldía local de Bosa", "Alcaldía Local de Bosa", "Alcaldia Local de Bosa", "Alcaldia local de Bosa", "Alcaldía local de Bosa", "UPN y Alcaldía Bosa", "Universidad Pedagógica Nacional y Alcaldía de Bosa"))) %>%
+  mutate(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica = fct_collapse(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica,
+               "Alcaldía de Usaquén" = c("Alcaldía De Usaquén", "Alcaldia local de usaquen", "Alcaldía Local de Usaquen", "Alcaldía Local Usaquén", "Alcaldia usaquen", "Alcadía de Usaquén", "Upn con la Alcaldía de Usaquen", "Universidad pedagógica y alcaldía Usaquen"))) %>% 
+  mutate(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica = fct_collapse(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica,
+               "Comunidad hermanos maristas de la enseñanza" = c("Comunidad hermanos maristas de la Enseñanza", "COMUNIDAD HERMANOS MARISTAS DE LA ENSEÑANZA"))) %>% 
+  mutate(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica = fct_collapse(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica,
+               "ART Consorcio Colombia en Paz" = c("ART Consorcio Colombia en Paz", "Consorcio Fondo Colombia en Paz 2019.", "Fondo Colombia en Paz")))%>% 
+  mutate(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica = fct_collapse(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica,
+               "Fondo de Desarrollo Local de Usaquén" = c("Fondo de Desarrollo Local de Usaquén", "Fondo de desarrollo local de Usaquen Contrato Interadministrativo 416"))) %>% 
+  mutate(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica = fct_collapse(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica,
+               "Instituto Popular de Cultura (IPC)" = c("instituto popular de cultura - Cali", "INSTITUTO POPULAR DE CULTURA", "Instituto Popular de Cultura (IPC)"))) %>% 
+  mutate(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica = fct_collapse(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica,
+               "Ministerio de Cultura" = c("MIN Culturas", "Mincultura", "Ministerio de Cultura", "MINISTERIO DE CULTURA", "Ministerio de las Culturas"))) %>% 
+    mutate(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica = fct_collapse(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica,
+               "Ministerio de Educación Nacional (MEN)" = c("Ministerio de educación", "Ministerio de Educación", "Ministerio de Educación Nacional", "Ministerio de Educación Nacional (MEN)", "MEN")))  %>% 
+    mutate(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica = fct_collapse(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica,
+               "CorpoElite" = c("Ministerio de Cultura y Corporación de Desarrollo Social Élite- CorpoElite"))) %>% 
+    mutate(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica = fct_collapse(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica,
+               "Secreataría Distrital de Cultura, Recreación y Deporte" = c("Secreataría Distrital de Cultura, Recreación y deporte", "Secretaria de cultura de recreacion y deporte"))) %>% 
+    mutate(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica = fct_collapse(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica,
+               "Secretaría de Educación de Bogotá" = c("Secretaría de Educación de Bogotá", "Secretaria de Educación de Bogotá", "Secretaria de Educación de Bogota", "Secretaria de Educación", "Secrecretaria de Educación"))) %>% 
+  mutate(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica = fct_collapse(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica,
+               "Secretaría de Educación Distrital" = c("Secretaría de Educación de Bogotá", "Secretaría de Educación Distrital", "Secretaría de educación distrital", "Secretaria de Educación Distrital", "Secretaria de Educación del Distrito", "Secretaría de Educación del Distrito", "Secretaria de Educación Distrital", "Secretaria de Educación Distrital.", "Sed", "SED", "SED Bogotá")))  %>% 
+  mutate(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica = fct_collapse(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica,
+               "Secretaría de Seguridad, Convivencia y Justicia" = c("Secretaría de Seguridad Convivencia y Justicia", "Secretaria de Seguridad", "Secretaría de Seguridad de Bogotá", "Secretaría de seguridad distrital", "Secretaría de seguridad y convivencia", "Secretaría de Seguridad y Convivencia", "Secretaría de Seguridad, convivencia y justicia", "SECRETARÍA DE SEGURIDAD, CONVIVENCIA Y JUSTICIA"))) %>% 
+mutate(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica = fct_collapse(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica,
+               "No aplica" = c("Ninguna", "No", "no aplica", "No aplica", "NO APLICA", "N/A", "NO", "Uiversidad Pedagogica", "Universidad pedagógica", "Universidad Pedagogica Nacional", "Universidad pedagógica", "Universidad Pedagogica Nacional", "Universidad pedagógica nacional", "Universidad Pedagógica Nacional", "Universidad Pedagógica Nacional de Colombia, Facultad de Bellas Artes, Lic. Artes Visuales", "Upn", "UPN")))
+
+
+sar <- sar %>%
+  filter(anodili %in% params$anio)
+```
+
+
+<!-- Eliminamos duplicados -->
+
+```{r}
+#sar <- sar[!duplicated(sar[c("nombre_encuestado_a", "nombre_del_proyecto", "fecha_de_diligenciamiento")]), ]
+```
+
+```{r}
+total_autoriza <- sar %>% filter(autoriza_datos == "Acepto") %>% count() %>% pull()
+total <- sar %>% count() %>% pull() 
+```
+
+```{r}
+# sar %>% 
+#   select(mesdili, anodili)
+```
+
+La encuesta de evaluación y percepción dirigida al personal interno del proyecto SAR fue respondida por **`r total`** personas, de las cuales **`r total_autoriza`** dieron su autorización para el uso de sus datos en este análisis estadístico.
+
+
+# Tipo de vinculación de los encuestados
+
+En este apartado se muestra la distribución de los encuestados, categorizándolos por el tipo de vinculación con el proyecto SAR.
+
+### Tabla
+```{r}
+
+sar %>%
+  categorica_1var(categoria_de_participacion_en_el_proyecto_sar, "Tipo de vinculación")
+```
+
+### Gráfico
+```{r}
+sar %>%
+  plot_barras(categoria_de_participacion_en_el_proyecto_sar, "", "", "Tipo de vinculación")
+```
+
+
+# Modalidad de contratación de los encuestados
+
+En este apartado se muestra la distribución de los encuestados en las diferentes modalidades de contratación en el proyecto SAR.
+
+### Tabla
+```{r}
+sar %>% 
+  categorica_1var(modalidad_de_participacion_en_el_proyecto_sar, "Modalidad de contratación")
+```
+
+### Gráfico
+```{r}
+sar %>% 
+  plot_barras(modalidad_de_participacion_en_el_proyecto_sar, "", "", "Modalidad de contratación")
+```
+
+
+# Tipo de vinculación y modalidad de contratación
+
+En este apartado se muestra la distribución del personal interno del proyecto SAR, categorizados por tipo de vinculación y la modalidad de su contratación.
+
+```{r}
+sar %>%
+  filter(autoriza_datos == "Acepto") %>% 
+  categorica_vinculacion_modalidad(categoria_de_participacion_en_el_proyecto_sar, modalidad_de_participacion_en_el_proyecto_sar, "Tipo de vinculación")
+  
+```
+
+# Identidad de género
+
+En este apartado se muestra la distribución del personal interno del proyecto SAR, categorizados por el género con el que se identifican.
+
+### Tabla
+```{r}
+sar %>% 
+  categorica_1var(genero, "Identidad de género")
+```
+
+### Gráfica
+```{r}
+sar %>% 
+  mutate(genero = factor(genero, levels = c ("Otro", "Masculino", "Femenino"), ordered = TRUE)) %>% 
+  plot_barras(genero, "", "", "Identidad de género")
+```
+
+# Asesoría operativa y administrativa para la ejecución del proyecto
+
+# Calificación por criterio de evaluación
+
+A continuación se muestra cómo percibieron los encuestados la asesoría operativa y administrativa para la ejecución del proyecto. Primero se establece el criterio de evaluación, se muestra una tabla que categoriza a los encuestados por su tipo de vinculación y su percepción respecto al criterio evaluado, y por último se ilustra a través de una gráfica la calificación dada por parte de los encuestados.
+
+## El apoyo para la formulación y ejecución de la propuesta
+
+### Tabla
+```{r}
+
+sar %>%
+  filter(autoriza_datos == "Acepto") %>%
+  categorica_2var_escala(categoria_de_participacion_en_el_proyecto_sar, el_apoyo_para_la_formulacion, "Tipo de vinculación")
+```
+
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.25)
+
+```
+
+### Gráfico
+```{r}
+
+sar %>%
+  mutate(el_apoyo_para_la_formulacion = factor(el_apoyo_para_la_formulacion, levels = c("Por mejorar", "Aceptable", "Bueno", "Muy bueno", "Excelente"))) %>% 
+  plot_barras(el_apoyo_para_la_formulacion, "", "", "")
+```
+
+## La claridad y calidad de la información presentada en los procedimientos y demás información recibida
+
+### Tabla
+```{r}
+sar %>%
+  filter(autoriza_datos == "Acepto") %>%
+  categorica_2var_escala(categoria_de_participacion_en_el_proyecto_sar, x2_la_claridad_y_calidad_de_la_informacion_presentada_en_los_procedimientos_y_demas_informacion_recibida_fue, "Tipo de vinculación")
+```
+
+### Gráfico
+```{r}
+sar %>%
+  mutate(x2_la_claridad_y_calidad_de_la_informacion_presentada_en_los_procedimientos_y_demas_informacion_recibida_fue = factor(x2_la_claridad_y_calidad_de_la_informacion_presentada_en_los_procedimientos_y_demas_informacion_recibida_fue, levels = c("Por mejorar", "Aceptable", "Bueno", "Muy bueno", "Excelente"))) %>% 
+  plot_barras(x2_la_claridad_y_calidad_de_la_informacion_presentada_en_los_procedimientos_y_demas_informacion_recibida_fue, "", "", "")
+```
+
+## El tiempo de respuesta a los trámites presentados a la SAE
+
+### Tabla
+```{r}
+sar %>%
+  filter(autoriza_datos == "Acepto") %>%
+  categorica_2var(categoria_de_participacion_en_el_proyecto_sar, x3_el_tiempo_de_respuesta_a_los_tramites_presentados_a_la_sae_fue, "Tipo de vinculación")
+```
+
+### Gráfico
+
+```{r}
+sar %>%
+  mutate(x3_el_tiempo_de_respuesta_a_los_tramites_presentados_a_la_sae_fue = factor(x3_el_tiempo_de_respuesta_a_los_tramites_presentados_a_la_sae_fue, levels = c("Oportuno", "Inoportuno"))) %>% 
+  plot_donas(x3_el_tiempo_de_respuesta_a_los_tramites_presentados_a_la_sae_fue)
+  
+```
+
+## Los medios de comunicación establecidos para resolver dudas
+
+### Tabla
+```{r}
+sar %>% 
+  filter(autoriza_datos == "Acepto") %>%
+  categorica_2var(categoria_de_participacion_en_el_proyecto_sar, x4_los_medios_de_comunicacion_establecidos_para_resolver_dudas_fueron, "Tipo de vinculación")
+```
+
+### Gráfico
+```{r}
+sar %>%
+    mutate(x4_los_medios_de_comunicacion_establecidos_para_resolver_dudas_fueron = factor(x4_los_medios_de_comunicacion_establecidos_para_resolver_dudas_fueron, levels = c("Suficientes", "Insuficientes"))) %>%
+  plot_donas(x4_los_medios_de_comunicacion_establecidos_para_resolver_dudas_fueron)
+```
+
+## La efectividad de dichos medios de comunicación
+
+### Tabla
+```{r}
+sar %>%
+  filter(autoriza_datos == "Acepto") %>% 
+  categorica_2var(categoria_de_participacion_en_el_proyecto_sar, x5_la_efectividad_de_dichos_medios_de_comunicacion_fue, "Tipo de vinculación")
+```
+
+### Gráfico
+
+```{r}
+sar %>%
+  plot_donas(x5_la_efectividad_de_dichos_medios_de_comunicacion_fue)
+```
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.50)
+
+```
+
+## El apoyo a la difusión y socialización de los aportes del proyecto
+
+### Tabla
+```{r}
+sar %>%
+  filter(autoriza_datos == "Acepto") %>%
+  categorica_2var_escala(categoria_de_participacion_en_el_proyecto_sar, x6_el_apoyo_a_la_difusion_y_socializacion_de_los_aportes_del_proyecto_fue, "Tipo de vinculación")
+```
+
+### Gráfico
+
+```{r}
+sar %>%
+  mutate(x6_el_apoyo_a_la_difusion_y_socializacion_de_los_aportes_del_proyecto_fue = factor(x6_el_apoyo_a_la_difusion_y_socializacion_de_los_aportes_del_proyecto_fue, levels = c("Por mejorar", "Aceptable", "Bueno", "Muy bueno", "Excelente"))) %>% 
+  plot_barras(x6_el_apoyo_a_la_difusion_y_socializacion_de_los_aportes_del_proyecto_fue, "", "", "")
+```
+
+## El apoyo recibido para la atención de contratiempos presentados 
+
+### Tabla
+
+```{r}
+sar %>%
+  filter(autoriza_datos == "Acepto") %>%
+  mutate(x7_el_apoyo_recibido_para_la_atencion_de_contratiempos_presentados_si_aplica_fue = factor(x7_el_apoyo_recibido_para_la_atencion_de_contratiempos_presentados_si_aplica_fue, levels = c("Por mejorar", "Aceptable", "Bueno", "Muy bueno", "Excelente"))) %>%  
+  categorica_2var_escala(categoria_de_participacion_en_el_proyecto_sar, x7_el_apoyo_recibido_para_la_atencion_de_contratiempos_presentados_si_aplica_fue, "Tipo de vinculación")
+```
+
+### Gráfico
+
+```{r}
+sar %>%
+  mutate(x7_el_apoyo_recibido_para_la_atencion_de_contratiempos_presentados_si_aplica_fue = factor(x7_el_apoyo_recibido_para_la_atencion_de_contratiempos_presentados_si_aplica_fue, levels = c("Por mejorar", "Aceptable", "Bueno", "Muy bueno", "Excelente"))) %>% 
+  plot_barras(x7_el_apoyo_recibido_para_la_atencion_de_contratiempos_presentados_si_aplica_fue, "", "", "")
+```
+
+## El seguimiento realizado por parte de la SAE al proyecto
+
+### Tabla
+```{r}
+sar %>%
+  filter(autoriza_datos == "Acepto") %>% 
+  mutate(x8_el_seguimiento_realizado_por_parte_de_la_sae_al_proyecto_fue = factor(x8_el_seguimiento_realizado_por_parte_de_la_sae_al_proyecto_fue, levels = c("Por mejorar", "Aceptable", "Bueno", "Muy bueno", "Excelente"))) %>%  
+  categorica_2var_escala(categoria_de_participacion_en_el_proyecto_sar, x8_el_seguimiento_realizado_por_parte_de_la_sae_al_proyecto_fue, "Tipo de vinculación")
+```
+
+### Gráfico
+
+```{r}
+sar %>%
+  mutate(x8_el_seguimiento_realizado_por_parte_de_la_sae_al_proyecto_fue = factor(x8_el_seguimiento_realizado_por_parte_de_la_sae_al_proyecto_fue, levels = c("Por mejorar", "Aceptable", "Bueno", "Muy bueno", "Excelente"))) %>% 
+  plot_barras(x8_el_seguimiento_realizado_por_parte_de_la_sae_al_proyecto_fue, "", "", "")
+```
+
+# Asesoría financiera para la ejecución del proyecto
+
+# Calificación por criterio de evaluación
+
+A continuación se muestra cómo percibieron los encuestados la asesoría financiera para la ejecución del proyecto. Primero se establece el criterio de evaluación, se muestra una tabla que categoriza a los encuestados por su tipo de vinculación y su percepción respecto al criterio evaluado, y por último se ilustra a través de una gráfica la calificación dada por parte de los encuestados.
+
+## La claridad en la información para la ejecución financiera (presupuesto y plan de compras)
+
+### Tabla
+```{r}
+sar %>%
+  filter(autoriza_datos == "Acepto") %>% 
+  mutate(claridad_en_la_informacion = factor(claridad_en_la_informacion, levels = c("Por mejorar", "Aceptable", "Bueno", "Muy bueno", "Excelente"))) %>%  
+  categorica_2var_escala(categoria_de_participacion_en_el_proyecto_sar, claridad_en_la_informacion, "Tipo de vinculación")
+```
+
+### Gráfico
+```{r}
+sar %>%
+  mutate(claridad_en_la_informacion = factor(claridad_en_la_informacion, levels = c("Por mejorar", "Aceptable", "Bueno", "Muy bueno", "Excelente"))) %>% 
+  plot_barras(claridad_en_la_informacion, "", "", "")
+```
+
+## Los medios de comunicación establecidos para resolver dudas de tipo financiero
+
+### Tabla
+```{r}
+sar %>%
+  filter(autoriza_datos == "Acepto") %>% 
+  categorica_2var(categoria_de_participacion_en_el_proyecto_sar, x10_los_medios_de_comunicacion_establecidos_para_resolver_dudas_de_tipo_financiero_fueron, "Tipo de vinculación")
+```
+
+### Gráfico
+```{r}
+
+sar %>%
+  mutate(x10_los_medios_de_comunicacion_establecidos_para_resolver_dudas_de_tipo_financiero_fueron = factor(x10_los_medios_de_comunicacion_establecidos_para_resolver_dudas_de_tipo_financiero_fueron, levels = c("Suficientes", "Insuficientes"))) %>% 
+  plot_donas(x10_los_medios_de_comunicacion_establecidos_para_resolver_dudas_de_tipo_financiero_fueron)
+```
+
+## La calidad de las respuestas recibidas sobre las dudas presentadas de tipo financiero
+
+### Tabla
+```{r}
+sar %>%
+  filter(autoriza_datos == "Acepto") %>% 
+  categorica_2var_escala(categoria_de_participacion_en_el_proyecto_sar, x11_la_calidad_de_las_respuestas_recibidas_sobre_las_dudas_presentadas_de_tipo_financiero_fueron, "Tipo de vinculación")
+```
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.75)
+
+```
+
+### Gráfico
+```{r}
+sar %>%
+  mutate(x11_la_calidad_de_las_respuestas_recibidas_sobre_las_dudas_presentadas_de_tipo_financiero_fueron = factor(x11_la_calidad_de_las_respuestas_recibidas_sobre_las_dudas_presentadas_de_tipo_financiero_fueron, levels = c("Por mejorar", "Aceptable", "Bueno", "Muy bueno", "Excelente"))) %>% 
+  plot_barras(x11_la_calidad_de_las_respuestas_recibidas_sobre_las_dudas_presentadas_de_tipo_financiero_fueron, "", "", "")
+```
+
+## El tiempo de respuesta a las inquietudes de tipo financiero presentadas a la SAE
+
+### Tabla
+```{r}
+sar %>%
+  filter(autoriza_datos == "Acepto") %>% 
+  categorica_2var(categoria_de_participacion_en_el_proyecto_sar, x12_el_tiempo_de_respuesta_a_las_inquietudes_de_tipo_financiero_presentadas_a_la_sae_fue, "Tipo de vinculación")
+```
+
+### Gráfico
+```{r}
+
+sar %>%
+  mutate(x12_el_tiempo_de_respuesta_a_las_inquietudes_de_tipo_financiero_presentadas_a_la_sae_fue = factor(x12_el_tiempo_de_respuesta_a_las_inquietudes_de_tipo_financiero_presentadas_a_la_sae_fue, levels = c("Oportuno", "Inoportuno"))) %>% 
+  plot_donas(x12_el_tiempo_de_respuesta_a_las_inquietudes_de_tipo_financiero_presentadas_a_la_sae_fue)
+```
+
+## Califiación dada a el acompañamiento a los directores/coordinadores de proyectos
+
+### Tabla
+```{r}
+sar %>%
+  filter(autoriza_datos == "Acepto") %>% 
+  categorica_2var_escala(categoria_de_participacion_en_el_proyecto_sar, x13_en_terminos_generales_el_acompanamiento_a_los_directores_coordinadores_de_proyectos_fue, "Tipo de vinculación")
+```
+
+### Gráfico
+```{r}
+sar %>%
+  mutate(x13_en_terminos_generales_el_acompanamiento_a_los_directores_coordinadores_de_proyectos_fue = factor(x13_en_terminos_generales_el_acompanamiento_a_los_directores_coordinadores_de_proyectos_fue, levels = c("Por mejorar", "Aceptable", "Bueno", "Muy bueno", "Excelente"))) %>% 
+  plot_barras(x13_en_terminos_generales_el_acompanamiento_a_los_directores_coordinadores_de_proyectos_fue, "", "", "")
+```
+
+# Aspecto logístico
+
+# Calificación por criterio de evaluación
+
+A continuación se muestra cómo percibieron los encuestados el aspecto logístico. Primero se establece el criterio de evaluación, se muestra una tabla que categoriza a los encuestados por su tipo de vinculación y su percepción respecto al criterio evaluado, y por último se ilustra a través de una gráfica la calificación dada por parte de los encuestados.
+
+## La disponibilidad de espacios (físico o virtual) para la ejecución del proyecto
+
+### Tabla
+```{r}
+sar %>%
+  filter(autoriza_datos == "Acepto") %>% 
+  categorica_2var(categoria_de_participacion_en_el_proyecto_sar, disponibilidad_de_espacios, "Tipo de vinculación")
+```
+
+### Gráfico
+```{r}
+
+sar %>%
+  mutate(disponibilidad_de_espacios = factor(x10_los_medios_de_comunicacion_establecidos_para_resolver_dudas_de_tipo_financiero_fueron, levels = c("Suficientes", "Insuficientes"))) %>% 
+  plot_donas(disponibilidad_de_espacios)
+```
+
+## La calidad de esos espacios
+
+```{r}
+sar %>%
+  filter(autoriza_datos == "Acepto") %>% 
+  categorica_2var_escala(categoria_de_participacion_en_el_proyecto_sar, x15_la_calidad_de_esos_espacios_fue, "Tipo de vinculación")
+```
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(1)
+
+```
+### Gráfico
+```{r}
+sar %>%
+  mutate(x15_la_calidad_de_esos_espacios_fue = factor(x15_la_calidad_de_esos_espacios_fue, levels = c("Por mejorar", "Aceptable", "Bueno", "Muy bueno", "Excelente"))) %>% 
+  plot_barras(x15_la_calidad_de_esos_espacios_fue, "", "", "")
+```

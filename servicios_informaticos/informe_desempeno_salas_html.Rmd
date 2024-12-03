@@ -1,0 +1,911 @@
+---
+title: "ENCUESTA DE EVALUACIÓN DE DESEMPEÑO - ADMINISTRADORES DE SALAS DE CÓMPUTO"
+author: "Oficina de Desarrollo y Planeación"
+output:
+  html_document:
+    fig_height: 7
+    fig_width: 10
+    highlight: tango
+    keep_md: no
+    number_sections: no
+    theme: cerulean
+    toc: yes
+    css: "corp-styles.css"
+    toc_depth: 4
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+  word_document:
+    toc: yes
+    toc_depth: '4'
+params:
+  anio: NA
+  semestre: NA
+  rendered_by_shiny: no
+subtitle: Universidad Pedagógica Nacional
+editor_options:
+  chunk_output_type: inline
+---
+
+<div>
+<img src="https://estilos.upn.edu.co/userfiles/footer/footer.svg" alt="UPN" class="watermark">
+</div>
+
+\newpage
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = FALSE,
+	message = FALSE,
+	warning = FALSE,
+	dpi = 300	)
+
+library(openxlsx)
+library(tidyverse)
+library(janitor)
+library(flextable)
+library(scales)
+library(lubridate)
+library(forcats)
+
+colores_plot <- c(#"#2171b5",
+                                              "#4292c6","#74a9cf",
+                                              "#41b6c4","#7fcdbb",#"#238b45","#41ab5d",
+                                              "#78c679","#c7e9b4","#edf8b1","#fee391","#fec44f",
+                                              "#fe9929","#ec7014")
+
+
+desempeno <- read.xlsx("Encuesta de Evaluación de Desempeño - Administradores de Salas de Cómputo(1-8)(1).xlsx")
+
+# ciarp_s <-  if(params$semestre == 1){
+#   ciarp_s20231
+# } else if (params$semestre == 2){
+#   ciarp_s20232
+# } else if (params$semestre == 3){
+#   ciarp_s
+# }
+```
+
+```{r}
+ftable <- function(x, encabezado = NULL, title = NULL) {
+  
+  table <- x %>% 
+    flextable() %>% 
+    set_caption(caption = title) %>%
+    align(part = "header", align = "center") %>% 
+    align(j = 2:ncol_keys(.), align = "center") %>% 
+    bg(part = "header", bg = "#2c7fb8") %>% 
+    color(part = "header", color = "white") %>% 
+    bg(j = 1, bg = "#D9D9D9") %>% 
+    bg(i = nrow_part(.), bg = "#2c7fb8") %>%
+    bold(part = "header") %>% 
+    bold(i = nrow_part(.)) %>%
+    color(i = nrow_part(.), color = "white") %>%
+    border(part = "all", border = fp_border_default(color="black", width = 1)) %>% 
+    autofit() %>%
+    fit_to_width(max_width = 8.5)
+  
+  if (!is.null(encabezado)) {
+    table <- table %>% 
+      add_header_row(colwidths = ncol_keys(.), values = encabezado)
+  }
+  
+  return(table)
+    
+}
+
+plot_donas_as <- function(x, col, titulo = "") {
+  
+  col <- enquo(col)
+  
+  data <- x %>%
+    mutate(!!col := factor(!!col, levels = c("Si", "No"))) %>% 
+    count(!!col) %>% 
+    mutate(porcentaje = n / sum(n),
+           ymax = cumsum(porcentaje),
+           ymin = c(0, head(ymax, n = -1)),
+           labelpos = (ymax + ymin) / 2,
+           labelname = paste(n,"\n",percent(porcentaje, 0.1)))
+  #filter(porcentaje >= 0.005)
+  
+  ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 10, xmin = 1, fill = !!col)) +
+    geom_rect() +
+    geom_text(aes(x = -1.5, y = labelpos, label = labelname), size = 5, color = "black", fontface = "bold") +
+    labs(title = str_wrap(titulo, width = 30)) +
+    scale_fill_manual(values = c("#3690c0", "#fc9272")) +
+    coord_polar(theta = "y") +
+    xlim(c(20, -10)) +
+    theme_void() +
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
+    guides(fill = guide_legend(title = "", label.position = "right",
+                               label.theme = element_text(size = 18)))
+}
+
+plot_donas <- function(x, col, titulo = "") {
+  
+  col <- enquo(col)
+  
+  data <- x %>%
+    count(!!col) %>% 
+    mutate(porcentaje = n / sum(n),
+           ymax = cumsum(porcentaje),
+           ymin = c(0, head(ymax, n = -1)),
+           labelpos = (ymax + ymin) / 2,
+           labelname = paste(n,"\n",percent(porcentaje, 0.1)))
+  #filter(porcentaje >= 0.005)
+  
+  ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 10, xmin = 1, fill = !!col)) +
+    geom_rect() +
+    geom_text(aes(x = -1.5, y = labelpos, label = labelname), size = 5, color = "black", fontface = "bold") +
+    labs(title = str_wrap(titulo, width = 30)) +
+    scale_fill_manual(values = colores_plot) +
+    coord_polar(theta = "y") +
+    xlim(c(20, -10)) +
+    theme_void() +
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
+    guides(fill = guide_legend(title = "", label.position = "right",
+                               label.theme = element_text(size = 18)))
+}
+
+## Función gráfico de barras para df caracterizacion
+plot_barras <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
+  col <- enquo(col)
+  
+  data <- x %>%
+    count(!!col )%>% 
+    mutate(perc = percent(n/sum(n), 0.1))
+  
+  if (is.null(top)) {
+    top <- 11
+  }
+  
+  data %>% 
+    arrange(desc(n)) %>% 
+    slice(1:top) %>% 
+    ggplot(aes(x = !!col, 
+               y= n, 
+               fill = !!col, 
+               label = paste(perc,"\n",n," "))) + 
+    geom_col()+
+    geom_text(vjust = 0.5, hjust = -0.1, size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$n)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
+    theme(legend.position="none")+
+    theme(axis.text.y = element_text(size = 14))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 40))+
+    scale_fill_manual(values = colores_plot) +
+    coord_flip()
+  
+}
+
+## Función gráfico de barras AGRUPADO para df caracterizacion
+plot_barras_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo = "") {
+  col <- enquo(col)
+  group <- enquo(group)
+  
+  data <- x %>%
+    count(!!group, !!col) %>% 
+    mutate(perc = percent(n/sum(n), 0.1))
+  
+  data %>% 
+    ggplot(aes(x = !!col, 
+               y= n, 
+               fill = !!group, 
+               label = paste(perc,"\n",n," "))) + 
+    geom_col(position = "dodge")+
+    geom_text(vjust = 0.5, hjust = -0.2 ,size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$n)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30))+ 
+    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+    guides(fill = guide_legend(title = leyenda, label.position = "right"
+                               , nrow = 2, label.theme = element_text(size = 12)))+
+    theme(legend.position = "bottom",
+          axis.text.y = element_text(size = 13),
+          axis.text.x = element_text(size = 13)) +
+    theme(axis.text.y = element_text(size = 12))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
+    scale_fill_manual(values = colores_plot) +
+    coord_flip()
+  
+}
+
+
+plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
+  
+  col <- enquo(col)
+  
+  if (is.null(top)) {
+    top <- 11
+  }
+  
+  data <- x %>%  
+    group_by(!!col) %>%
+    summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
+    ungroup()
+  
+  data %>% 
+    arrange(desc(promedio_general)) %>% 
+    slice(1:top) %>% 
+    ggplot(aes(x = !!col, 
+               y= promedio_general, 
+               fill = !!col, 
+               label = promedio_general)) + 
+    geom_col()+
+    geom_text(vjust = 0.5, hjust = -0.5, size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$promedio_general)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
+    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+    theme(legend.position="none")+
+    theme(axis.text.y = element_text(size = 14))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
+    scale_fill_manual(values = colores_plot)+
+    coord_flip()
+  
+}
+
+
+categorica_1var <- function(x, cat1, rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
+  cat1 <- enquo(cat1)
+  
+    if (is.null(wrap_width)) {
+    wrap_width <- 100
+    }
+  
+  table <- x %>% 
+    count(!!cat1) %>% 
+    adorn_totals(where = "row", name = "Total General") %>%
+    rename('{rename}' := !!cat1, "Cantidad" = n) %>% 
+    mutate('{rename}' := str_wrap(!!sym(rename), width = wrap_width)) %>%
+    ftable(encabezado, title)
+  
+  return(table)
+    
+}
+
+categorica_2var <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
+  cat1 <- enquo(cat1)
+  cat2 <- enquo(cat2)
+  
+  table <- x %>% 
+    count(!!cat1, !!cat2) %>% 
+    rbind(
+      x %>% 
+        filter(!is.na(!!cat2)) %>% 
+        count(!!cat2) %>% 
+        mutate(!!cat1 := "Total General")
+    ) %>% 
+    group_by(!!cat1) %>% 
+    #mutate(p = n/sum(n)) %>% 
+    #filter (p >= 0.0005) %>% 
+    #select(-n) %>% 
+    pivot_wider(names_from = !!cat2, values_from = n, values_fill = 0) %>%
+    adorn_totals(where = "col", name = "Total General") %>%
+    #mutate(across(where(is.numeric), ~ percent(.x, 0.01, decimal.mark = ","))) %>% 
+    rename("{rename}" := !!cat1)
+  
+      if (is.null(label_width)) {
+    label_width <- 10
+      
+  }
+  
+  # Personalizar el tamaño de las etiquetas de columna
+  colnames(table) <- str_wrap(colnames(table), width = label_width)
+  
+  table <- table %>%  ftable(encabezado, title)
+  
+  return(table)
+}
+
+categorica_2var_escala <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
+  cat1 <- enquo(cat1)
+  cat2 <- enquo(cat2)
+  
+  # Definir el orden fijo de las categorías
+  orden_categorias <- c("Excelente", "Muy bueno", "Bueno", "Aceptable", "Por mejorar")
+  
+  table <- x %>% 
+    count(!!cat1, !!cat2) %>% 
+    rbind(
+      x %>% 
+        filter(!is.na(!!cat2)) %>% 
+        count(!!cat2) %>% 
+        mutate(!!cat1 := "Total General")
+    ) %>% 
+    group_by(!!cat1) %>% 
+    pivot_wider(names_from = !!cat2, values_from = n, values_fill = 0) %>%
+    # Asegurar que todas las categorías estén presentes y en el orden correcto
+    mutate(across(all_of(orden_categorias), ~if_else(is.na(.), 0, .))) %>%
+    select(1, all_of(orden_categorias), everything()) %>%
+    adorn_totals(where = "col", name = "Total General") %>%
+    rename("{rename}" := !!cat1)
+  
+  if (is.null(label_width)) {
+    label_width <- 10
+  }
+  
+  table <- table %>%  ftable(encabezado, title)
+  
+  return(table)
+}
+
+categorica_vinculacion_modalidad <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
+  cat1 <- enquo(cat1)
+  cat2 <- enquo(cat2)
+  
+  # Definir el orden fijo de las categorías
+  orden_categorias <- c("Contrato de prestación de servicios", "Resolución de incentivos", "Otra")
+  
+  table <- x %>% 
+    count(!!cat1, !!cat2) %>% 
+    rbind(
+      x %>% 
+        filter(!is.na(!!cat2)) %>% 
+        count(!!cat2) %>% 
+        mutate(!!cat1 := "Total General")
+    ) %>% 
+    group_by(!!cat1) %>% 
+    pivot_wider(names_from = !!cat2, values_from = n, values_fill = 0) %>%
+    # Asegurar que todas las categorías estén presentes y en el orden correcto
+    mutate(across(all_of(orden_categorias), ~if_else(is.na(.), 0, .))) %>%
+    select(1, all_of(orden_categorias), everything()) %>%
+    adorn_totals(where = "col", name = "Total General") %>%
+    rename("{rename}" := !!cat1)
+  
+  if (is.null(label_width)) {
+    label_width <- 10
+  }
+  
+  table <- table %>%  ftable(encabezado, title)
+  
+  return(table)
+}
+
+categorica_2varp <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
+  cat1 <- enquo(cat1)
+  cat2 <- enquo(cat2)
+  
+  table <- x %>% 
+    count(!!cat1, !!cat2) %>% 
+    rbind(
+      x %>% 
+        filter(!is.na(!!cat2)) %>% 
+        count(!!cat2) %>% 
+        mutate(!!cat1 := "Total General")
+    ) %>% 
+    group_by(!!cat1) %>% 
+    mutate(p = n/sum(n)) %>% 
+    #filter (p >= 0.0005) %>% 
+    select(-n) %>% 
+    pivot_wider(names_from = !!cat2, values_from = p, values_fill = 0) %>% 
+    adorn_totals(where = "col", name = "Total General") %>%
+    mutate(across(where(is.numeric), ~ percent(.x, 0.1, decimal.mark = ","))) %>% 
+    rename("{rename}" := !!cat1)
+  
+      if (is.null(label_width)) {
+    label_width <- 10
+      
+  }
+  
+  # Personalizar el tamaño de las etiquetas de columna
+  colnames(table) <- str_wrap(colnames(table), width = label_width)
+  
+  table <- table %>%  ftable(encabezado, title)
+  
+  return(table)
+}
+
+wrap_text <- function(x, width) {
+  sapply(x, function(y) {
+    paste(strwrap(y, width = width), collapse = "\n")
+  })
+}
+
+tabla_prom <- function(x, col, rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
+  
+  col <- enquo(col)
+  
+  if (is.null(wrap_width)) {
+    wrap_width <- 100
+  }
+  
+  table <- x %>% 
+  group_by(!!col) %>%
+  summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
+  ungroup() %>% 
+  #arrange(desc(promedio_general)) %>% 
+  rename("{rename}" := !!col,
+         "Promedio" = promedio_general) %>% 
+  as.data.frame()  
+  
+  formatted_table <- ftable(table, encabezado, title) %>% 
+  bg(i = nrow_part(.), bg = "white") %>%
+  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+  color(i = nrow_part(.), color = "black") %>%
+  bold(i = nrow_part(.), bold = FALSE)
+  
+  return(formatted_table)
+  
+}
+
+
+transformar_cali <- function(x, col) {
+  col <- enquo(col)
+  
+  x %>%
+    mutate(!!col := case_when(
+      !!col == "Excelente" ~ "5",
+      !!col == "Bueno" ~ "4",
+      !!col == "Aceptable" ~ "3",
+      !!col == "Necesita mejorar" ~ "2",
+      !!col == "Insatisfactorio" ~ "1",
+      TRUE ~ !!col)) %>% 
+    mutate(!!col := as.numeric(!!col))
+  
+}
+
+```
+
+```{r}
+desempeno <- desempeno %>% 
+  distinct()
+
+desempeno <- desempeno %>% 
+  clean_names()
+
+desempeno <- desempeno %>% 
+  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
+  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+         mesdili = str_to_title(mesdili)) %>% 
+  mutate(anodili = year(hora_de_finalizacion))
+
+
+desempeno[] <- lapply(desempeno, function(x) gsub("^[a-e]\\)\\s+", "", x))
+
+
+desempeno_num <- desempeno %>% 
+  rename(valor1 = como_evaluaria_el_profesionalismo_del_administrador_de_la_sala_de_computo_en_su_interaccion_con_estudiantes_y_personal_academico,
+         valor2 = en_terminos_de_eficiencia_operativa_como_calificaria_el_desempeno_en_la_gestion_de_recursos_y_mantenimiento_de_equipos_number_10,
+         valor3 = que_tan_satisfactorio_es_el_cumplimiento_de_los_horarios_establecidos_por_el_administrador_en_el_funcionamiento_de_la_sala_de_computo_number_10,
+         valor4 = como_evaluaria_la_capacidad_del_administrador_para_resolver_problemas_tecnicos_y_situaciones_imprevistas_number_10,
+         valor5 = en_terminos_de_comunicacion_con_los_usuarios_de_la_sala_de_computo_que_tan_efectivo_considera_al_administrador_number_10,
+         valor6 = que_tan_proactivo_es_el_administrador_en_la_identificacion_y_aplicacion_de_mejoras_en_los_servicios_number_10,
+         valor7 = como_calificaria_la_habilidad_del_administrador_para_trabajar_en_equipo_y_colaborar_en_iniciativas_relacionadas_con_la_tecnologia_number_10,
+         valor8 = en_que_medida_el_administrador_demuestra_conocimiento_actualizado_sobre_las_ultimas_tendencias_y_avances_en_tecnologia_informatica_para_mejorar_el_rendimiento_de_la_sala_de_computo_number_10,
+         valor9 = que_tan_efectivo_es_el_administrador_al_mantener_la_seguridad_de_la_informacion_y_la_integridad_de_los_sistemas_number_10,
+         valor10 = en_terminos_de_atencion_y_soporte_a_los_usuarios_como_calificaria_el_desempeno_del_administrador_number_10) %>% 
+  transformar_cali(valor1) %>% 
+  transformar_cali(valor2) %>% 
+  transformar_cali(valor3) %>% 
+  transformar_cali(valor4) %>% 
+  transformar_cali(valor5) %>% 
+  transformar_cali(valor6) %>% 
+  transformar_cali(valor7) %>% 
+  transformar_cali(valor8) %>% 
+  transformar_cali(valor9) %>% 
+  transformar_cali(valor10)
+
+
+```
+
+
+
+
+```{r}
+total <- desempeno %>% count() %>% pull()
+```
+
+
+La encuesta de evaluación del desempeño de los administradores de las salas de cómputo fue realizada por **`r total`** personas.
+
+# Dependencia
+
+En este apartado se muestra la distribución de las personas que evaluaron el desempeño de los administradores de las salas de cómputo en los distintos departamentos de la UPN.
+
+### Tabla
+```{r}
+desempeno %>% 
+  filter(!is.na(dependencia_number_10)) %>% 
+  categorica_1var(dependencia_number_10, "Departamento")
+
+```
+
+### Gráfica
+```{r}
+desempeno %>% 
+  filter(!is.na(dependencia_number_10)) %>%
+  plot_barras(dependencia_number_10, "", "", "")
+  
+```
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.25)
+
+```
+
+### Calificación general por departamento
+
+#### Tabla
+
+```{r}
+
+desempeno_num %>% 
+  tabla_prom(dependencia_number_10, "Departamento")
+
+```
+
+#### Gráfica
+
+```{r}
+
+desempeno_num %>% 
+  plot_barras_prom(dependencia_number_10, "", "", "")
+
+```
+
+
+# Calificación y/o aporte por criterio de evaluación
+
+En este apartado se muestran diferentes aspectos evaluados por los usuarios de salas de cómputo que contestaron la encuesta.
+
+## Tabla general
+
+```{r}
+
+promedios <- desempeno_num %>% 
+  summarise(
+    "Profesionalismo en interacción" =
+      round(mean(valor1, na.rm = TRUE), 1),
+    "Eficiencia en gestión de recursos" =
+      round(mean(valor2, na.rm = TRUE), 1),
+    "Cumplimiento de horarios" =
+      round(mean(valor3, na.rm = TRUE), 1),
+    "Resolución de problemas técnicos" =
+      round(mean(valor4, na.rm = TRUE), 1),
+    "Efectividad en comunicación" =
+      round(mean(valor5, na.rm = TRUE), 1),
+    "Proactividad en mejoras" =
+      round(mean(valor6, na.rm = TRUE), 1),
+    "Trabajo en equipo y colaboración" =
+      round(mean(valor7, na.rm = TRUE), 1),
+    "Conocimiento en tecnología" =
+      round(mean(valor8, na.rm = TRUE), 1),
+    "Seguridad de la información" =
+      round(mean(valor9, na.rm = TRUE), 1),
+    "Atención y soporte a usuarios" = 
+      round(mean(valor10, na.rm = TRUE), 1)
+  ) %>%
+  pivot_longer(cols = everything(), names_to = "Categoría", values_to = "Promedio")
+
+desempeno_gene <- desempeno %>% 
+  select(
+  como_evaluaria_el_profesionalismo_del_administrador_de_la_sala_de_computo_en_su_interaccion_con_estudiantes_y_personal_academico,
+  en_terminos_de_eficiencia_operativa_como_calificaria_el_desempeno_en_la_gestion_de_recursos_y_mantenimiento_de_equipos_number_10,
+  que_tan_satisfactorio_es_el_cumplimiento_de_los_horarios_establecidos_por_el_administrador_en_el_funcionamiento_de_la_sala_de_computo_number_10,
+  como_evaluaria_la_capacidad_del_administrador_para_resolver_problemas_tecnicos_y_situaciones_imprevistas_number_10,
+  en_terminos_de_comunicacion_con_los_usuarios_de_la_sala_de_computo_que_tan_efectivo_considera_al_administrador_number_10,
+  que_tan_proactivo_es_el_administrador_en_la_identificacion_y_aplicacion_de_mejoras_en_los_servicios_number_10,
+  como_calificaria_la_habilidad_del_administrador_para_trabajar_en_equipo_y_colaborar_en_iniciativas_relacionadas_con_la_tecnologia_number_10,
+  en_que_medida_el_administrador_demuestra_conocimiento_actualizado_sobre_las_ultimas_tendencias_y_avances_en_tecnologia_informatica_para_mejorar_el_rendimiento_de_la_sala_de_computo_number_10,
+  que_tan_efectivo_es_el_administrador_al_mantener_la_seguridad_de_la_informacion_y_la_integridad_de_los_sistemas_number_10,
+  en_terminos_de_atencion_y_soporte_a_los_usuarios_como_calificaria_el_desempeno_del_administrador_number_10) %>%
+  rename(
+  "Profesionalismo en interacción" =
+    como_evaluaria_el_profesionalismo_del_administrador_de_la_sala_de_computo_en_su_interaccion_con_estudiantes_y_personal_academico,
+  "Eficiencia en gestión de recursos" =
+    en_terminos_de_eficiencia_operativa_como_calificaria_el_desempeno_en_la_gestion_de_recursos_y_mantenimiento_de_equipos_number_10,
+  "Cumplimiento de horarios" =
+    que_tan_satisfactorio_es_el_cumplimiento_de_los_horarios_establecidos_por_el_administrador_en_el_funcionamiento_de_la_sala_de_computo_number_10,
+  "Resolución de problemas técnicos" =
+    como_evaluaria_la_capacidad_del_administrador_para_resolver_problemas_tecnicos_y_situaciones_imprevistas_number_10,
+  "Efectividad en comunicación" =
+    en_terminos_de_comunicacion_con_los_usuarios_de_la_sala_de_computo_que_tan_efectivo_considera_al_administrador_number_10,
+  "Proactividad en mejoras" =
+    que_tan_proactivo_es_el_administrador_en_la_identificacion_y_aplicacion_de_mejoras_en_los_servicios_number_10,
+  "Trabajo en equipo y colaboración" =
+    como_calificaria_la_habilidad_del_administrador_para_trabajar_en_equipo_y_colaborar_en_iniciativas_relacionadas_con_la_tecnologia_number_10,
+  "Conocimiento en tecnología" =
+    en_que_medida_el_administrador_demuestra_conocimiento_actualizado_sobre_las_ultimas_tendencias_y_avances_en_tecnologia_informatica_para_mejorar_el_rendimiento_de_la_sala_de_computo_number_10,
+  "Seguridad de la información" =
+    que_tan_efectivo_es_el_administrador_al_mantener_la_seguridad_de_la_informacion_y_la_integridad_de_los_sistemas_number_10,
+  "Atención y soporte a usuarios" =
+    en_terminos_de_atencion_y_soporte_a_los_usuarios_como_calificaria_el_desempeno_del_administrador_number_10
+) %>%
+  pivot_longer(cols = everything(), 
+               names_to = "Categoria", 
+               values_to = "Calificacion") %>% 
+  mutate(Calificacion = factor(Calificacion, levels = c("Excelente", "Bueno","Aceptable", "Necesita mejorar", "Insatisfactorio"))) %>%
+  count(Categoria, Calificacion)
+
+desempeno_gene %>% 
+  rename("Calificación" = Calificacion, "Categoría" = Categoria) %>% 
+  pivot_wider(names_from = "Calificación", values_from = n, 
+              values_fill = list(n = 0)) %>%
+  left_join(promedios, by = "Categoría") %>% 
+  ftable(encabezado = "Calificación por categoría") %>%
+  bg(i = nrow_part(.), bg = "white") %>%
+  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+  color(i = nrow_part(.), color = "black") %>%
+  bold(i = nrow_part(.), bold = FALSE)
+
+```
+
+
+## Gráfica general
+
+```{r}
+
+desempeno_gene %>% 
+    ggplot(aes(x = Categoria, 
+               y= n, 
+               fill = Calificacion, 
+               label = n))+
+    geom_col(position = "dodge")+
+    geom_text(vjust = 0.5, hjust = -0.2 ,size = 2.5,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(desempeno_gene$n)*1.1))+
+    labs(x = "", y = "", title = str_wrap("Calificación por categoría", width = 30))+ 
+    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+     theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+        guides(fill = guide_legend(title = "", label.position = "right"
+                     , nrow = 1, label.theme = element_text(size = 12)))+
+        theme(legend.position = "bottom",
+          axis.text.y = element_text(size = 13),
+          axis.text.x = element_text(size = 13)) +
+    theme(axis.text.y = element_text(size = 12))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 50))+
+    scale_fill_manual(values = c("#388E3C","#7CB342","#FBC02D","#FFA000", "#D32F2F"))+
+    coord_flip()
+
+```
+
+
+## ¿Cómo evaluaría el profesionalismo del administrador de la sala de cómputo en su interacción con estudiantes y personal académico? 
+
+### Tabla
+
+```{r}
+
+desempeno %>% 
+  mutate(como_evaluaria_el_profesionalismo_del_administrador_de_la_sala_de_computo_en_su_interaccion_con_estudiantes_y_personal_academico = factor(como_evaluaria_el_profesionalismo_del_administrador_de_la_sala_de_computo_en_su_interaccion_con_estudiantes_y_personal_academico, levels = c("Excelente", "Bueno", "Aceptable", "Necesita mejorar", "Insatisfactorio"))) %>% 
+  categorica_1var(como_evaluaria_el_profesionalismo_del_administrador_de_la_sala_de_computo_en_su_interaccion_con_estudiantes_y_personal_academico, "Calificación")
+
+```
+
+### Gráfica
+
+```{r}
+
+desempeno %>%
+  mutate(como_evaluaria_el_profesionalismo_del_administrador_de_la_sala_de_computo_en_su_interaccion_con_estudiantes_y_personal_academico = factor(como_evaluaria_el_profesionalismo_del_administrador_de_la_sala_de_computo_en_su_interaccion_con_estudiantes_y_personal_academico, levels = c("Insatisfactorio", "Necesita mejorar", "Aceptable", "Bueno", "Excelente"))) %>%   
+  plot_barras(como_evaluaria_el_profesionalismo_del_administrador_de_la_sala_de_computo_en_su_interaccion_con_estudiantes_y_personal_academico, "", "", "")
+
+```
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.50)
+
+```
+
+## En términos de eficiencia operativa, ¿cómo calificaría el desempeño en la gestión de recursos y mantenimiento de equipos?
+
+### Tabla
+```{r}
+
+desempeno %>% 
+  mutate(en_terminos_de_eficiencia_operativa_como_calificaria_el_desempeno_en_la_gestion_de_recursos_y_mantenimiento_de_equipos_number_10 = factor(en_terminos_de_eficiencia_operativa_como_calificaria_el_desempeno_en_la_gestion_de_recursos_y_mantenimiento_de_equipos_number_10, levels = c("Excelente", "Bueno", "Aceptable", "Necesita mejorar", "Insatisfactorio"))) %>% 
+  categorica_1var(en_terminos_de_eficiencia_operativa_como_calificaria_el_desempeno_en_la_gestion_de_recursos_y_mantenimiento_de_equipos_number_10, "Calificación")
+
+```
+
+### Gráfica
+
+```{r}
+
+desempeno %>%
+  mutate(en_terminos_de_eficiencia_operativa_como_calificaria_el_desempeno_en_la_gestion_de_recursos_y_mantenimiento_de_equipos_number_10 = factor(en_terminos_de_eficiencia_operativa_como_calificaria_el_desempeno_en_la_gestion_de_recursos_y_mantenimiento_de_equipos_number_10, levels = c("Insatisfactorio", "Necesita mejorar", "Aceptable", "Bueno", "Excelente"))) %>%   
+  plot_barras(en_terminos_de_eficiencia_operativa_como_calificaria_el_desempeno_en_la_gestion_de_recursos_y_mantenimiento_de_equipos_number_10, "", "", "")
+
+```
+
+## ¿Qué tan satisfactorio es el cumplimiento de los horarios establecidos por el administrador en el funcionamiento de la sala de cómputo?
+
+### Tabla
+```{r}
+
+desempeno %>% 
+  mutate(que_tan_satisfactorio_es_el_cumplimiento_de_los_horarios_establecidos_por_el_administrador_en_el_funcionamiento_de_la_sala_de_computo_number_10 = factor(que_tan_satisfactorio_es_el_cumplimiento_de_los_horarios_establecidos_por_el_administrador_en_el_funcionamiento_de_la_sala_de_computo_number_10, levels = c("Excelente", "Bueno", "Aceptable", "Necesita mejorar", "Insatisfactorio"))) %>% 
+  categorica_1var(que_tan_satisfactorio_es_el_cumplimiento_de_los_horarios_establecidos_por_el_administrador_en_el_funcionamiento_de_la_sala_de_computo_number_10, "Calificación")
+
+```
+
+### Gráfica
+
+```{r}
+
+desempeno %>%
+  mutate(que_tan_satisfactorio_es_el_cumplimiento_de_los_horarios_establecidos_por_el_administrador_en_el_funcionamiento_de_la_sala_de_computo_number_10 = factor(que_tan_satisfactorio_es_el_cumplimiento_de_los_horarios_establecidos_por_el_administrador_en_el_funcionamiento_de_la_sala_de_computo_number_10, levels = c("Insatisfactorio", "Necesita mejorar", "Aceptable", "Bueno", "Excelente"))) %>%   plot_barras(que_tan_satisfactorio_es_el_cumplimiento_de_los_horarios_establecidos_por_el_administrador_en_el_funcionamiento_de_la_sala_de_computo_number_10, "", "", "")
+
+```
+
+
+## ¿Cómo evaluaría la capacidad del administrador para resolver problemas técnicos y situaciones imprevistas? 
+
+### Tabla
+
+```{r}
+
+desempeno %>% 
+  mutate(como_evaluaria_la_capacidad_del_administrador_para_resolver_problemas_tecnicos_y_situaciones_imprevistas_number_10 = factor(como_evaluaria_la_capacidad_del_administrador_para_resolver_problemas_tecnicos_y_situaciones_imprevistas_number_10, levels = c("Excelente", "Bueno", "Aceptable", "Necesita mejorar", "Insatisfactorio"))) %>% 
+  categorica_1var(como_evaluaria_la_capacidad_del_administrador_para_resolver_problemas_tecnicos_y_situaciones_imprevistas_number_10, "Calificación")
+
+```
+
+### Gráfica
+
+```{r}
+
+desempeno %>%
+  mutate(como_evaluaria_la_capacidad_del_administrador_para_resolver_problemas_tecnicos_y_situaciones_imprevistas_number_10 = factor(como_evaluaria_la_capacidad_del_administrador_para_resolver_problemas_tecnicos_y_situaciones_imprevistas_number_10, levels = c("Insatisfactorio", "Necesita mejorar", "Aceptable", "Bueno", "Excelente"))) %>%   
+  plot_barras(como_evaluaria_la_capacidad_del_administrador_para_resolver_problemas_tecnicos_y_situaciones_imprevistas_number_10, "", "", "")
+
+```
+
+## En términos de comunicación con los usuarios de la sala de cómputo, ¿qué tan efectivo considera al administrador?
+
+### Tabla
+
+```{r}
+
+desempeno %>% 
+  mutate(en_terminos_de_comunicacion_con_los_usuarios_de_la_sala_de_computo_que_tan_efectivo_considera_al_administrador_number_10 = factor(en_terminos_de_comunicacion_con_los_usuarios_de_la_sala_de_computo_que_tan_efectivo_considera_al_administrador_number_10, levels = c("Excelente", "Bueno", "Aceptable", "Necesita mejorar", "Insatisfactorio"))) %>% 
+  categorica_1var(en_terminos_de_comunicacion_con_los_usuarios_de_la_sala_de_computo_que_tan_efectivo_considera_al_administrador_number_10, "Calificación")
+
+```
+
+### Gráfica
+
+```{r}
+
+desempeno %>%
+  mutate(en_terminos_de_comunicacion_con_los_usuarios_de_la_sala_de_computo_que_tan_efectivo_considera_al_administrador_number_10 = factor(en_terminos_de_comunicacion_con_los_usuarios_de_la_sala_de_computo_que_tan_efectivo_considera_al_administrador_number_10, levels = c("Insatisfactorio", "Necesita mejorar", "Aceptable", "Bueno", "Excelente"))) %>%   plot_barras(en_terminos_de_comunicacion_con_los_usuarios_de_la_sala_de_computo_que_tan_efectivo_considera_al_administrador_number_10, "", "", "")
+
+```   
+
+## ¿Qué tan proactivo es el administrador en la identificación y aplicación de mejoras en los servicios?
+
+### Tabla
+
+```{r}
+
+desempeno %>% 
+  mutate(que_tan_proactivo_es_el_administrador_en_la_identificacion_y_aplicacion_de_mejoras_en_los_servicios_number_10 = factor(que_tan_proactivo_es_el_administrador_en_la_identificacion_y_aplicacion_de_mejoras_en_los_servicios_number_10, levels = c("Excelente", "Bueno", "Aceptable", "Necesita mejorar", "Insatisfactorio"))) %>% 
+  categorica_1var(que_tan_proactivo_es_el_administrador_en_la_identificacion_y_aplicacion_de_mejoras_en_los_servicios_number_10, "Calificación")
+
+```
+
+### Gráfica
+
+```{r}
+
+desempeno %>%
+  mutate(que_tan_proactivo_es_el_administrador_en_la_identificacion_y_aplicacion_de_mejoras_en_los_servicios_number_10 = factor(que_tan_proactivo_es_el_administrador_en_la_identificacion_y_aplicacion_de_mejoras_en_los_servicios_number_10, levels = c("Insatisfactorio", "Necesita mejorar", "Aceptable", "Bueno", "Excelente"))) %>%   plot_barras(que_tan_proactivo_es_el_administrador_en_la_identificacion_y_aplicacion_de_mejoras_en_los_servicios_number_10, "", "", "")
+
+```  
+
+## ¿Cómo calificaría la habilidad del administrador para trabajar en equipo y colaborar en iniciativas relacionadas con la tecnología?
+
+### Tabla
+
+```{r}
+
+desempeno %>% 
+  mutate(como_calificaria_la_habilidad_del_administrador_para_trabajar_en_equipo_y_colaborar_en_iniciativas_relacionadas_con_la_tecnologia_number_10 =
+           factor(como_calificaria_la_habilidad_del_administrador_para_trabajar_en_equipo_y_colaborar_en_iniciativas_relacionadas_con_la_tecnologia_number_10, levels = c("Excelente", "Bueno", "Aceptable", "Necesita mejorar", "Insatisfactorio"))) %>% 
+  categorica_1var(como_calificaria_la_habilidad_del_administrador_para_trabajar_en_equipo_y_colaborar_en_iniciativas_relacionadas_con_la_tecnologia_number_10, "Calificación")
+
+```
+
+
+### Gráfica
+
+```{r}
+
+desempeno %>%
+  mutate(como_calificaria_la_habilidad_del_administrador_para_trabajar_en_equipo_y_colaborar_en_iniciativas_relacionadas_con_la_tecnologia_number_10 =
+           factor(como_calificaria_la_habilidad_del_administrador_para_trabajar_en_equipo_y_colaborar_en_iniciativas_relacionadas_con_la_tecnologia_number_10, levels = c("Insatisfactorio", "Necesita mejorar", "Aceptable", "Bueno", "Excelente"))) %>%  
+  plot_barras(como_calificaria_la_habilidad_del_administrador_para_trabajar_en_equipo_y_colaborar_en_iniciativas_relacionadas_con_la_tecnologia_number_10, "", "", "")
+
+```
+
+
+## ¿En qué medida el administrador demuestra conocimiento actualizado sobre las últimas tendencias y avances en tecnología informática para mejorar el rendimiento de la sala de cómputo?
+
+
+### Tabla
+
+```{r}
+
+desempeno %>% 
+  mutate(en_que_medida_el_administrador_demuestra_conocimiento_actualizado_sobre_las_ultimas_tendencias_y_avances_en_tecnologia_informatica_para_mejorar_el_rendimiento_de_la_sala_de_computo_number_10 = factor(en_que_medida_el_administrador_demuestra_conocimiento_actualizado_sobre_las_ultimas_tendencias_y_avances_en_tecnologia_informatica_para_mejorar_el_rendimiento_de_la_sala_de_computo_number_10, levels = c("Excelente", "Bueno", "Aceptable", "Necesita mejorar", "Insatisfactorio"))) %>% 
+  categorica_1var(en_que_medida_el_administrador_demuestra_conocimiento_actualizado_sobre_las_ultimas_tendencias_y_avances_en_tecnologia_informatica_para_mejorar_el_rendimiento_de_la_sala_de_computo_number_10, "Calificación")
+
+```
+
+### Gráfica
+```{r}
+
+desempeno %>%
+  mutate(en_que_medida_el_administrador_demuestra_conocimiento_actualizado_sobre_las_ultimas_tendencias_y_avances_en_tecnologia_informatica_para_mejorar_el_rendimiento_de_la_sala_de_computo_number_10 = factor(en_que_medida_el_administrador_demuestra_conocimiento_actualizado_sobre_las_ultimas_tendencias_y_avances_en_tecnologia_informatica_para_mejorar_el_rendimiento_de_la_sala_de_computo_number_10, levels = c("Insatisfactorio", "Necesita mejorar", "Aceptable", "Bueno", "Excelente"))) %>%  
+  plot_barras(en_que_medida_el_administrador_demuestra_conocimiento_actualizado_sobre_las_ultimas_tendencias_y_avances_en_tecnologia_informatica_para_mejorar_el_rendimiento_de_la_sala_de_computo_number_10, "", "", "")
+
+```  
+
+## ¿Qué tan efectivo es el administrador al mantener la seguridad de la información y la integridad de los sistemas?
+
+### Tabla
+```{r}
+
+desempeno %>% 
+  mutate(que_tan_efectivo_es_el_administrador_al_mantener_la_seguridad_de_la_informacion_y_la_integridad_de_los_sistemas_number_10 = factor(que_tan_efectivo_es_el_administrador_al_mantener_la_seguridad_de_la_informacion_y_la_integridad_de_los_sistemas_number_10, levels = c("Excelente", "Bueno", "Aceptable", "Necesita mejorar", "Insatisfactorio"))) %>% 
+  categorica_1var(que_tan_efectivo_es_el_administrador_al_mantener_la_seguridad_de_la_informacion_y_la_integridad_de_los_sistemas_number_10, "Calificación")
+
+```
+
+### Gráfica
+```{r}
+
+desempeno %>%
+  mutate(que_tan_efectivo_es_el_administrador_al_mantener_la_seguridad_de_la_informacion_y_la_integridad_de_los_sistemas_number_10 = factor(que_tan_efectivo_es_el_administrador_al_mantener_la_seguridad_de_la_informacion_y_la_integridad_de_los_sistemas_number_10, levels = c("Insatisfactorio", "Necesita mejorar", "Aceptable", "Bueno", "Excelente"))) %>%   plot_barras(que_tan_efectivo_es_el_administrador_al_mantener_la_seguridad_de_la_informacion_y_la_integridad_de_los_sistemas_number_10, "", "", "")
+
+```  
+
+
+## En términos de atención y soporte a los usuarios, ¿Cómo calificaría el desempeño del administrador?
+
+### Tabla
+
+```{r}
+
+desempeno %>% 
+  mutate(en_terminos_de_atencion_y_soporte_a_los_usuarios_como_calificaria_el_desempeno_del_administrador_number_10 = factor(en_terminos_de_atencion_y_soporte_a_los_usuarios_como_calificaria_el_desempeno_del_administrador_number_10, levels = c("Excelente", "Bueno", "Aceptable", "Necesita mejorar", "Insatisfactorio"))) %>% 
+  categorica_1var(en_terminos_de_atencion_y_soporte_a_los_usuarios_como_calificaria_el_desempeno_del_administrador_number_10, "Calificación")
+
+```
+
+### Gráfica
+```{r}
+
+desempeno %>%
+  mutate(en_terminos_de_atencion_y_soporte_a_los_usuarios_como_calificaria_el_desempeno_del_administrador_number_10 = factor(en_terminos_de_atencion_y_soporte_a_los_usuarios_como_calificaria_el_desempeno_del_administrador_number_10, levels = c("Insatisfactorio", "Necesita mejorar", "Aceptable", "Bueno", "Excelente"))) %>%   plot_barras(en_terminos_de_atencion_y_soporte_a_los_usuarios_como_calificaria_el_desempeno_del_administrador_number_10, "", "", "")
+``` 
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.75)
+
+```
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(1)
+
+```
