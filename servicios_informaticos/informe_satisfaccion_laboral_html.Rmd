@@ -598,20 +598,6 @@ satis_laboral %>%
 
 ```
 
-## Tareas Adicionales
-
-Esta sección solicita a los empleados que proporcionen ejemplos específicos de tareas adicionales asignadas fuera de sus funciones principales, teniendo en cuenta que en la pregunta anterior respondieron algo diferente a Nunca.
-
-### Tabla
-
-```{r}
-
-satis_laboral %>% 
-  mutate(tareas_adicionales = if_else(tareas_adicionales == "1. Conexión de Video Beam 2. En los eventos realizados en el departamento en los caso en que las áreas encargadas no se presentaban en el espacio solicitado, toco realizar la validación con las personas del sonido porque aun no habían hechos las conexiones, función que debería realizar las personas que realizan la logística del evento  ", "1. Conexión de Video Beam. 2. En los eventos, al no presentarse los responsables, se verificó porque los del sonido no habían hecho las conexiones, tarea que es de logística", tareas_adicionales)) %>% 
-  categorica_1var(tareas_adicionales, "Tareas adicionales", wrap_width = 40)
-
-```
-
 
 # Trabajo Fuera del Horario Laboral
 

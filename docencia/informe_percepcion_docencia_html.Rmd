@@ -542,7 +542,7 @@ total <- docencia %>% count() %>% pull()
 ```
 
 
-La encuesta de satisfacción y percepción sobre las solicitudes a la Vicerrectoría Académica fue respondida por **`r total`** docentes.
+La encuesta de satisfacción y percepción sobre las solicitudes a la Vicerrectoría Académica fue respondida por **`r total`** personas.
 
 # Unidad o dependencia
 
@@ -686,6 +686,8 @@ if (params$rendered_by_shiny)
 ```
 
 # Calificación y/o aporte por criterio de evaluación
+
+Este apartado presenta un análisis detallado de las calificaciones y aportes obtenidos según los criterios de evaluación establecidos. Su objetivo es ofrecer información clara y estructurada para identificar fortalezas, debilidades y áreas de mejora en los diferentes aspectos evaluados.
 
 ## Tabla general
 
@@ -915,6 +917,8 @@ if (params$rendered_by_shiny)
 ```
 
 # Calificación y/o aporte por categoría (del encuestado)
+
+En este apartado se analiza la calificación y los aportes según las categorías específicas de los encuestados. Este enfoque permite comprender cómo las diferentes unidades, dependencias o grupos perciben y evalúan los aspectos relevantes, facilitando la identificación de necesidades particulares y oportunidades de mejora.
 
 ## Por unidad o dependencia 
 

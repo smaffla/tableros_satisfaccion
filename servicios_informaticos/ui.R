@@ -738,32 +738,32 @@ dashboardPage(
         br(),
         
         
-        fluidRow(
-          align = "center",
-          HTML("<h4 style = 'color: #00609d'><strong>Tareas Adicionales</strong></h4>"),
-        ),
-        
-        
-        fluidRow(
-          align = "center",
-          div(
-            style = "max-width: 900px; margin: 0 auto;",
-            HTML("<h5 style='color: #393939;'>Esta sección solicita a los empleados que proporcionen ejemplos específicos de tareas adicionales asignadas fuera de sus funciones principales, teniendo en cuenta que en la pregunta anterior respondieron algo diferente a Nunca.</h5>")
-          )
-        ),
-        
-        br(),
-        
-        fluidRow(
-          column(
-            width = 8,
-            offset = 2,
-            uiOutput("ft_algunas_tarea_satis") %>% withSpinner(type = 8, size = 0.5)
-          )
-        ),
-        
-        br(),
-        br(),
+        # fluidRow(
+        #   align = "center",
+        #   HTML("<h4 style = 'color: #00609d'><strong>Tareas Adicionales</strong></h4>"),
+        # ),
+        # 
+        # 
+        # fluidRow(
+        #   align = "center",
+        #   div(
+        #     style = "max-width: 900px; margin: 0 auto;",
+        #     HTML("<h5 style='color: #393939;'>Esta sección solicita a los empleados que proporcionen ejemplos específicos de tareas adicionales asignadas fuera de sus funciones principales, teniendo en cuenta que en la pregunta anterior respondieron algo diferente a Nunca.</h5>")
+        #   )
+        # ),
+        # 
+        # br(),
+        # 
+        # fluidRow(
+        #   column(
+        #     width = 8,
+        #     offset = 2,
+        #     uiOutput("ft_algunas_tarea_satis") %>% withSpinner(type = 8, size = 0.5)
+        #   )
+        # ),
+        # 
+        # br(),
+        # br(),
         
         fluidRow(
           align = "center",
