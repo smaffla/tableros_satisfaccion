@@ -435,6 +435,10 @@ talento <- talento %>%
                                 "Secretaría General") ~ "Rectoría",
                                           TRUE ~ unidad_o_dependencia))
   
+talento <- talento %>%
+  filter(mesdili %in% params$mes,
+         anodili %in% params$anio)
+
 
 talento_num <- talento %>% 
   mutate(como_calificaria_su_experiencia_con_el_servicio_recibido = case_when(
@@ -447,8 +451,7 @@ talento_num <- talento %>%
   mutate(como_calificaria_su_experiencia_con_el_servicio_recibido =
            as.numeric(como_calificaria_su_experiencia_con_el_servicio_recibido))
 
-# beneficiarios <- beneficiarios %>%
-#   filter(mesdili %in% params$mes)
+
 ```
 
 

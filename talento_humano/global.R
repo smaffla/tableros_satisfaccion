@@ -27,6 +27,14 @@ colores_plot <- c(#"#2171b5",
   "#78c679","#c7e9b4","#edf8b1","#fee391","#fec44f",
   "#fe9929","#ec7014")
 
+#Solo se deja hasta junio porque hasta ahi estan los datos
+
+Todos <- c("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio")
+
+#Se deja vector con los demas meses
+
+# Todos <- c("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre",
+#            "Octubre", "Noviembre", "Diciembre")
 
 # Funciones --------------------------------------
 
@@ -56,6 +64,8 @@ ftable <- function(x, encabezado = NULL, title = NULL) {
   return(table)
   
 }
+
+
 
 plot_donas <- function(x, col, titulo = "") {
   
@@ -118,9 +128,73 @@ plot_barras <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
   
 }
 
-plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
+## Función gráfico de barras AGRUPADO para df caracterizacion
+plot_barras_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo = "") {
+  col <- enquo(col)
+  group <- enquo(group)
+  
+  data <- x %>%
+    count(!!group, !!col) %>% 
+    mutate(perc = percent(n/sum(n), 0.1))
+  
+  data %>% 
+    ggplot(aes(x = !!col, 
+               y= n, 
+               fill = !!group, 
+               label = paste(perc,"\n",n," "))) + 
+    geom_col(position = "dodge")+
+    geom_text(vjust = 0.5, hjust = -0.2 ,size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$n)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30))+ 
+    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+    guides(fill = guide_legend(title = leyenda, label.position = "right"
+                               , nrow = 2, label.theme = element_text(size = 12)))+
+    theme(legend.position = "bottom",
+          axis.text.y = element_text(size = 13),
+          axis.text.x = element_text(size = 13)) +
+    theme(axis.text.y = element_text(size = 12))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
+    scale_fill_manual(values = colores_plot) +
+    coord_flip()
+  
+}
+
+
+tabla_prom <- function(x, col, col_promedio,rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
   
   col <- enquo(col)
+  col_promedio <- enquo(col_promedio)
+  
+  if (is.null(wrap_width)) {
+    wrap_width <- 100
+  }
+  
+  table <- x %>% 
+    group_by(!!col) %>%
+    summarise(promedio_general = round(mean(!!col_promedio), 1)) %>%
+    ungroup() %>% 
+    #arrange(desc(promedio_general)) %>% 
+    rename("{rename}" := !!col,
+           "Promedio" = promedio_general) %>% 
+    as.data.frame()  
+  
+  formatted_table <- ftable(table, encabezado, title) %>% 
+    bg(i = nrow_part(.), bg = NA) %>%
+    bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+    color(i = nrow_part(.), color = "black") %>%
+    bold(i = nrow_part(.), bold = FALSE)
+  
+  return(formatted_table)
+  
+}
+
+plot_barras_prom <- function(x, col,col_promedio, xlab, ylab, titulo = "", top = NULL) {
+  
+  col <- enquo(col)
+  col_promedio <- enquo(col_promedio)
   
   if (is.null(top)) {
     top <- 11
@@ -128,7 +202,7 @@ plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
   
   data <- x %>%  
     group_by(!!col) %>%
-    summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
+    summarise(promedio_general = round(mean(!!col_promedio), 1)) %>%
     ungroup()
   
   data %>% 
@@ -148,7 +222,7 @@ plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
     theme(axis.text.x = element_text(size = 8))+
     theme(plot.title.position = "plot",
           plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 30))+
     scale_fill_manual(values = colores_plot)+
     coord_flip()
   
@@ -173,32 +247,48 @@ categorica_1var <- function(x, cat1, rename, encabezado = NULL, title = NULL, wr
   
 }
 
-tabla_prom <- function(x, col, rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
-  
-  col <- enquo(col)
-  
-  if (is.null(wrap_width)) {
-    wrap_width <- 100
-  }
+categorica_2var <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
+  cat1 <- enquo(cat1)
+  cat2 <- enquo(cat2)
   
   table <- x %>% 
-    group_by(!!col) %>%
-    summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
-    ungroup() %>% 
-    #arrange(desc(promedio_general)) %>% 
-    rename("{rename}" := !!col,
-           "Promedio" = promedio_general) %>% 
-    as.data.frame()  
+    count(!!cat1, !!cat2) %>% 
+    rbind(
+      x %>% 
+        filter(!is.na(!!cat2)) %>% 
+        count(!!cat2) %>% 
+        mutate(!!cat1 := "Total General")
+    ) %>% 
+    group_by(!!cat1) %>% 
+    #mutate(p = n/sum(n)) %>% 
+    #filter (p >= 0.0005) %>% 
+    #select(-n) %>% 
+    pivot_wider(names_from = !!cat2, values_from = n, values_fill = 0) %>%
+    adorn_totals(where = "col", name = "Total General") %>%
+    #mutate(across(where(is.numeric), ~ percent(.x, 0.01, decimal.mark = ","))) %>% 
+    rename("{rename}" := !!cat1)
   
-  formatted_table <- ftable(table, encabezado, title) %>% 
-    bg(i = nrow_part(.), bg = NA) %>%
-    bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
-    color(i = nrow_part(.), color = "black") %>%
-    bold(i = nrow_part(.), bold = FALSE)
+  if (is.null(label_width)) {
+    label_width <- 10
+    
+  }
   
-  return(formatted_table)
+  # Personalizar el tamaño de las etiquetas de columna
+  colnames(table) <- str_wrap(colnames(table), width = label_width)
   
+  table <- table %>%  ftable(encabezado, title)
+  
+  return(table)
 }
+
+
+wrap_text <- function(x, width) {
+  sapply(x, function(y) {
+    paste(strwrap(y, width = width), collapse = "\n")
+  })
+}
+
+
 
 excepciones <- c("de", "DE", "De")
 
@@ -225,17 +315,6 @@ ajustar_mayusculas <- function(texto, excepciones) {
 }
 
 
-transformar_cali <- function(x) {
-  case_when(
-    x == "Excelente" ~ 5,
-    x == "Bueno" ~ 4,
-    x == "Aceptable" ~ 3,
-    x == "Necesita mejorar" ~ 2,
-    x == "Insatisfactorio" ~ 1,
-    TRUE ~ NA_real_  # Valor predeterminado en caso de que no coincida con ninguna categoría
-  )
-}
-
 generate_html <- function(variable) {
   HTML(glue("<h3 style = 'color: #00609d'>{variable()}</h3>"))
 }
@@ -251,66 +330,107 @@ generate_html_negrilla <- function(variable) {
 
 # Depuración ---------------------------------------------------------------
 
-docencia <- read.xlsx("Encuesta de percepción (2024-I)(1-6).xlsx", sheet = "Sheet1")
 
-docencia <- docencia %>% 
+talento <- read.xlsx("Encuesta de satisfacción del proceso de Gestión de Talento Humano (1-363).xlsx")
+
+talento <- talento %>% 
   distinct()
 
-docencia <- docencia %>% 
+talento <- talento %>% 
   clean_names()
 
-docencia <- docencia %>% 
-  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
-  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+talento <- talento %>% 
+  mutate(fecha_de_diligenciamiento = as.Date(fecha_de_diligenciamiento, origin = "1899-12-30")) %>% 
+  mutate(mesdili = month(fecha_de_diligenciamiento, label = TRUE, abbr = FALSE),
          mesdili = str_to_title(mesdili)) %>% 
-  mutate(anodili = year(hora_de_finalizacion))
+  mutate(anodili = year(fecha_de_diligenciamiento))
 
-docencia <- docencia %>% 
-  select(-contains("puntos"), -contains("comentarios"), -hora_de_la_ultima_modificacion)
+talento <- talento %>% 
+  mutate(seleccione_el_tipo_de_solicitud_que_realizo = ifelse(is.na(seleccione_el_tipo_de_solicitud_que_realizo), 
+                                                              "No menciona",seleccione_el_tipo_de_solicitud_que_realizo))
 
-docencia <- docencia %>%
-  mutate(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece =
-           sapply(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece,
-                  ajustar_mayusculas, excepciones = excepciones))%>% 
-  mutate(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece = trimws(
-    a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece)) %>% 
-  mutate(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece = case_when(
-    a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece == "Fct" ~ "Facultad de Ciencia y Tecnología",
-    a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece == "Facultad de Educacion Fisica" ~ 
-      "Facultad de Educación Física",
-    TRUE~a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece))
-
-docencia <- docencia %>% 
-  mutate(cual_es_el_tipo_de_vinculacion_o_relacion_que_tiene_con_la_upn_universidad_pedagogica_nacional =
-           trimws(cual_es_el_tipo_de_vinculacion_o_relacion_que_tiene_con_la_upn_universidad_pedagogica_nacional))
-
-docencia <- docencia %>% 
-  mutate(en_que_instalaciones_de_la_upn_universidad_pedagogica_nacional_desarrolla_sus_actividades_y_o_labores =
-           str_replace_all(en_que_instalaciones_de_la_upn_universidad_pedagogica_nacional_desarrolla_sus_actividades_y_o_labores,
-                           ";", ""))
-
-docencia <- docencia %>% 
-  mutate(a_que_grupo_poblacional_o_sector_social_pertenece =
-           str_replace_all(a_que_grupo_poblacional_o_sector_social_pertenece, ";", ""))
-
-docencia <- docencia %>% 
-  mutate(across(c(los_medios_utilizados_para_atender_las_solicitudes_correo_electronico_llamadas_mesas_de_trabajo,
-                  la_oportunidad_en_la_respuesta_a_los_requerimientos_atendiendo_los_tiempos_establecidos,
-                  el_respeto_y_cordialidad_de_la_persona_que_atendio_su_solicitud,
-                  la_eficacia_de_la_respuesta_dada_por_la_vicerrectoria_academica_solucion_a_su_requerimiento,
-                  los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud), 
-                ~ str_replace_all(., "\\s*\\(\\d+\\)", "")))
-
-docencia_num <- docencia %>% 
-  mutate(across(c(los_medios_utilizados_para_atender_las_solicitudes_correo_electronico_llamadas_mesas_de_trabajo,
-                  la_oportunidad_en_la_respuesta_a_los_requerimientos_atendiendo_los_tiempos_establecidos,
-                  el_respeto_y_cordialidad_de_la_persona_que_atendio_su_solicitud,
-                  la_eficacia_de_la_respuesta_dada_por_la_vicerrectoria_academica_solucion_a_su_requerimiento,
-                  los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud), ~ transformar_cali(.))) %>% 
-  rename(valor1 = los_medios_utilizados_para_atender_las_solicitudes_correo_electronico_llamadas_mesas_de_trabajo,
-         valor2 = la_oportunidad_en_la_respuesta_a_los_requerimientos_atendiendo_los_tiempos_establecidos,
-         valor3 = el_respeto_y_cordialidad_de_la_persona_que_atendio_su_solicitud,
-         valor4 = la_eficacia_de_la_respuesta_dada_por_la_vicerrectoria_academica_solucion_a_su_requerimiento,
-         valor5 = los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud)
+talento <- talento %>% 
+  rename(unidad_o_dependencia = 
+           indique_la_dependencia_a_la_cual_pertenece_si_no_tiene_vinculo_con_la_upn_por_favor_escribir_ninguna)
 
 
+talento <- talento %>%
+  mutate(unidad_o_dependencia = sapply(unidad_o_dependencia, ajustar_mayusculas, excepciones = excepciones))%>% 
+  mutate(unidad_o_dependencia = trimws(unidad_o_dependencia)) %>% 
+  mutate(unidad_o_dependencia = case_when(
+    unidad_o_dependencia %in% c("Biblioteca", "Subdirección de Biblioteca", 
+                                "Subdirección de Biblioteca Y Recursos Bibliográficos", 
+                                "Subdirección de Biblioteca Y Recursos Bibliotecarios", 
+                                "Subdirección de Bibliotecas, Documentación Y Recursos Bibliográficos") 
+    ~ "Subdirección de Biblioteca, Documentación Y Recursos Bibliográficos",
+    unidad_o_dependencia %in% c("Bienestar", "S.b.u", "Sbu")  ~ "Subdirección de Bienestar Universitario",
+    unidad_o_dependencia %in% c("Biologia", "Licenciatura de Biología", "Dbi", "Departamento de Biologia Facultad de Ciencias") 
+    ~ "Departamento de Biología",
+    unidad_o_dependencia %in% c("Ceg") ~ "Centro de Egresados",
+    unidad_o_dependencia %in% c("Cinndet") ~ "Centro de Innovación Y Desarrollo Educativo Y Tecnológico - Cinndet",
+    unidad_o_dependencia %in% c("Contratación", "Gco") ~ "Grupo de Contratación",
+    unidad_o_dependencia %in% c("Departamento de Posgrado de La Facultad de Educación", 
+                                "Departamento de Posgrado Facultad de Educación", 
+                                "Departamento de Posgrado Fed Upn", "Posgrado") 
+    ~ "Departamento de Posgrado - Facultad de Educación",
+    unidad_o_dependencia %in% c("Departamento de Psicodedagogía---Educación Infantil", "Psicopedagogia") 
+    ~ "Departamento de Psicopedagogía",
+    unidad_o_dependencia %in% c("Facltad de Educación Física", "Lic En Recreación", "Licenciatura En Deporte", 
+                                "Facultad de Educacion Fisica", "Facultad Educación Física", "Fef") ~ "Facultad de Educación Física",
+    unidad_o_dependencia %in% c("Facultad de Baellas Artes", "Facultad de Bellas Artes - Licenciatura En Artes Escénicas", 
+                                "Licenciatura En Artes Esçenicas", "Licenciatura En Musica") ~ "Facultad de Bellas Artes",
+    unidad_o_dependencia %in% c("Fct") ~ "Facultad de Ciencia Y Tecnología",
+    unidad_o_dependencia %in% c("Facultad de Educacion", "Fed", "Licenciatura Educación Especial",
+                                "Licenciatura Educacion Infantil", "Licenciatura En Educación Infantil") ~ "Facultad de Educación",
+    unidad_o_dependencia %in% c("Tecnología") ~ "Departamento de Tecnología",
+    unidad_o_dependencia %in% c("Instituto Pedagogico Nacional", "Ipn", "Ipn Sección de Educación Inicial", "Sei Ipn")
+    ~ "Instituto Pedagógico Nacional",
+    unidad_o_dependencia %in% c("Personal")  ~ "Subdirección de Personal",
+    unidad_o_dependencia %in% c("Servicios Generales", "Servicos Generales") ~ "Subdirección de Servicios Generales",
+    unidad_o_dependencia %in% c("Vgu", "Vicerrectoría de Gestión", "Vicerrectoría de Gestión Universitaria.")
+    ~ "Vicerrectoría de Gestión Universitaria",
+    unidad_o_dependencia %in% c("Ciup") ~ "Subdirección de Gestión de Proyectos",
+    #unidad_o_dependencia %in% c("Dte") ~ "Docente",
+    unidad_o_dependencia %in% c("Fct") ~ "Facultad de Ciencia Y Tecnología",
+    unidad_o_dependencia %in% c("Infraestructura Física") ~ "Grupo de Infraestructura",
+    unidad_o_dependencia %in% c("Matemáticas") ~ "Departamento de Matemáticas",
+    unidad_o_dependencia %in% c("Oficina de Control Disciplinario") ~ "Oficina de Control Disciplinario Interno",
+    unidad_o_dependencia %in% c("Química") ~ "Departamento de Química",
+    unidad_o_dependencia %in% c("Vicerrectoria Académica") ~ "Vicerrectoría Académica",
+    TRUE ~ unidad_o_dependencia
+  )) %>% 
+  mutate(unidad_o_dependencia = case_when(
+    unidad_o_dependencia %in% c("Subdirección de Biblioteca, Documentación Y Recursos Bibliográficos",
+                                "Subdirección de Admisiones Y Registros") ~
+      "Vicerrectoría Académica",
+    unidad_o_dependencia %in% c("Centro de Egresados","Subdirección de Gestión de Proyectos", 
+                                "Grupo Interno de Trabajo de Gestión Documental"
+    ) ~ "Vicerrectoría de Gestión Universitaria",
+    unidad_o_dependencia %in% c("Subdirección de Bienestar Universitario", "Grupo de Contratación",
+                                "Subdirección de Personal","Subdirección de Servicios Generales", "Grupo de Infraestructura",
+                                "Certificaciones Laborales", "Subdirección Financiera"
+    ) ~ "Vicerrectoría Administrativa Y Financiera",
+    unidad_o_dependencia == "Vicerrectoría Administrativa Y Financiera" ~ "Vicerrectoría Administrativa y Financiera",
+    unidad_o_dependencia %in% c("Departamento de Biología", "Departamento de Tecnología","Departamento de Matemáticas",
+                                "Departamento de Química", "Coordinación Maestría En Docencia de Las Matemáticas",
+                                "Departamento de Física") 
+    ~ "Facultad de Ciencia y Tecnología",
+    unidad_o_dependencia == "Facultad de Ciencia Y Tecnología" ~ "Facultad de Ciencia y Tecnología",
+    unidad_o_dependencia %in% c("Departamento de Posgrado - Facultad de Educación", "Departamento de Psicopedagogía"
+    ) ~ "Facultad de Educación",
+    unidad_o_dependencia %in% c("Departamento de Lenguas", "Departamento de Ciencias Sociales") ~ "Facultad de Humanidades",
+    unidad_o_dependencia %in% c("Oficina de Control Disciplinario Interno", "Oficina de Control Interno",
+                                "Secretaría General") ~ "Rectoría",
+    TRUE ~ unidad_o_dependencia))
+
+
+talento_num <- talento %>% 
+  mutate(como_calificaria_su_experiencia_con_el_servicio_recibido = case_when(
+    como_calificaria_su_experiencia_con_el_servicio_recibido == "Excelente" ~ "5",
+    como_calificaria_su_experiencia_con_el_servicio_recibido == "Muy bueno" ~ "4",
+    como_calificaria_su_experiencia_con_el_servicio_recibido == "Bueno" ~ "3",
+    como_calificaria_su_experiencia_con_el_servicio_recibido == "Regular" ~ "2",
+    como_calificaria_su_experiencia_con_el_servicio_recibido == "Malo" ~ "1",
+    TRUE ~ como_calificaria_su_experiencia_con_el_servicio_recibido)) %>% 
+  mutate(como_calificaria_su_experiencia_con_el_servicio_recibido =
+           as.numeric(como_calificaria_su_experiencia_con_el_servicio_recibido))
