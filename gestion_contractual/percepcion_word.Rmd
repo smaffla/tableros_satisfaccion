@@ -50,8 +50,15 @@ colores_plot <- c(#"#2171b5",
                                               "#fe9929","#ec7014")
 
 
-gestion <- read.xlsx("Encuesta de satisfaccion del proceso de Grupo de Contratacion.xlsx")
+percepcion <- read.xlsx("Encuesta de percepcion (2024-I)(1-6) (2).xlsx", sheet = "Sheet1")
 
+# ciarp_s <-  if(params$semestre == 1){
+#   ciarp_s20231
+# } else if (params$semestre == 2){
+#   ciarp_s20232
+# } else if (params$semestre == 3){
+#   ciarp_s
+# }
 ```
 
 ```{r}
@@ -87,7 +94,7 @@ plot_donas_as <- function(x, col, titulo = "") {
   col <- enquo(col)
   
   data <- x %>%
-    mutate(!!col := factor(!!col, levels = c("Satisfecho", "Insatisfecho"))) %>% 
+    mutate(!!col := factor(!!col, levels = c("Si", "No"))) %>% 
     count(!!col) %>% 
     mutate(porcentaje = n / sum(n),
            ymax = cumsum(porcentaje),
@@ -432,11 +439,11 @@ transformar_cali <- function(x, col) {
   
   x %>%
     mutate(!!col := case_when(
-      !!col == "Excelente" ~ "5",
-      !!col == "Bueno" ~ "4",
-      !!col == "Aceptable" ~ "3",
-      !!col == "Necesita mejorar" ~ "2",
-      !!col == "Insatisfactorio" ~ "1",
+      !!col == "Excelente (5)" ~ "5",
+      !!col == "Bueno (4)" ~ "4",
+      !!col == "Aceptable (3)" ~ "3",
+      !!col == "Necesita mejorar (2)" ~ "2",
+      !!col == "Insatisfactorio (1)" ~ "1",
       TRUE ~ !!col)) %>% 
     mutate(!!col := as.numeric(!!col))
   
@@ -445,28 +452,112 @@ transformar_cali <- function(x, col) {
 ```
 
 ```{r}
-gestion <- gestion %>% 
+percepcion <- percepcion %>% 
   distinct()
 
-gestion <- gestion %>% 
+percepcion <- percepcion %>% 
   clean_names()
 
-gestion <- gestion %>% 
+percepcion <- percepcion %>% 
   mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
   mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
          mesdili = str_to_title(mesdili)) %>% 
   mutate(anodili = year(hora_de_finalizacion))
 
 
+percepcion_num <- percepcion %>% 
+  rename(valor1 = los_medios_utilizados_para_atender_las_solicitudes_correo_electronico_llamadas_mesas_de_trabajo,
+         valor2 = la_oportunidad_en_la_respuesta_a_los_requerimientos_atendiendo_los_tiempos_establecidos,
+         valor3 = el_respeto_y_cordialidad_de_la_persona_que_atendio_su_solicitud,
+         valor4 = la_eficacia_de_la_respuesta_dada_por_la_vicerrectoria_academica_solucion_a_su_requerimiento,
+         valor5 = los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud) %>% 
+  transformar_cali(valor1) %>% 
+  transformar_cali(valor2) %>% 
+  transformar_cali(valor3) %>% 
+  transformar_cali(valor4) %>% 
+  transformar_cali(valor5) 
+
+
 ```
+
+
 
 
 ```{r}
-total <- gestion %>% count() %>% pull()
+total <- percepcion %>% count() %>% pull()
 ```
 
 
-La encuesta realizada con el fin de evaluar la gestión contractual fue contestada por **`r total`** personas.
+La encuesta de evaluación de la percepción de la gestión contractual fue realizada por **`r total`** personas.
+
+# Rango de edad
+
+### Tabla
+
+```{r}
+percepcion %>% 
+  filter(!is.na(cual_es_su_rango_de_edad)) %>%
+  mutate(cual_es_su_rango_de_edad = trimws(cual_es_su_rango_de_edad)) %>% 
+  categorica_1var(cual_es_su_rango_de_edad, "Rango de edad")
+```
+
+### Gráfica
+
+```{r}
+percepcion %>% 
+  mutate(cual_es_su_rango_de_edad = fct_collapse(cual_es_su_rango_de_edad, "Ninguna" = c("Ninguna", "Ninguna;"))) %>%
+  plot_barras(cual_es_su_rango_de_edad, "", "", "")
+```
+
+# Grupo poblacional
+
+### Tabla
+
+```{r}
+percepcion %>% 
+  mutate(a_que_grupo_poblacional_o_sector_social_pertenece = fct_collapse(a_que_grupo_poblacional_o_sector_social_pertenece, "Ninguna" = c("Ninguna", "Ninguna;"))) %>%
+  categorica_1var(a_que_grupo_poblacional_o_sector_social_pertenece, "Grupo Poblacional")
+```
+
+### Gráfica
+
+```{r}
+percepcion %>% 
+  mutate(a_que_grupo_poblacional_o_sector_social_pertenece = fct_collapse(a_que_grupo_poblacional_o_sector_social_pertenece, "Ninguna" = c("Ninguna", "Ninguna;"))) %>%
+  plot_donas(a_que_grupo_poblacional_o_sector_social_pertenece)
+```
+
+# Dependencia
+
+En este apartado se muestra la distribución de las personas que evaluaron el servicio de gestión contractual en los distintos departamentos de la UPN.
+
+### Tabla
+```{r}
+percepcion %>% 
+  filter(!is.na(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece)) %>%
+  mutate(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece = trimws(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece)) %>% 
+  mutate(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece = fct_collapse(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece, "Facultad de Bellas Artes" = c("Facultad de Bellas Artes", "FACULTAD DE BELLAS ARTES"),
+                                                                                              "Facultad de Educación Física" = c("Facultad de Educación Física", "FACULTAD DE EDUCACIÓN FÍSICA", "Facultad de Educación Física", "FACULTAD DE EDUCACION FISICA"),
+                                                                                              "Facultad de Humanidades" = c("Facultad de Humanidades"),
+                                                                                              "Facultad de Ciencia y Tecnología" = c("FCT"),
+                                                                                              "Facultad de Educación" = c("FACULTAD DE EDUCACIÓN"))) %>% 
+  categorica_1var(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece, "Departamento")
+
+```
+
+### Gráfica
+```{r}
+percepcion %>% 
+  filter(!is.na(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece)) %>%
+    mutate(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece = trimws(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece)) %>% 
+  mutate(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece = fct_collapse(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece, "Facultad de Bellas Artes" = c("Facultad de Bellas Artes", "FACULTAD DE BELLAS ARTES"),
+                                                                                              "Facultad de Educación Física" = c("Facultad de Educación Física", "FACULTAD DE EDUCACIÓN FÍSICA", "Facultad de Educación Física", "FACULTAD DE EDUCACION FISICA"),
+                                                                                              "Facultad de Humanidades" = c("Facultad de Humanidades"),
+                                                                                              "Facultad de Ciencia y Tecnología" = c("FCT"),
+                                                                                              "Facultad de Educación" = c("FACULTAD DE EDUCACIÓN"))) %>% 
+  plot_barras(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece, "", "", "")
+  
+```
 
 ```{r}
 
@@ -477,36 +568,139 @@ if (params$rendered_by_shiny)
 
 # Calificación y/o aporte por criterio de evaluación
 
-En este apartado se muestran diferentes aspectos del servicio que fueron evaluados por los encuestados.
+En este apartado se muestran diferentes aspectos evaluados por los usuarios del servicio de gestión contractual.
 
-### Calificación del servicio
-
-Se muestra cómo calificaron los encuestados su experencia con el servicio recibido.
-
-#### Tabla
+## Tabla general
 
 ```{r}
 
-gestion %>% 
-  categorica_1var(como_calificaria_su_experiencia_con_el_servicio_recibido, "Calificación")
+promedios <- percepcion_num %>% 
+  summarise(
+    "Medios utilizados" =
+      round(mean(valor1, na.rm = TRUE), 1),
+    "Oportunidad de respuesta" =
+      round(mean(valor2, na.rm = TRUE), 1),
+    "Respeto y cordialidad" =
+      round(mean(valor3, na.rm = TRUE), 1),
+    "La eficacia de la respuesta" =
+      round(mean(valor4, na.rm = TRUE), 1),
+    "Conocimientos y habilidades del personal" =
+      round(mean(valor5, na.rm = TRUE), 1)) %>%
+  pivot_longer(cols = everything(), names_to = "Categoría", values_to = "Promedio")
+
+percepcion_gene <- percepcion %>% 
+  select(
+  los_medios_utilizados_para_atender_las_solicitudes_correo_electronico_llamadas_mesas_de_trabajo,
+  la_oportunidad_en_la_respuesta_a_los_requerimientos_atendiendo_los_tiempos_establecidos,
+  el_respeto_y_cordialidad_de_la_persona_que_atendio_su_solicitud,
+  la_eficacia_de_la_respuesta_dada_por_la_vicerrectoria_academica_solucion_a_su_requerimiento,
+  los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud) %>%
+  rename(
+  "Medios utilizados" =
+    los_medios_utilizados_para_atender_las_solicitudes_correo_electronico_llamadas_mesas_de_trabajo,
+  "Oportunidad de respuesta" =
+    la_oportunidad_en_la_respuesta_a_los_requerimientos_atendiendo_los_tiempos_establecidos,
+  "Respeto y cordialidad" =
+    el_respeto_y_cordialidad_de_la_persona_que_atendio_su_solicitud,
+  "La eficacia de la respuesta" =
+    la_eficacia_de_la_respuesta_dada_por_la_vicerrectoria_academica_solucion_a_su_requerimiento,
+  "Conocimientos y habilidades del personal" =
+    los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud
+) %>%
+  pivot_longer(cols = everything(), 
+               names_to = "Categoria", 
+               values_to = "Calificacion") %>% 
+  mutate(Calificacion = factor(Calificacion, levels = c("Excelente", "Bueno","Aceptable", "Necesita mejorar", "Insatisfactorio"))) %>%
+  count(Categoria, Calificacion)
+
+percepcion_gene %>% 
+  rename("Calificación" = Calificacion, "Categoría" = Categoria) %>% 
+  # pivot_wider(names_from = "Calificación", values_from = n, 
+  #             values_fill = list(n = 0)) %>%
+  select(-n) %>% 
+  select(-Calificación) %>% 
+  left_join(promedios, by = "Categoría") %>% 
+  ftable(encabezado = "Calificación por categoría") %>%
+  bg(i = nrow_part(.), bg = "white") %>%
+  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+  color(i = nrow_part(.), color = "black") %>%
+  bold(i = nrow_part(.), bold = FALSE)
 
 ```
 
-#### Gráfica
+
+## Los medios utilizados para atender las solicitudes (correo electrónico, llamadas, mesas de trabajo): 
+
+### Tabla
 
 ```{r}
 
-gestion %>% 
-  plot_donas(como_calificaria_su_experiencia_con_el_servicio_recibido)
+percepcion %>% 
+  mutate(los_medios_utilizados_para_atender_las_solicitudes_correo_electronico_llamadas_mesas_de_trabajo = factor(los_medios_utilizados_para_atender_las_solicitudes_correo_electronico_llamadas_mesas_de_trabajo, levels = c("Excelente (5)", "Bueno (4)", "Aceptable (3)", "Necesita mejorar (2)", "Insatisfactorio (1)"))) %>% 
+  categorica_1var(los_medios_utilizados_para_atender_las_solicitudes_correo_electronico_llamadas_mesas_de_trabajo, "Calificación")
 
 ```
 
-### Claridad en el instructivo de la solicitud de certificados
+### Gráfica
 
-En este apartado se les preguntó a los encuestados sobre la claridad de la información proporcionada en el instructivo para la solicitud de certificados.
+```{r}
 
-El puntaje para este apartado se categorizó de la siguiente forma:
+percepcion %>%
+  mutate(los_medios_utilizados_para_atender_las_solicitudes_correo_electronico_llamadas_mesas_de_trabajo = factor(los_medios_utilizados_para_atender_las_solicitudes_correo_electronico_llamadas_mesas_de_trabajo, levels = c("Insatisfactorio (1)", "Necesita mejorar (2)", "Aceptable (3)", "Bueno (4)", "Excelente (5)"))) %>%   
+  plot_barras(los_medios_utilizados_para_atender_las_solicitudes_correo_electronico_llamadas_mesas_de_trabajo, "", "", "")
 
+```
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.50)
+
+```
+
+## La oportunidad en la respuesta a los requerimientos, atendiendo los tiempos establecidos.
+
+### Tabla
+
+```{r}
+
+percepcion %>% 
+  mutate(la_oportunidad_en_la_respuesta_a_los_requerimientos_atendiendo_los_tiempos_establecidos = factor(la_oportunidad_en_la_respuesta_a_los_requerimientos_atendiendo_los_tiempos_establecidos, levels = c("Excelente (5)", "Bueno (4)", "Aceptable (3)", "Necesita mejorar (2)", "Insatisfactorio (1)"))) %>% 
+  categorica_1var(la_oportunidad_en_la_respuesta_a_los_requerimientos_atendiendo_los_tiempos_establecidos, "Calificación")
+
+```
+
+### Gráfica
+
+```{r}
+
+percepcion %>%
+  mutate(la_oportunidad_en_la_respuesta_a_los_requerimientos_atendiendo_los_tiempos_establecidos = factor(la_oportunidad_en_la_respuesta_a_los_requerimientos_atendiendo_los_tiempos_establecidos, levels = c("Insatisfactorio (1)", "Necesita mejorar (2)", "Aceptable (3)", "Bueno (4)", "Excelente (5)"))) %>%   
+  plot_barras(la_oportunidad_en_la_respuesta_a_los_requerimientos_atendiendo_los_tiempos_establecidos, "", "", "")
+
+```
+
+## El respeto y cordialidad de la persona que atendió su solicitud.
+
+### Tabla
+
+```{r}
+
+percepcion %>% 
+  mutate(el_respeto_y_cordialidad_de_la_persona_que_atendio_su_solicitud = factor(el_respeto_y_cordialidad_de_la_persona_que_atendio_su_solicitud, levels = c("Excelente (5)", "Bueno (4)", "Aceptable (3)", "Necesita mejorar (2)", "Insatisfactorio (1)"))) %>% 
+  categorica_1var(el_respeto_y_cordialidad_de_la_persona_que_atendio_su_solicitud, "Calificación")
+
+```
+
+### Gráfica
+
+```{r}
+
+percepcion %>%
+  mutate(el_respeto_y_cordialidad_de_la_persona_que_atendio_su_solicitud = factor(el_respeto_y_cordialidad_de_la_persona_que_atendio_su_solicitud, levels = c("Insatisfactorio (1)", "Necesita mejorar (2)", "Aceptable (3)", "Bueno (4)", "Excelente (5)"))) %>%   
+  plot_barras(el_respeto_y_cordialidad_de_la_persona_que_atendio_su_solicitud, "", "", "")
+
+```
 ```{r}
 
 if (params$rendered_by_shiny)
@@ -514,95 +708,51 @@ if (params$rendered_by_shiny)
 
 ```
 
-```{r}
-puntajes <- data.frame(
-  Puntaje = 1:5,
-  Significado = c("Muy confuso", "Confuso", "Neutral", "Claro", "Muy claro")
-)
 
-tabla <- flextable(puntajes)
+## La eficacia de la respuesta dada por la Vicerrectoría Académica (solución a su requerimiento)  
 
-tabla %>% 
-  align(part = "header", align = "center") %>% 
-  align(j = 2:ncol_keys(.), align = "center") %>% 
-  bg(part = "header", bg = "#2c7fb8") %>% 
-  color(part = "header", color = "white") %>% 
-  bg(j = 1, bg = "#D9D9D9") %>% 
-  bold(part = "header") %>%
-  border(part = "all", border = fp_border_default(color = "black", width = 1)) %>% 
-  autofit() %>%
-  fit_to_width(max_width = 8.5)
-
-```
-
-#### Calificación
-
-```{r}
-gestion %>% rename(var = el_instructivo_de_la_solicitud_de_certificados_fue_claro_para_el_manejo_de_la_informacion) %>% 
-  mutate(var = case_when( var == 5 ~ "Muy claro", 
-                          var == 4 ~ "Claro", 
-                          var == 3 ~ "Neutral", var == 2 ~ "Confuso", 
-                          var == 1 ~ "Muy confuso", 
-                          TRUE ~ as.character(var))) %>%
-  plot_barras(var, "", "","")
-```
-
-### Tiempos de respuesta a solicitudes
-
-Se muestra en cuanto tiempo los encuestados recibieron respuestas a sus solicitudes
-
-#### Tabla
+### Tabla
 
 ```{r}
 
-gestion %>% 
-  categorica_1var(los_tiempos_de_respuesta_a_su_s_solicitud_es_fueron, "Rango")
+percepcion %>% 
+  mutate(la_eficacia_de_la_respuesta_dada_por_la_vicerrectoria_academica_solucion_a_su_requerimiento = factor(la_eficacia_de_la_respuesta_dada_por_la_vicerrectoria_academica_solucion_a_su_requerimiento, levels = c("Excelente (5)", "Bueno (4)", "Aceptable (3)", "Necesita mejorar (2)", "Insatisfactorio (1)"))) %>% 
+  categorica_1var(la_eficacia_de_la_respuesta_dada_por_la_vicerrectoria_academica_solucion_a_su_requerimiento, "Calificación")
+
 ```
 
-#### Gráfica
+### Gráfica
 
 ```{r}
-gestion %>% 
-  plot_barras(los_tiempos_de_respuesta_a_su_s_solicitud_es_fueron, "", "", "")
+
+percepcion %>%
+  mutate(la_eficacia_de_la_respuesta_dada_por_la_vicerrectoria_academica_solucion_a_su_requerimiento = factor(la_eficacia_de_la_respuesta_dada_por_la_vicerrectoria_academica_solucion_a_su_requerimiento, levels = c("Insatisfactorio (1)", "Necesita mejorar (2)", "Aceptable (3)", "Bueno (4)", "Excelente (5)"))) %>%   
+  plot_barras(la_eficacia_de_la_respuesta_dada_por_la_vicerrectoria_academica_solucion_a_su_requerimiento, "", "", "")
+
 ```
 
-### Claridad del funcionario que atendió
 
-En este apartado se les preguntó a los encuestados sobre la claridad de la información proporcionada por el funcionario que lo atendió.
+## Los conocimientos y habilidades que atendió tu solicitud.
 
-El puntaje para este apartado se categorizó de la siguiente forma:
+### Tabla
 
 ```{r}
-puntajes <- data.frame(
-  Puntaje = 1:5,
-  Significado = c("Muy confuso", "Confuso", "Neutral", "Claro", "Muy claro")
-)
 
-tabla <- flextable(puntajes) 
-
-tabla %>% 
-  align(part = "header", align = "center") %>% 
-  align(j = 2:ncol_keys(.), align = "center") %>% 
-  bg(part = "header", bg = "#2c7fb8") %>% 
-  color(part = "header", color = "white") %>% 
-  bg(j = 1, bg = "#D9D9D9") %>% 
-  bold(part = "header") %>%
-  border(part = "all", border = fp_border_default(color = "black", width = 1)) 
+percepcion %>% 
+  mutate(los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud = factor(los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud, levels = c("Excelente (5)", "Bueno (4)", "Aceptable (3)", "Necesita mejorar (2)", "Insatisfactorio (1)"))) %>% 
+  categorica_1var(los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud, "Calificación")
 
 ```
 
-#### Calificación
+### Gráfica
 
 ```{r}
-gestion %>% rename(var = funcionario_que_lo_atendio_fue_claro_en_la_informacion) %>% 
-  mutate(var = case_when( var == 5 ~ "Muy claro", 
-                          var == 4 ~ "Claro", 
-                          var == 3 ~ "Neutral", var == 2 ~ "Confuso", 
-                          var == 1 ~ "Muy confuso", 
-                          TRUE ~ as.character(var))) %>%
-  plot_barras(var, "", "","")
-```
 
+percepcion %>%
+  mutate(los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud = factor(los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud, levels = c("Insatisfactorio (1)", "Necesita mejorar (2)", "Aceptable (3)", "Bueno (4)", "Excelente (5)"))) %>%   
+  plot_barras(los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud, "", "", "")
+
+```
 
 
 ```{r}

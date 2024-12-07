@@ -1,49 +1,67 @@
-# Carga de librerias ------------------------------------------------------
+---
+title: "ENCUESTA DE EVALUACIÓN Y PERCEPCIÓN - GESTIÓN CONTRACTUAL"
+author: "Oficina de Desarrollo y Planeación"
+output:
+  html_document:
+    fig_height: 7
+    fig_width: 10
+    highlight: tango
+    keep_md: no
+    number_sections: no
+    theme: cerulean
+    toc: yes
+    css: "corp-styles.css"
+    toc_depth: 4
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+  word_document:
+    toc: yes
+    toc_depth: '4'
+params:
+  anio: NA
+  semestre: NA
+  rendered_by_shiny: no
+subtitle: Universidad Pedagógica Nacional
+editor_options:
+  chunk_output_type: inline
+---
 
-#library(plotly)
-library(shiny)
-library(shinyWidgets)
-library(shinydashboard)
+
+<div>
+<img src="https://estilos.upn.edu.co/userfiles/footer/footer.svg" alt="UPN" class="watermark">
+</div>
+
+\newpage
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = FALSE,
+	message = FALSE,
+	warning = FALSE,
+	dpi = 300	)
+
 library(openxlsx)
-library(janitor)
-library(scales)
-library(summaryBox)
-library(shinycssloaders)
-library(lubridate)
-library(ggthemes)
-library(DT)
 library(tidyverse)
-library(ggrepel)
-library(lubridate)
-library(glue)
+library(janitor)
 library(flextable)
-library(htmltools)
+library(scales)
+library(lubridate)
 library(forcats)
 
-Sys.setlocale("LC_TIME", "es_ES.utf8")
-
-
 colores_plot <- c(#"#2171b5",
-  "#4292c6","#74a9cf",
-  "#41b6c4","#7fcdbb",#"#238b45","#41ab5d",
-  "#78c679","#c7e9b4","#edf8b1","#fee391","#fec44f",
-  "#fe9929","#ec7014")
-
-#Funciones -------------------------------------------------------
-
-generate_html <- function(variable) {
-  HTML(glue("<h2 style = 'color: #00609d'>{variable()}</h2>"))
-}
-
-generate_html_text <- function(variable) {
-  HTML(glue("<h5 style = 'color: #393939'>{variable()}</h5>"))
-}
+                                              "#4292c6","#74a9cf",
+                                              "#41b6c4","#7fcdbb",#"#238b45","#41ab5d",
+                                              "#78c679","#c7e9b4","#edf8b1","#fee391","#fec44f",
+                                              "#fe9929","#ec7014")
 
 
-generate_html_negrilla <- function(variable) {
-  HTML(glue("<h3 style = 'color: #00609d'><strong>{variable()}</strong></h3>"))
-}
+gestion <- read.xlsx("Encuesta de satisfaccion del proceso de Grupo de Contratacion.xlsx")
 
+```
+
+```{r}
 ftable <- function(x, encabezado = NULL, title = NULL) {
   
   table <- x %>% 
@@ -68,33 +86,35 @@ ftable <- function(x, encabezado = NULL, title = NULL) {
   }
   
   return(table)
-  
+    
 }
 
-styled_dt <- function(x, title = NULL) {
-  table <- x %>%
-    datatable(
-      options = list(
-        pageLength = 7,
-        lengthMenu = list(c(7, 10, 15, -1), c(7, 10, 15, "Todos")),
-        initComplete = JS(
-          "function(settings, json) {",
-          "$(this.api().table().header()).css({'background-color': '#2c7fb8', 'color': 'white', 'font-weight': 'bold'});",
-          "}"
-        )
-      ),
-      caption = htmltools::tags$caption(
-        style = 'caption-side: top; text-align: center; color:black; font-size:150%',
-        title
-      )
-    ) %>%
-    formatStyle(
-      columns = names(x),
-      backgroundColor = styleEqual(names(x), rep('#D9D9D9', length(names(x)))),
-      color = styleEqual(names(x), rep('black', length(names(x)))),
-      fontWeight = styleEqual(names(x), rep('bold', length(names(x))))
-    )
-  return(table)
+plot_donas_as <- function(x, col, titulo = "") {
+  
+  col <- enquo(col)
+  
+  data <- x %>%
+    mutate(!!col := factor(!!col, levels = c("Satisfecho", "Insatisfecho"))) %>% 
+    count(!!col) %>% 
+    mutate(porcentaje = n / sum(n),
+           ymax = cumsum(porcentaje),
+           ymin = c(0, head(ymax, n = -1)),
+           labelpos = (ymax + ymin) / 2,
+           labelname = paste(n,"\n",percent(porcentaje, 0.1)))
+  #filter(porcentaje >= 0.005)
+  
+  ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 10, xmin = 1, fill = !!col)) +
+    geom_rect() +
+    geom_text(aes(x = -1.5, y = labelpos, label = labelname), size = 5, color = "black", fontface = "bold") +
+    labs(title = str_wrap(titulo, width = 30)) +
+    scale_fill_manual(values = c("#3690c0", "#fc9272")) +
+    coord_polar(theta = "y") +
+    xlim(c(20, -10)) +
+    theme_void() +
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
+    guides(fill = guide_legend(title = "", label.position = "right",
+                               label.theme = element_text(size = 18)))
 }
 
 plot_donas <- function(x, col, titulo = "") {
@@ -124,7 +144,7 @@ plot_donas <- function(x, col, titulo = "") {
                                label.theme = element_text(size = 18)))
 }
 
-## FunciC3n grC!fico de barras para df caracterizacion
+## Función gráfico de barras para df caracterizacion
 plot_barras <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
   col <- enquo(col)
   
@@ -158,7 +178,7 @@ plot_barras <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
   
 }
 
-## FunciC3n grC!fico de barras AGRUPADO para df caracterizacion
+## Función gráfico de barras AGRUPADO para df caracterizacion
 plot_barras_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo = "") {
   col <- enquo(col)
   group <- enquo(group)
@@ -233,9 +253,9 @@ plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
 categorica_1var <- function(x, cat1, rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
   cat1 <- enquo(cat1)
   
-  if (is.null(wrap_width)) {
+    if (is.null(wrap_width)) {
     wrap_width <- 100
-  }
+    }
   
   table <- x %>% 
     count(!!cat1) %>% 
@@ -245,31 +265,8 @@ categorica_1var <- function(x, cat1, rename, encabezado = NULL, title = NULL, wr
     ftable(encabezado, title)
   
   return(table)
-  
+    
 }
-
-categorica_1vardt <- function(x, col, sum_col, rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
-  col <- enquo(col)
-  sum_col <- enquo(sum_col)
-  
-  if (is.null(wrap_width)) {
-    wrap_width <- 100
-  }
-  
-  table <- x %>% 
-    group_by(!!col) %>%
-    summarise(Suma = sum(!!sum_col, na.rm = TRUE), .groups = 'drop') %>%
-    adorn_totals(where = "row", name = "Total General") %>%
-    mutate(Suma = format(Suma, big.mark = ".", decimal.mark = ",", scientific = FALSE)) %>% 
-    #arrange(Suma) %>% 
-    rename('{rename}' := !!col, "Cantidad" = Suma) %>% 
-    #mutate('{rename}' := str_wrap(!!sym(rename), width = wrap_width)) %>%
-    styled_dt(title)
-  
-  return(table)
-  
-}
-
 
 categorica_2var <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
   cat1 <- enquo(cat1)
@@ -292,12 +289,12 @@ categorica_2var <- function(x, cat1, cat2, rename, encabezado = NULL, title = NU
     #mutate(across(where(is.numeric), ~ percent(.x, 0.01, decimal.mark = ","))) %>% 
     rename("{rename}" := !!cat1)
   
-  if (is.null(label_width)) {
+      if (is.null(label_width)) {
     label_width <- 10
-    
+      
   }
   
-  # Personalizar el tamaC1o de las etiquetas de columna
+  # Personalizar el tamaño de las etiquetas de columna
   colnames(table) <- str_wrap(colnames(table), width = label_width)
   
   table <- table %>%  ftable(encabezado, title)
@@ -309,7 +306,7 @@ categorica_2var_escala <- function(x, cat1, cat2, rename, encabezado = NULL, tit
   cat1 <- enquo(cat1)
   cat2 <- enquo(cat2)
   
-  # Definir el orden fijo de las categorC-as
+  # Definir el orden fijo de las categorías
   orden_categorias <- c("Excelente", "Muy bueno", "Bueno", "Aceptable", "Por mejorar")
   
   table <- x %>% 
@@ -322,7 +319,7 @@ categorica_2var_escala <- function(x, cat1, cat2, rename, encabezado = NULL, tit
     ) %>% 
     group_by(!!cat1) %>% 
     pivot_wider(names_from = !!cat2, values_from = n, values_fill = 0) %>%
-    # Asegurar que todas las categorC-as estC)n presentes y en el orden correcto
+    # Asegurar que todas las categorías estén presentes y en el orden correcto
     mutate(across(all_of(orden_categorias), ~if_else(is.na(.), 0, .))) %>%
     select(1, all_of(orden_categorias), everything()) %>%
     adorn_totals(where = "col", name = "Total General") %>%
@@ -341,8 +338,8 @@ categorica_vinculacion_modalidad <- function(x, cat1, cat2, rename, encabezado =
   cat1 <- enquo(cat1)
   cat2 <- enquo(cat2)
   
-  # Definir el orden fijo de las categorC-as
-  orden_categorias <- c("Contrato de prestaciC3n de servicios", "ResoluciC3n de incentivos", "Otra")
+  # Definir el orden fijo de las categorías
+  orden_categorias <- c("Contrato de prestación de servicios", "Resolución de incentivos", "Otra")
   
   table <- x %>% 
     count(!!cat1, !!cat2) %>% 
@@ -354,7 +351,7 @@ categorica_vinculacion_modalidad <- function(x, cat1, cat2, rename, encabezado =
     ) %>% 
     group_by(!!cat1) %>% 
     pivot_wider(names_from = !!cat2, values_from = n, values_fill = 0) %>%
-    # Asegurar que todas las categorC-as estC)n presentes y en el orden correcto
+    # Asegurar que todas las categorías estén presentes y en el orden correcto
     mutate(across(all_of(orden_categorias), ~if_else(is.na(.), 0, .))) %>%
     select(1, all_of(orden_categorias), everything()) %>%
     adorn_totals(where = "col", name = "Total General") %>%
@@ -390,12 +387,12 @@ categorica_2varp <- function(x, cat1, cat2, rename, encabezado = NULL, title = N
     mutate(across(where(is.numeric), ~ percent(.x, 0.1, decimal.mark = ","))) %>% 
     rename("{rename}" := !!cat1)
   
-  if (is.null(label_width)) {
+      if (is.null(label_width)) {
     label_width <- 10
-    
+      
   }
   
-  # Personalizar el tamaC1o de las etiquetas de columna
+  # Personalizar el tamaño de las etiquetas de columna
   colnames(table) <- str_wrap(colnames(table), width = label_width)
   
   table <- table %>%  ftable(encabezado, title)
@@ -418,138 +415,43 @@ tabla_prom <- function(x, col, rename, encabezado = NULL, title = NULL, wrap_wid
   }
   
   table <- x %>% 
-    group_by(!!col) %>%
-    summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
-    ungroup() %>% 
-    #arrange(desc(promedio_general)) %>% 
-    rename("{rename}" := !!col,
-           "Promedio" = promedio_general) %>% 
-    as.data.frame()  
+  group_by(!!col) %>%
+  summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
+  ungroup() %>% 
+  #arrange(desc(promedio_general)) %>% 
+  rename("{rename}" := !!col,
+         "Promedio" = promedio_general) %>% 
+  as.data.frame()  
   
   formatted_table <- ftable(table, encabezado, title) %>% 
-    bg(i = nrow_part(.), bg = NA) %>%
-    bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
-    color(i = nrow_part(.), color = "black") %>%
-    bold(i = nrow_part(.), bold = FALSE)
+  bg(i = nrow_part(.), bg = "white") %>%
+  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+  color(i = nrow_part(.), color = "black") %>%
+  bold(i = nrow_part(.), bold = FALSE)
   
   return(formatted_table)
   
 }
+
 
 transformar_cali <- function(x, col) {
   col <- enquo(col)
   
   x %>%
     mutate(!!col := case_when(
-      !!col == "Excelente (5)" ~ "5",
-      !!col == "Bueno (4)" ~ "4",
-      !!col == "Aceptable (3)" ~ "3",
-      !!col == "Necesita mejorar (2)" ~ "2",
-      !!col == "Insatisfactorio (1)" ~ "1",
+      !!col == "Excelente" ~ "5",
+      !!col == "Bueno" ~ "4",
+      !!col == "Aceptable" ~ "3",
+      !!col == "Necesita mejorar" ~ "2",
+      !!col == "Insatisfactorio" ~ "1",
       TRUE ~ !!col)) %>% 
     mutate(!!col := as.numeric(!!col))
   
 }
 
-tabla_prom_1var <- function(x, col, col_promedio,rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
-  
-  col <- enquo(col)
-  col_promedio <- enquo(col_promedio)
-  
-  if (is.null(wrap_width)) {
-    wrap_width <- 100
-  }
-  
-  table <- x %>% 
-    group_by(!!col) %>%
-    summarise(promedio_general = round(mean(!!col_promedio), 1)) %>%
-    ungroup() %>% 
-    #arrange(desc(promedio_general)) %>% 
-    rename("{rename}" := !!col,
-           "Promedio" = promedio_general) %>% 
-    as.data.frame()  
-  
-  formatted_table <- ftable(table, encabezado, title) %>% 
-    bg(i = nrow_part(.), bg = NA) %>%
-    bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
-    color(i = nrow_part(.), color = "black") %>%
-    bold(i = nrow_part(.), bold = FALSE)
-  
-  return(formatted_table)
-  
-}
+```
 
-plot_barras_prom_1var <- function(x, col,col_promedio, xlab, ylab, titulo = "", top = NULL) {
-  
-  col <- enquo(col)
-  col_promedio <- enquo(col_promedio)
-  
-  if (is.null(top)) {
-    top <- 11
-  }
-  
-  data <- x %>%  
-    group_by(!!col) %>%
-    summarise(promedio_general = round(mean(!!col_promedio), 1)) %>%
-    ungroup()
-  
-  data %>% 
-    arrange(desc(promedio_general)) %>% 
-    slice(1:top) %>% 
-    ggplot(aes(x = !!col, 
-               y= promedio_general, 
-               fill = !!col, 
-               label = promedio_general)) + 
-    geom_col()+
-    geom_text(vjust = 0.5, hjust = -0.5, size = 4,position = position_dodge(width = 1))+
-    scale_y_continuous(limits = c(0, max(data$promedio_general)*1.1))+
-    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
-    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
-    theme(legend.position="none")+
-    theme(axis.text.y = element_text(size = 14))+
-    theme(axis.text.x = element_text(size = 8))+
-    theme(plot.title.position = "plot",
-          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
-    scale_fill_manual(values = colores_plot)+
-    coord_flip()
-  
-}
-
-
-#percepci??n -------------------------------------
-
-percepcion <- read.xlsx("Encuesta de percepcion (2024-I)(1-6) (2).xlsx", sheet = "Sheet1")
-
-percepcion <- percepcion %>% 
-  distinct()
-
-percepcion <- percepcion %>% 
-  clean_names()
-
-percepcion <- percepcion %>% 
-  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
-  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
-         mesdili = str_to_title(mesdili)) %>% 
-  mutate(anodili = year(hora_de_finalizacion))
-
-
-percepcion_num <- percepcion %>% 
-  rename(valor1 = los_medios_utilizados_para_atender_las_solicitudes_correo_electronico_llamadas_mesas_de_trabajo,
-         valor2 = la_oportunidad_en_la_respuesta_a_los_requerimientos_atendiendo_los_tiempos_establecidos,
-         valor3 = el_respeto_y_cordialidad_de_la_persona_que_atendio_su_solicitud,
-         valor4 = la_eficacia_de_la_respuesta_dada_por_la_vicerrectoria_academica_solucion_a_su_requerimiento,
-         valor5 = los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud) %>% 
-  transformar_cali(valor1) %>% 
-  transformar_cali(valor2) %>% 
-  transformar_cali(valor3) %>% 
-  transformar_cali(valor4) %>% 
-  transformar_cali(valor5) 
-
-
-#Gesti??n ---------------------------------------------
-gestion <- read.xlsx("Encuesta de satisfaccion del proceso de Grupo de Contratacion.xlsx")
-
+```{r}
 gestion <- gestion %>% 
   distinct()
 
@@ -562,3 +464,157 @@ gestion <- gestion %>%
          mesdili = str_to_title(mesdili)) %>% 
   mutate(anodili = year(hora_de_finalizacion))
 
+
+```
+
+
+```{r}
+total <- gestion %>% count() %>% pull()
+```
+
+
+La encuesta realizada con el fin de evaluar la gestión contractual fue contestada por **`r total`** personas.
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.25)
+
+```
+
+# Calificación y/o aporte por criterio de evaluación
+
+En este apartado se muestran diferentes aspectos del servicio que fueron evaluados por los encuestados.
+
+### Calificación del servicio
+
+Se muestra cómo calificaron los encuestados su experencia con el servicio recibido.
+
+#### Tabla
+
+```{r}
+
+gestion %>% 
+  categorica_1var(como_calificaria_su_experiencia_con_el_servicio_recibido, "Calificación")
+
+```
+
+#### Gráfica
+
+```{r}
+
+gestion %>% 
+  plot_donas(como_calificaria_su_experiencia_con_el_servicio_recibido)
+
+```
+
+### Claridad en el instructivo de la solicitud de certificados
+
+En este apartado se les preguntó a los encuestados sobre la claridad de la información proporcionada en el instructivo para la solicitud de certificados.
+
+El puntaje para este apartado se categorizó de la siguiente forma:
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.75)
+
+```
+
+```{r}
+puntajes <- data.frame(
+  Puntaje = 1:5,
+  Significado = c("Muy confuso", "Confuso", "Neutral", "Claro", "Muy claro")
+)
+
+tabla <- flextable(puntajes)
+
+tabla %>% 
+  align(part = "header", align = "center") %>% 
+  align(j = 2:ncol_keys(.), align = "center") %>% 
+  bg(part = "header", bg = "#2c7fb8") %>% 
+  color(part = "header", color = "white") %>% 
+  bg(j = 1, bg = "#D9D9D9") %>% 
+  bold(part = "header") %>%
+  border(part = "all", border = fp_border_default(color = "black", width = 1)) %>% 
+  autofit() %>%
+  fit_to_width(max_width = 8.5)
+
+```
+
+#### Calificación
+
+```{r}
+gestion %>% rename(var = el_instructivo_de_la_solicitud_de_certificados_fue_claro_para_el_manejo_de_la_informacion) %>% 
+  mutate(var = case_when( var == 5 ~ "Muy claro", 
+                          var == 4 ~ "Claro", 
+                          var == 3 ~ "Neutral", var == 2 ~ "Confuso", 
+                          var == 1 ~ "Muy confuso", 
+                          TRUE ~ as.character(var))) %>%
+  plot_barras(var, "", "","")
+```
+
+### Tiempos de respuesta a solicitudes
+
+Se muestra en cuanto tiempo los encuestados recibieron respuestas a sus solicitudes
+
+#### Tabla
+
+```{r}
+
+gestion %>% 
+  categorica_1var(los_tiempos_de_respuesta_a_su_s_solicitud_es_fueron, "Rango")
+```
+
+#### Gráfica
+
+```{r}
+gestion %>% 
+  plot_barras(los_tiempos_de_respuesta_a_su_s_solicitud_es_fueron, "", "", "")
+```
+
+### Claridad del funcionario que atendió
+
+En este apartado se les preguntó a los encuestados sobre la claridad de la información proporcionada por el funcionario que lo atendió.
+
+El puntaje para este apartado se categorizó de la siguiente forma:
+
+```{r}
+puntajes <- data.frame(
+  Puntaje = 1:5,
+  Significado = c("Muy confuso", "Confuso", "Neutral", "Claro", "Muy claro")
+)
+
+tabla <- flextable(puntajes) 
+
+tabla %>% 
+  align(part = "header", align = "center") %>% 
+  align(j = 2:ncol_keys(.), align = "center") %>% 
+  bg(part = "header", bg = "#2c7fb8") %>% 
+  color(part = "header", color = "white") %>% 
+  bg(j = 1, bg = "#D9D9D9") %>% 
+  bold(part = "header") %>%
+  border(part = "all", border = fp_border_default(color = "black", width = 1)) 
+
+```
+
+#### Calificación
+
+```{r}
+gestion %>% rename(var = funcionario_que_lo_atendio_fue_claro_en_la_informacion) %>% 
+  mutate(var = case_when( var == 5 ~ "Muy claro", 
+                          var == 4 ~ "Claro", 
+                          var == 3 ~ "Neutral", var == 2 ~ "Confuso", 
+                          var == 1 ~ "Muy confuso", 
+                          TRUE ~ as.character(var))) %>%
+  plot_barras(var, "", "","")
+```
+
+
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(1)
+
+```
