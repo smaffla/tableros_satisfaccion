@@ -1,6 +1,6 @@
 dashboardPage(
   dashboardHeader(
-    title = "Encuestas percerpción y calidad - Asesorías CIARP"
+    title = "Encuestas de satisfacción de docencia"
   ),
   
   ## ⏹️ 🍔 Sidebar -----------------------------------------------------------------

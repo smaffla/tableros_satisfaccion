@@ -78,7 +78,7 @@ percepcion_num_filtred <- reactive({
   output$calificacion_gestion <- renderUI({
     
     table <- gestion_filtred() %>%
-      categorica_1var(como_calificaria_su_experiencia_con_el_servicio_recibido, "Calificaci??n")
+      categorica_1var(como_calificaria_su_experiencia_con_el_servicio_recibido, "Calificación")
     
     flextable::htmltools_value(table)
     
@@ -95,7 +95,7 @@ percepcion_num_filtred <- reactive({
   ### Botones de descarga b,o8 ------------------------------------------------------
   
   output$download_html_gestion <- downloadHandler(
-    filename = "Informe descriptivo sobre la evaluaci??n del servicio de gesti??n contractual.html",
+    filename = "Informe descriptivo sobre la evaluación del servicio de gestión contractual.html",
     content = function(file) {
       withProgress(message = 'Descargando informe html', {
         
@@ -113,7 +113,7 @@ percepcion_num_filtred <- reactive({
   )
   
   output$download_doc_gestion <- downloadHandler(
-    filename = "Informe descriptivo sobre la percepci??n del servicio de gesti??n contractual.docx",
+    filename = "Informe descriptivo sobre la percepción del servicio de gestión contractual.docx",
     content = function(file) {
       withProgress(message = 'Descargando informe word', {
         
@@ -145,7 +145,7 @@ percepcion_num_filtred <- reactive({
         bold(part = "header") %>%
         border(part = "all", border = fp_border_default(color = "black", width = 1)) %>% 
         autofit() %>%
-        fit_to_width(max_width = 8.5)
+        fit_to_width(max_width = 10)
       
       flextable::htmltools_value(tabla)
       
@@ -199,7 +199,9 @@ percepcion_num_filtred <- reactive({
       color(part = "header", color = "white") %>% 
       bg(j = 1, bg = "#D9D9D9") %>% 
       bold(part = "header") %>%
-      border(part = "all", border = fp_border_default(color = "black", width = 1)) 
+      border(part = "all", border = fp_border_default(color = "black", width = 1)) %>% 
+      autofit() %>%
+      fit_to_width(max_width = 10)
     
     flextable::htmltools_value(tabla)
     
