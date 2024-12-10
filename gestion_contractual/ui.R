@@ -1,6 +1,6 @@
 dashboardPage(
   dashboardHeader(
-    title = "ENCUESTA DE EVALUACIÓN Y PERCEPCÓN - GESTIÓN CONTRACTUAL"
+    title = "Encuesta de satisfacción del proceso del Grupo de Contratación"
   ),
   
   ## Sidebar -----------------------------------------------------------------
@@ -11,7 +11,7 @@ dashboardPage(
     sidebarMenu(
       style = "position: fixed;",
       #menuItem("Percepción del servicio", tabName = "dashboardPercepcion", icon = icon("user"), startExpanded = TRUE),
-      menuItem("Gestión Contractual", tabName = "dashboardGestion", icon = icon("face-smile-beam"), startExpanded = TRUE)
+      menuItem("   Gestión Contractual", tabName = "dashboardGestion", icon = icon("face-smile-beam"), startExpanded = TRUE)
       )
   ), #  Cierra sidebarmenu
   
