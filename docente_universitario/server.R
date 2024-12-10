@@ -142,7 +142,7 @@ server <- function(input, output, session) {
   output$plot_tipo_vinculacion_cs <- renderPlot({
     ciarp_s_filtrado() %>%
       filter(!is.na(tipo_de_vinculacion_con_la_universidad_pedagogica_nacional)) %>%
-      plot_barras(tipo_de_vinculacion_con_la_universidad_pedagogica_nacional, "", "", "Tipo de vinculación")
+      plot_barras(tipo_de_vinculacion_con_la_universidad_pedagogica_nacional, "", "", "")
   })
   
   

@@ -74,20 +74,33 @@ dashboardPage(
         div(
           class = "contenido",
           
+          # fluidRow(
+          #   column(
+          #     width=12,
+          #     #offset = 1,
+          #     align = "center",
+          #     div(style="display: inline-block; margin-right: 30px;", img(src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg/1200px-Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg.png", height=104, width=120)),
+          #     div(style="display: inline-block; vertical-align: middle;", h1(span("Encuesta de satisfacción - ", style = "font-weight: 300"), "Subdirección de Admisiones y Registro (2023)",
+          #                                                                    style = "font-family: 'Source Sans Pro';
+          #                                                                             color: #fff; text-align: center;
+          #                                                                             background-image: url('https://raw.githubusercontent.com/rstudio/shiny-examples/main/081-widgets-gallery/www/texturebg.png');
+          #                                                                             padding: 20px")
+          #     )),        
+          # ),
+          
           fluidRow(
             column(
               width=12,
               #offset = 1,
               align = "center",
               div(style="display: inline-block; margin-right: 30px;", img(src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg/1200px-Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg.png", height=104, width=120)),
-              div(style="display: inline-block; vertical-align: middle;", h1(span("Encuesta de satisfacción - ", style = "font-weight: 300"), "Subdirección de Admisiones y Registro (2023)",
+              div(style="display: inline-block; vertical-align: middle;", h1("Encuesta de Percepción Ciarp Socializaciones (2023)",
                                                                              style = "font-family: 'Source Sans Pro';
                                                                                       color: #fff; text-align: center;
                                                                                       background-image: url('https://raw.githubusercontent.com/rstudio/shiny-examples/main/081-widgets-gallery/www/texturebg.png');
                                                                                       padding: 20px")
-              )),        
+              )),
           ),
-          
           
           #### 🔡 Texto introducción -------------------------------------------------------------
           
@@ -104,7 +117,7 @@ dashboardPage(
                   
                 box(
                     title = "Introducción", width = 8, background = "light-blue",
-                    "Este informe muestra el análisis descriptivo de datos, correspondiente a la encuesta de satisfacción dirigida a los docentes de la UPN para conocer su percepción sobre las socializaciones realizadas por el CIARP"
+                    "El informe analiza la encuesta de satisfacción dirigida a los docentes de la UPN sobre las socializaciones realizadas por el CIARP, con gráficos y tablas organizados por categorías."
                   ),
                 
                 column(
@@ -116,18 +129,6 @@ dashboardPage(
                 )
               )
             ),
-          
-          br(),
-          br(),
-          
-          fluidRow(
-            align = "center",
-            div(
-              style = "max-width: 900px; margin: 0 auto;",
-              HTML("<h5 style='color: #393939;'><strong>A continuación, se presenta una serie de tablas y gráficas detalladas que ilustran la distribución de la cantidad y porcentaje de 
-                 los docentes que han respondido la encuesta de percepción y satisfacción CIARP socializaciones. Estos gráficos están organizados en diversas categorías para ofrecer una visión integral y comprensiva de los datos recolectados:</strong></h5>")
-            )
-          ),
           
           br(),
           
@@ -151,7 +152,7 @@ dashboardPage(
           ),
           
           br(),
-          
+          br(),
           
           fluidRow(
             align = "center",
@@ -161,7 +162,7 @@ dashboardPage(
             )
           ),
           
-          br(),
+          #br(),
           
           fluidRow(
             align = "center",
@@ -275,18 +276,32 @@ dashboardPage(
           #   valueBoxOutput("prueba_value")
           # ),
           
+          # fluidRow(
+          #   column(
+          #     width=12,
+          #     #offset = 1,
+          #     align = "center",
+          #     div(style="display: inline-block; margin-right: 30px;", img(src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg/1200px-Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg.png", height=104, width=120)),
+          #     div(style="display: inline-block; vertical-align: middle;", h1(span("Encuesta de satisfacción - ", style = "font-weight: 300"), "Subdirección de Admisiones y Registro (2023)",
+          #                                                                    style = "font-family: 'Source Sans Pro';
+          #                                                                             color: #fff; text-align: center;
+          #                                                                             background-image: url('https://raw.githubusercontent.com/rstudio/shiny-examples/main/081-widgets-gallery/www/texturebg.png');
+          #                                                                             padding: 20px")
+          #     )),        
+          # ),
+          
           fluidRow(
             column(
               width=12,
               #offset = 1,
               align = "center",
               div(style="display: inline-block; margin-right: 30px;", img(src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg/1200px-Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg.png", height=104, width=120)),
-              div(style="display: inline-block; vertical-align: middle;", h1(span("Encuesta de satisfacción - ", style = "font-weight: 300"), "Subdirección de Admisiones y Registro (2023)",
+              div(style="display: inline-block; vertical-align: middle;", h1("Encuesta de Percepción Ciarp Asesorías Personalizadas (2023)",
                                                                              style = "font-family: 'Source Sans Pro';
                                                                                       color: #fff; text-align: center;
                                                                                       background-image: url('https://raw.githubusercontent.com/rstudio/shiny-examples/main/081-widgets-gallery/www/texturebg.png');
                                                                                       padding: 20px")
-              )),        
+              )),
           ),
           
           
@@ -312,7 +327,7 @@ dashboardPage(
                   
                   box(
                     title = "Introducción", width = 8, background = "light-blue",
-                    "Esta encuesta muestra el análisis descriptivo de datos, correspondiente a la encuesta de satisfacción dirigida a los docentes de la UPN para conocer su percepción sobre las asesoías personalizadas realizadas por el CIARP"
+                    "El informe analiza la encuesta de satisfacción de docentes de la UPN sobre las asesorías personalizadas del CIARP, detallando las preguntas utilizadas para su evaluación."
                   ),
                   
                   column(
@@ -322,17 +337,6 @@ dashboardPage(
                   )
                 )
               )
-            )
-          ),
-          
-          br(),
-          br(),
-          
-          fluidRow(
-            align = "center",
-            div(
-              style = "max-width: 900px; margin: 0 auto;",
-              HTML("<h5 style='color: #393939;'><strong>En el siguiente apartado se muestran las preguntas planteadas en las encuestas, por medio de las cuales se evaluaron las asesorías personalizadas CIARP</strong></h5>")
             )
           ),
           

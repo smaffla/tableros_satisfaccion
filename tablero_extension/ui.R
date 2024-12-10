@@ -72,7 +72,7 @@ dashboardPage(
             #offset = 1,
             align = "center",
             div(style="display: inline-block; margin-right: 30px;", img(src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg/1200px-Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg.png", height=104, width=120)),
-            div(style="display: inline-block; vertical-align: middle;", h1(span("Evaluación y percepción", style = "font-weight: 300"), "personal interno SAR",
+            div(style="display: inline-block; vertical-align: middle;", h1("Evaluación y percepción personal interno SAR",
                                                                            style = "font-family: 'Source Sans Pro';
                                                                                       color: #fff; text-align: center;
                                                                                       background-image: url('https://raw.githubusercontent.com/rstudio/shiny-examples/main/081-widgets-gallery/www/texturebg.png');
@@ -83,6 +83,7 @@ dashboardPage(
         
         #### 🔡 Texto introducción -------------------------------------------------------------
 
+        
         fluidRow(
           column(
             width = 12,
@@ -93,33 +94,18 @@ dashboardPage(
               background = "light-blue",
               align = "center",
               fluidRow(
-                column(
-                  width = 7,
-                  fluidRow(align="center",
-                           column(width = 10,offset = 1, align = "center",
-                                  textOutput("texto_introduccion_sar") %>% withSpinner(type = 8, size = 0.5)
-                           )
-                  )
+                
+                box(
+                  title = "Introducción", width = 8, background = "light-blue",
+                  "El informe analiza la encuesta de evaluación y percepción del personal interno del proyecto SAR en la UPN, con tablas y gráficos categorizados que resumen la participación al 27-06-2024."
                 ),
-                #### 🟩 🟨 ValueBoxes -------------------------------------------------------------
+                
                 column(
                   width = 4,
                   uiOutput("value_box_sar") %>% withSpinner(type = 8, size = 0.5)
                 )
               )
             )
-          )
-        ),
-        
-        br(),
-        br(),
-        
-        fluidRow(
-          align = "center",
-          div(
-            style = "max-width: 900px; margin: 0 auto;",
-            HTML("<h5 style='color: #393939;'><strong>A continuación, se presenta una serie de tablas y gráficas detalladas que ilustran la distribución de la cantidad y porcentaje de 
-                 personas que han participado en la encuestas. Estos gráficos están organizados en diversas categorías para ofrecer una visión integral y comprensiva de los datos recolectados:</strong></h5>")
           )
         ),
         
@@ -139,7 +125,7 @@ dashboardPage(
           ),
           column(
             width = 6,
-            DTOutput("dt_vinculacion_sar") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("dt_vinculacion_sar") %>% withSpinner(type = 8, size = 0.5)
           )
         ),
         
@@ -160,7 +146,7 @@ dashboardPage(
           ),
           column(
             width = 6,
-            DTOutput("dt_contratacion_sar") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("dt_contratacion_sar") %>% withSpinner(type = 8, size = 0.5)
           )
         ),
         
@@ -198,7 +184,7 @@ dashboardPage(
           ),
           column(
             width = 6,
-            DTOutput("dt_genero_sar") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("dt_genero_sar") %>% withSpinner(type = 8, size = 0.5)
           )
         ),
         
@@ -472,7 +458,7 @@ dashboardPage(
             #offset = 1,
             align = "center",
             div(style="display: inline-block; margin-right: 30px;", img(src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg/1200px-Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg.png", height=104, width=120)),
-            div(style="display: inline-block; vertical-align: middle;", h1(span("Encuesta de satisfacción", style = "font-weight: 300"), "beneficiarios de proyectos",
+            div(style="display: inline-block; vertical-align: middle;", h1("Encuesta de satisfacción beneficiarios de proyectos",
                                                                            style = "font-family: 'Source Sans Pro';
                                                                                       color: #fff; text-align: center;
                                                                                       background-image: url('https://raw.githubusercontent.com/rstudio/shiny-examples/main/081-widgets-gallery/www/texturebg.png');
@@ -486,40 +472,25 @@ dashboardPage(
         fluidRow(
           column(
             width = 12,
-            offset = 1, 
+            offset = 1,
             box(
               width = 10,
               style = "margin-top: 2%",
               background = "light-blue",
               align = "center",
               fluidRow(
-                column(
-                  width = 7,
-                  fluidRow(align="center",
-                           column(width = 10,offset = 1, align = "center",
-                                  textOutput("texto_introduccion_beneficiarios") %>% withSpinner(type = 8, size = 0.5)
-                           )
-                  )
+                
+                box(
+                  title = "Introducción", width = 8, background = "light-blue",
+                  "El informe presenta el análisis descriptivo de la encuesta de satisfacción de usuarios beneficiarios de proyectos en la UPN, con tablas y gráficos categorizados que resumen la participación al 27-06-2024."
                 ),
-                #### 🟩 🟨 ValueBoxes -------------------------------------------------------------
+                
                 column(
                   width = 4,
                   uiOutput("value_box_beneficiarios") %>% withSpinner(type = 8, size = 0.5)
                 )
               )
             )
-          )
-        ),
-        
-        br(),
-        br(),
-        
-        fluidRow(
-          align = "center",
-          div(
-            style = "max-width: 900px; margin: 0 auto;",
-            HTML("<h5 style='color: #393939;'><strong>A continuación, se presenta una serie de tablas y gráficas detalladas que ilustran la distribución de la cantidad y porcentaje de 
-                 personas que han participado en la encuesta. Estos gráficos están organizados en diversas categorías para ofrecer una visión integral y comprensiva de los datos recolectados:</strong></h5>")
           )
         ),
         
@@ -539,7 +510,7 @@ dashboardPage(
         ),
         column(
           width = 6,
-          DTOutput("dt_genero_beneficiarios") %>% withSpinner(type = 8, size = 0.5)
+          uiOutput("dt_genero_beneficiarios") %>% withSpinner(type = 8, size = 0.5)
         )
       ),
       
@@ -563,7 +534,6 @@ dashboardPage(
           HTML("<h5 style = 'color: #393939'><strong>En este apartado se muestran diferentes aspectos evaluados por los beneficiarios que respondieron la encuesta de satisfacción.</strong></h4>"),
         )),
       
-      br(),
       
       fluidRow(
         align = "center",
