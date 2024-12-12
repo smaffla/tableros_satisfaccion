@@ -81,8 +81,6 @@ dashboardPage(
         ),
         
         
-        #### 🔡 Texto introducción -------------------------------------------------------------
-
         fluidRow(
           column(
             width = 12,
@@ -93,15 +91,12 @@ dashboardPage(
               background = "light-blue",
               align = "center",
               fluidRow(
-                column(
-                  width = 7,
-                  fluidRow(align="center",
-                           column(width = 10,offset = 1, align = "center",
-                                  textOutput("texto_introduccion_admision") %>% withSpinner(type = 8, size = 0.5)
-                           )
-                  )
+                
+                box(
+                  title = "Introducción", width = 8, background = "light-blue",
+                  "El informe incluye tablas y gráficos que detallan las respuestas sobre la satisfacción de los usuarios con la Subdirección de Admisiones y Registro, categorizando aspectos clave de su desempeño."
                 ),
-                #### 🟩 🟨 ValueBoxes -------------------------------------------------------------
+                
                 column(
                   width = 4,
                   uiOutput("value_box_admision") %>% withSpinner(type = 8, size = 0.5)
@@ -111,17 +106,6 @@ dashboardPage(
           )
         ),
         
-        br(),
-        br(),
-        
-        fluidRow(
-          align = "center",
-          div(
-            style = "max-width: 900px; margin: 0 auto;",
-            HTML("<h5 style='color: #393939;'><strong>A continuación, se presenta una serie de tablas y gráficas detalladas que ilustran la distribución de la cantidad y porcentaje de 
-                 los usuarios que han respondido la encuesta de satisfacción de la Subdirección de Admisiones y Registro. Estos gráficos están organizados en diversas categorías para ofrecer una visión integral y comprensiva de los datos recolectados:</strong></h5>")
-          )
-        ),
         
         br(),
         
@@ -376,15 +360,12 @@ dashboardPage(
               background = "light-blue",
               align = "center",
               fluidRow(
-                column(
-                  width = 7,
-                  fluidRow(align="center",
-                           column(width = 10,offset = 1, align = "center",
-                                  textOutput("texto_introduccion_calidad_2024") %>% withSpinner(type = 8, size = 0.5)
-                           )
-                  )
+                
+                box(
+                  title = "Introducción", width = 8, background = "light-blue",
+                  "El informe presenta tablas y gráficos sobre la encuesta de satisfacción de usuarios de la Subdirección de Admisiones y Registro, destacando la distribución de respuestas, organizadas por categorías clave."
                 ),
-                #### 🟩 🟨 ValueBoxes -------------------------------------------------------------
+                
                 column(
                   width = 4,
                   uiOutput("value_box_calidad_2024") %>% withSpinner(type = 8, size = 0.5)
@@ -393,19 +374,8 @@ dashboardPage(
             )
           )
         ),
-
-        br(),
-        br(),
-
-        fluidRow(
-          align = "center",
-          div(
-            style = "max-width: 900px; margin: 0 auto;",
-            HTML("<h5 style='color: #393939;'><strong>A continuación, se presenta una serie de tablas y gráficas detalladas que ilustran la distribución de la cantidad y porcentaje de
-                 los usuarios que han respondido la encuesta de satisfacción de la Subdirección de Admisiones y Registro. Estos gráficos están organizados en diversas categorías para ofrecer una visión integral y comprensiva de los datos recolectados:</strong></h5>")
-          )
-        ),
-
+        
+        
         br(),
 
         fluidRow(

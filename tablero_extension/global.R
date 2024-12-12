@@ -394,8 +394,25 @@ plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
   
 }
 
+categorica_1var <- function(x, cat1, rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
+  cat1 <- enquo(cat1)
+  
+  if (is.null(wrap_width)) {
+    wrap_width <- 100
+  }
+  
+  table <- x %>% 
+    count(!!cat1) %>% 
+    adorn_totals(where = "row", name = "Total General") %>%
+    rename('{rename}' := !!cat1, "Cantidad" = n) %>% 
+    mutate('{rename}' := str_wrap(!!sym(rename), width = wrap_width)) %>%
+    ftable(encabezado, title)
+  
+  return(table)
+  
+}
 
-categorica_1var <- function(x, col, rename, title = NULL, wrap_width = NULL) {
+categorica_1var_dt <- function(x, col, rename, title = NULL, wrap_width = NULL) {
   col <- enquo(col)
   
   if (is.null(wrap_width)) {

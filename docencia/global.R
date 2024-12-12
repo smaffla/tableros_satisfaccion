@@ -191,7 +191,7 @@ tabla_prom <- function(x, col, rename, encabezado = NULL, title = NULL, wrap_wid
     as.data.frame()  
   
   formatted_table <- ftable(table, encabezado, title) %>% 
-    bg(i = nrow_part(.), bg = "white") %>%
+    bg(i = nrow_part(.), bg = NA) %>%
     bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
     color(i = nrow_part(.), color = "black") %>%
     bold(i = nrow_part(.), bold = FALSE)
@@ -237,7 +237,7 @@ transformar_cali <- function(x) {
 }
 
 generate_html <- function(variable) {
-  HTML(glue("<h2 style = 'color: #00609d'>{variable()}</h2>"))
+  HTML(glue("<h3 style = 'color: #00609d'>{variable()}</h3>"))
 }
 
 generate_html_text <- function(variable) {

@@ -1,6 +1,5 @@
 # Carga de librerias ------------------------------------------------------
 
-library(plotly)
 library(shiny)
 library(shinyWidgets)
 library(shinydashboard)
@@ -16,6 +15,9 @@ library(tidyverse)
 library(ggrepel)
 library(lubridate)
 library(glue)
+library(flextable)
+library(htmltools)
+library(forcats)
 
 Sys.setlocale("LC_TIME", "es_ES.utf8")
 
@@ -356,7 +358,7 @@ plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
   
 }
 
-categorica_1var <- function(x, col, rename, title = NULL, wrap_width = NULL) {
+categorica_1var_dt <- function(x, col, rename, title = NULL, wrap_width = NULL) {
   col <- enquo(col)
   
   if (is.null(wrap_width)) {
@@ -374,7 +376,25 @@ categorica_1var <- function(x, col, rename, title = NULL, wrap_width = NULL) {
   
 }
 
-categorica_2var <- function(x, cat1, cat2, rename, title = NULL, label_width = NULL) {
+categorica_1var <- function(x, cat1, rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
+  cat1 <- enquo(cat1)
+  
+  if (is.null(wrap_width)) {
+    wrap_width <- 100
+  }
+  
+  table <- x %>% 
+    count(!!cat1) %>% 
+    adorn_totals(where = "row", name = "Total General") %>%
+    rename('{rename}' := !!cat1, "Cantidad" = n) %>% 
+    mutate('{rename}' := str_wrap(!!sym(rename), width = wrap_width)) %>%
+    ftable(encabezado, title)
+  
+  return(table)
+  
+}
+
+categorica_2var_dt <- function(x, cat1, cat2, rename, title = NULL, label_width = NULL) {
   cat1 <- enquo(cat1)
   cat2 <- enquo(cat2)
   
@@ -406,10 +426,42 @@ categorica_2var <- function(x, cat1, cat2, rename, title = NULL, label_width = N
   return(table)
 }
 
+categorica_2var <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
+  cat1 <- enquo(cat1)
+  cat2 <- enquo(cat2)
+  
+  table <- x %>% 
+    count(!!cat1, !!cat2) %>% 
+    rbind(
+      x %>% 
+        filter(!is.na(!!cat2)) %>% 
+        count(!!cat2) %>% 
+        mutate(!!cat1 := "Total General")
+    ) %>% 
+    group_by(!!cat1) %>% 
+    #mutate(p = n/sum(n)) %>% 
+    #filter (p >= 0.0005) %>% 
+    #select(-n) %>% 
+    pivot_wider(names_from = !!cat2, values_from = n, values_fill = 0) %>%
+    adorn_totals(where = "col", name = "Total General") %>%
+    #mutate(across(where(is.numeric), ~ percent(.x, 0.01, decimal.mark = ","))) %>% 
+    rename("{rename}" := !!cat1)
+  
+  if (is.null(label_width)) {
+    label_width <- 10
+    
+  }
+  
+  # Personalizar el tamaño de las etiquetas de columna
+  colnames(table) <- str_wrap(colnames(table), width = label_width)
+  
+  table <- table %>%  ftable(encabezado, title)
+  
+  return(table)
+}
 
 
-
-tabla_prom <- function(x, col, rename, titulo = NULL, wrap_width = NULL) {
+tabla_prom_dt <- function(x, col, rename, titulo = NULL, wrap_width = NULL) {
   
   col <- enquo(col)
   
@@ -434,7 +486,32 @@ tabla_prom <- function(x, col, rename, titulo = NULL, wrap_width = NULL) {
   
 }
 
-
+tabla_prom <- function(x, col, rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
+  
+  col <- enquo(col)
+  
+  if (is.null(wrap_width)) {
+    wrap_width <- 100
+  }
+  
+  table <- x %>% 
+    group_by(!!col) %>%
+    summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
+    ungroup() %>% 
+    #arrange(desc(promedio_general)) %>% 
+    rename("{rename}" := !!col,
+           "Promedio" = promedio_general) %>% 
+    as.data.frame()  
+  
+  formatted_table <- ftable(table, encabezado, title) %>% 
+    bg(i = nrow_part(.), bg = NA) %>%
+    bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+    color(i = nrow_part(.), color = "black") %>%
+    bold(i = nrow_part(.), bold = FALSE)
+  
+  return(formatted_table)
+  
+}
 
 styled_dt <- function(x, title = NULL) {
   table <- x %>%
@@ -460,4 +537,31 @@ styled_dt <- function(x, title = NULL) {
       fontWeight = styleEqual(names(x), rep('bold', length(names(x))))
     )
   return(table)
+}
+
+ftable <- function(x, encabezado = NULL, title = NULL) {
+  
+  table <- x %>% 
+    flextable() %>% 
+    set_caption(caption = title) %>%
+    align(part = "header", align = "center") %>% 
+    align(j = 2:ncol_keys(.), align = "center") %>% 
+    bg(part = "header", bg = "#2c7fb8") %>% 
+    color(part = "header", color = "white") %>% 
+    bg(j = 1, bg = "#D9D9D9") %>% 
+    bg(i = nrow_part(.), bg = "#2c7fb8") %>%
+    bold(part = "header") %>% 
+    bold(i = nrow_part(.)) %>%
+    color(i = nrow_part(.), color = "white") %>%
+    border(part = "all", border = fp_border_default(color="black", width = 1)) %>% 
+    autofit() %>%
+    fit_to_width(max_width = 8.5)
+  
+  if (!is.null(encabezado)) {
+    table <- table %>% 
+      add_header_row(colwidths = ncol_keys(.), values = encabezado)
+  }
+  
+  return(table)
+  
 }

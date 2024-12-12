@@ -1,6 +1,6 @@
 dashboardPage(
   dashboardHeader(
-    title = "ENCUESTA DE EVALUACIÓN Y PERCEPCÓN - GESTIÓN CONTRACTUAL"
+    title = "Encuesta de satisfacción del proceso del Grupo de Contratación"
   ),
   
   ## Sidebar -----------------------------------------------------------------
@@ -11,7 +11,7 @@ dashboardPage(
     sidebarMenu(
       style = "position: fixed;",
       #menuItem("Percepción del servicio", tabName = "dashboardPercepcion", icon = icon("user"), startExpanded = TRUE),
-      menuItem("Gestión Contractual", tabName = "dashboardGestion", icon = icon("face-smile-beam"), startExpanded = TRUE)
+      menuItem("   Gestión Contractual", tabName = "dashboardGestion", icon = icon("face-smile-beam"), startExpanded = TRUE)
       )
   ), #  Cierra sidebarmenu
   
@@ -73,7 +73,7 @@ dashboardPage(
               #offset = 1,
               align = "center",
               div(style="display: inline-block; margin-right: 30px;", img(src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg/1200px-Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg.png", height=104, width=120)),
-              div(style="display: inline-block; vertical-align: middle;", h1("Desempeño de administradores de salas de cómputo (2023)",
+              div(style="display: inline-block; vertical-align: middle;", h1("Satisfacción del proceso de Grupo de Contratación",
                                                                              style = "font-family: 'Source Sans Pro';
                                                                                       color: #fff; text-align: center;
                                                                                       background-image: url('https://raw.githubusercontent.com/rstudio/shiny-examples/main/081-widgets-gallery/www/texturebg.png');
@@ -102,7 +102,7 @@ dashboardPage(
                   
                   column(
                     #offset = 1,
-                    width = 2,
+                    width = 4,
                     uiOutput("value_box_gestion") %>% withSpinner(type = 8, size = 0.5)
                   )
                 )

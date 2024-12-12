@@ -105,43 +105,58 @@ dashboardPage(
   
         #### 🔡 Texto introducción -------------------------------------------------------------
   
-          fluidRow(
-            column(
-              width = 12,
-              box(
-                width = 12,
-                style = "margin-top: 2%",
-                background = "light-blue",
-                align = "center",
-                fluidRow(
-                  column(
-                    width = 4,
-                    fluidRow(align="center",
-                             column(width = 10,offset = 1, align = "center",
-                                    textOutput("texto_introduccion_general") %>% withSpinner(type = 8, size = 0.5)
-                             )
-                    )
-                  ),
-                  #### 🟩 🟨 ValueBoxes ------------------------------------------------------------- 
-                  column(
-                    width = 8,
-                    uiOutput("value_box_general") %>% withSpinner(type = 8, size = 0.5)
-                  )
+          # fluidRow(
+          #   column(
+          #     width = 12,
+          #     box(
+          #       width = 12,
+          #       style = "margin-top: 2%",
+          #       background = "light-blue",
+          #       align = "center",
+          #       fluidRow(
+          #         column(
+          #           width = 4,
+          #           fluidRow(align="center",
+          #                    column(width = 10,offset = 1, align = "center",
+          #                           textOutput("texto_introduccion_general") %>% withSpinner(type = 8, size = 0.5)
+          #                    )
+          #           )
+          #         ),
+          #         #### 🟩 🟨 ValueBoxes ------------------------------------------------------------- 
+          #         column(
+          #           width = 8,
+          #           uiOutput("value_box_general") %>% withSpinner(type = 8, size = 0.5)
+          #         )
+          #       )
+          #     )
+          #   )
+          # ),
+        
+        fluidRow(
+          column(
+            width = 12,
+            offset = 1,
+            box(
+              width = 10,
+              style = "margin-top: 2%",
+              background = "light-blue",
+              align = "center",
+              fluidRow(
+                
+                box(
+                  title = "Introducción", width = 6, background = "light-blue",
+                  "El informe presenta el análisis descriptivo de las encuestas de satisfacción de los servicios de transporte, aseo y cafetería en la UPN, con tablas y gráficos categorizados que resumen la participación al 27-06-2024."
+                ),
+                
+                column(
+                  width = 6,
+                  uiOutput("value_box_general") %>% withSpinner(type = 8, size = 0.5)
                 )
               )
             )
-          ),
-        
-          br(),
-        
-        fluidRow(
-          align = "center",
-          div(
-            style = "max-width: 900px; margin: 0 auto;",
-            HTML("<h5 style='color: #393939;'><strong>A continuación, se presenta una serie de tablas y gráficas detalladas que ilustran la distribución de la cantidad y porcentaje de 
-                 personas que han participado en todas las encuestas. Estos gráficos están organizados en diversas categorías para ofrecer una visión integral y comprensiva de los datos recolectados:</strong></h5>")
           )
         ),
+        
         
           br(),
         
@@ -161,7 +176,7 @@ dashboardPage(
             ),
             column(
               width = 6,
-              DTOutput("dt_general_vinculacion") %>% withSpinner(type = 8, size = 0.5)
+              uiOutput("dt_general_vinculacion") %>% withSpinner(type = 8, size = 0.5)
             )
           ),
         
@@ -180,7 +195,7 @@ dashboardPage(
         fluidRow(
           column(
             width = 6,
-            DTOutput("dt_general_intalaciones") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("dt_general_intalaciones") %>% withSpinner(type = 8, size = 0.5)
           ),
           column(
             width = 6,
@@ -207,7 +222,7 @@ dashboardPage(
           ),
           column(
             width = 6,
-            DTOutput("dt_general_genero") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("dt_general_genero") %>% withSpinner(type = 8, size = 0.5)
           )
         ),
         
@@ -226,7 +241,7 @@ dashboardPage(
         fluidRow(
           column(
             width = 6,
-            DTOutput("dt_general_edad") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("dt_general_edad") %>% withSpinner(type = 8, size = 0.5)
           ),
           column(
             width = 6,
@@ -253,7 +268,7 @@ dashboardPage(
           ),
           column(
             width = 6,
-            DTOutput("dt_general_grupo_poblacional") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("dt_general_grupo_poblacional") %>% withSpinner(type = 8, size = 0.5)
           )
         ),
         
@@ -272,7 +287,7 @@ dashboardPage(
         fluidRow(
           column(
             width = 6,
-            DTOutput("dt_general_etnias") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("dt_general_etnias") %>% withSpinner(type = 8, size = 0.5)
           ),
           column(
             width = 6,
@@ -299,7 +314,7 @@ dashboardPage(
           ),
           column(
             width = 6,
-            DTOutput("dt_general_unidad_dependencia") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("dt_general_unidad_dependencia") %>% withSpinner(type = 8, size = 0.5)
           )
         ),
         
@@ -371,7 +386,7 @@ dashboardPage(
             offset = 1,
             #align = "center",
             div(style="display: inline-block; margin-right: 30px;", img(src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg/1200px-Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg.png", height=104, width=120)),
-            div(style="display: inline-block; vertical-align: middle;", h1(span("Servicio de", style = "font-weight: 300"), "transporte",
+            div(style="display: inline-block; vertical-align: middle;", h1("Servicio de transporte",
                                                                            style = "font-family: 'Source Sans Pro';
                                                                                       color: #fff; text-align: center;
                                                                                       background-image: url('https://raw.githubusercontent.com/rstudio/shiny-examples/main/081-widgets-gallery/www/texturebg.png');
@@ -457,7 +472,7 @@ dashboardPage(
         fluidRow(
           column(
             width = 6,
-            dataTableOutput("dt_meses_transporte") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("dt_meses_transporte") %>% withSpinner(type = 8, size = 0.5)
           ),
           
           column(
@@ -490,7 +505,7 @@ dashboardPage(
         fluidRow(
           column(
             width = 6,
-            dataTableOutput("dt_tipo_servicio_trans") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("dt_tipo_servicio_trans") %>% withSpinner(type = 8, size = 0.5)
           ),
           
           column(
@@ -523,7 +538,7 @@ dashboardPage(
         fluidRow(
           column(
             width = 6,
-            dataTableOutput("dt_calificacion_conductor") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("dt_calificacion_conductor") %>% withSpinner(type = 8, size = 0.5)
           ),
           
           column(
@@ -594,7 +609,7 @@ dashboardPage(
         fluidRow(
           column(
             width = 6,
-            dataTableOutput("dt_calificacion_categoria_trans") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("dt_calificacion_categoria_trans") %>% withSpinner(type = 8, size = 0.5)
           ),
           
           column(
@@ -665,7 +680,7 @@ dashboardPage(
         fluidRow(
           column(
             width = 6,
-            dataTableOutput("dt_calificacion_categoria_ind_trans") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("dt_calificacion_categoria_ind_trans") %>% withSpinner(type = 8, size = 0.5)
           ),
           
           column(
@@ -762,7 +777,7 @@ dashboardPage(
           column(
             width = 8,
             offset = 2,
-            DTOutput("dt_aspecto_trans_cantidad") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("dt_aspecto_trans_cantidad") %>% withSpinner(type = 8, size = 0.5)
           ),
           
         ),
@@ -834,7 +849,7 @@ dashboardPage(
             offset = 1,
             #align = "center",
             div(style="display: inline-block; margin-right: 30px;", img(src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg/1200px-Universidad_Pedag%C3%B3gica_Nacional_(Colombia)_logo.svg.png", height=104, width=120)),
-            div(style="display: inline-block; vertical-align: middle;", h1(span("Servicio de", style = "font-weight: 300"), "aseo y cafetería",
+            div(style="display: inline-block; vertical-align: middle;", h1("Servicio de aseo y cafetería",
                                                                            style = "font-family: 'Source Sans Pro';
                                                                                       color: #fff; text-align: center;
                                                                                       background-image: url('https://raw.githubusercontent.com/rstudio/shiny-examples/main/081-widgets-gallery/www/texturebg.png');
@@ -907,7 +922,7 @@ dashboardPage(
           column(
             width = 10,
             offset = 1,
-            DTOutput("dt_califi_gene_aseocafe") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("dt_califi_gene_aseocafe") %>% withSpinner(type = 8, size = 0.5)
           )
         ),
         
@@ -988,7 +1003,7 @@ dashboardPage(
         fluidRow(
           column(
             width = 6,
-            DTOutput("dt_califi_categoria") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("dt_califi_categoria") %>% withSpinner(type = 8, size = 0.5)
           ),
           column(
             width = 6,
@@ -1025,7 +1040,7 @@ dashboardPage(
           column(
             width = 6,
             
-            DTOutput("dt_califi_genero_ac") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("dt_califi_genero_ac") %>% withSpinner(type = 8, size = 0.5)
           ),
           
           column(
@@ -1052,7 +1067,7 @@ dashboardPage(
           ),
           column(
             width = 6,
-            DTOutput("dt_califi_edad_ac") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("dt_califi_edad_ac") %>% withSpinner(type = 8, size = 0.5)
           )
         ),
         
@@ -1068,7 +1083,7 @@ dashboardPage(
         fluidRow(
           column(
             width = 6,
-            DTOutput("dt_califi_dependencia_ac") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("dt_califi_dependencia_ac") %>% withSpinner(type = 8, size = 0.5)
           ),
           column(
             width = 6,
@@ -1092,7 +1107,7 @@ dashboardPage(
           ),
           column(
             width = 6,
-            DTOutput("dt_califi_vinculacion_ac") %>% withSpinner(type = 8, size = 0.5)
+            uiOutput("dt_califi_vinculacion_ac") %>% withSpinner(type = 8, size = 0.5)
           )
         ),
         

@@ -128,23 +128,30 @@ server <- function(input, output, session) {
     #Categorización por tipo de vinculación
     output$plot_vinculacion_sar <- renderPlot({
           sar_filtrado() %>%
-          plot_barras(categoria_de_participacion_en_el_proyecto_sar, "", "", "Tipo de vinculación")
+          plot_barras(categoria_de_participacion_en_el_proyecto_sar, "", "", "")
          })
     
-    output$dt_vinculacion_sar <- renderDataTable({
-        sar_filtrado() %>%
-        categorica_1var(categoria_de_participacion_en_el_proyecto_sar, "Tipo de vinculación")})
+    output$dt_vinculacion_sar <- renderUI({
+      table <- sar_filtrado() %>%
+        categorica_1var(categoria_de_participacion_en_el_proyecto_sar, "Tipo de vinculación")
+      
+      flextable::htmltools_value(table)
+      
+      })
+  
     
     #categorizacion por modalidad de contratación
     
     output$plot_contratacion_sar <- renderPlot({
       sar_filtrado() %>%
-        plot_barras(modalidad_de_participacion_en_el_proyecto_sar, "", "", "Modalidad de contratación")
+        plot_barras(modalidad_de_participacion_en_el_proyecto_sar, "", "", "")
     })
     
-    output$dt_contratacion_sar <- renderDataTable({
-      sar_filtrado() %>%
+    output$dt_contratacion_sar <- renderUI({
+      table <-sar_filtrado() %>%
         categorica_1var(modalidad_de_participacion_en_el_proyecto_sar, "Modalidad de contratación")
+      
+      flextable::htmltools_value(table)
       })
     
     #Relación contratación/vinculación
@@ -160,12 +167,14 @@ server <- function(input, output, session) {
     output$plot_genero_sar <- renderPlot({
       sar_filtrado() %>%
         mutate(genero = factor(genero, levels = c ("Otro", "Masculino", "Femenino"), ordered = TRUE)) %>% 
-        plot_barras(genero, "", "", "Identidad de género")
+        plot_barras(genero, "", "", "")
     })
     
-    output$dt_genero_sar <- renderDataTable({
-      sar_filtrado() %>%
+    output$dt_genero_sar <- renderUI({
+      table <- sar_filtrado() %>%
         categorica_1var(genero, "Identidad de género")
+      
+      flextable::htmltools_value(table)
     })
     
     
@@ -452,13 +461,15 @@ server <- function(input, output, session) {
       beneficiarios_filtrado() %>% 
         filter(!is.na(genero)) %>% 
         mutate(genero = factor(genero, levels = c ("Otro", "Masculino", "Femenino"), ordered = TRUE)) %>% 
-        plot_barras(genero, "", "", "Identidad de género")
+        plot_barras(genero, "", "", "")
     })
     
-    output$dt_genero_beneficiarios <- renderDataTable({
-      beneficiarios_filtrado() %>% 
+    output$dt_genero_beneficiarios <- renderUI({
+      table <- beneficiarios_filtrado() %>% 
         filter(!is.na(genero)) %>% 
         categorica_1var(genero, "Identidad de género")
+      
+      flextable::htmltools_value(table)
     })
     
     
