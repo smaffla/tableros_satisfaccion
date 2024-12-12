@@ -379,7 +379,7 @@ talento <- talento %>%
     unidad_o_dependencia %in% c("Biologia", "Licenciatura de Biología", "Dbi", "Departamento de Biologia Facultad de Ciencias") 
     ~ "Departamento de Biología",
     unidad_o_dependencia %in% c("Ceg") ~ "Centro de Egresados",
-    unidad_o_dependencia %in% c("Cinndet") ~ "Centro de Innovación Y Desarrollo Educativo Y Tecnológico - Cinndet",
+    unidad_o_dependencia %in% c("Centro de Innovación Y Desarrollo Educativo Y Tecnológico - Cinndet") ~ "Cinndet", 
     unidad_o_dependencia %in% c("Contratación", "Gco") ~ "Grupo de Contratación",
     unidad_o_dependencia %in% c("Departamento de Posgrado de La Facultad de Educación", 
                                      "Departamento de Posgrado Facultad de Educación", 
@@ -393,7 +393,7 @@ talento <- talento %>%
                            "Licenciatura En Artes Esçenicas", "Licenciatura En Musica") ~ "Facultad de Bellas Artes",
     unidad_o_dependencia %in% c("Fct") ~ "Facultad de Ciencia Y Tecnología",
     unidad_o_dependencia %in% c("Facultad de Educacion", "Fed", "Licenciatura Educación Especial",
-    "Licenciatura Educacion Infantil", "Licenciatura En Educación Infantil") ~ "Facultad de Educación",
+    "Licenciatura Educacion Infantil", "Licenciatura En Educación Infantil", "Leco") ~ "Facultad de Educación",
     unidad_o_dependencia %in% c("Tecnología") ~ "Departamento de Tecnología",
     unidad_o_dependencia %in% c("Instituto Pedagogico Nacional", "Ipn", "Ipn Sección de Educación Inicial", "Sei Ipn")
     ~ "Instituto Pedagógico Nacional",
@@ -402,7 +402,6 @@ talento <- talento %>%
     unidad_o_dependencia %in% c("Vgu", "Vicerrectoría de Gestión", "Vicerrectoría de Gestión Universitaria.")
     ~ "Vicerrectoría de Gestión Universitaria",
     unidad_o_dependencia %in% c("Ciup") ~ "Subdirección de Gestión de Proyectos",
-    #unidad_o_dependencia %in% c("Dte") ~ "Docente",
     unidad_o_dependencia %in% c("Fct") ~ "Facultad de Ciencia Y Tecnología",
     unidad_o_dependencia %in% c("Infraestructura Física") ~ "Grupo de Infraestructura",
     unidad_o_dependencia %in% c("Matemáticas") ~ "Departamento de Matemáticas",
@@ -413,19 +412,19 @@ talento <- talento %>%
   )) %>% 
   mutate(unidad_o_dependencia = case_when(
     unidad_o_dependencia %in% c("Subdirección de Biblioteca, Documentación Y Recursos Bibliográficos",
-                                "Subdirección de Admisiones Y Registros") ~
+                                "Subdirección de Admisiones Y Registros", "Docente") ~
       "Vicerrectoría Académica",
     unidad_o_dependencia %in% c("Centro de Egresados","Subdirección de Gestión de Proyectos", 
                                 "Grupo Interno de Trabajo de Gestión Documental"
                                 ) ~ "Vicerrectoría de Gestión Universitaria",
     unidad_o_dependencia %in% c("Subdirección de Bienestar Universitario", "Grupo de Contratación",
                                 "Subdirección de Personal","Subdirección de Servicios Generales", "Grupo de Infraestructura",
-                                "Certificaciones Laborales", "Subdirección Financiera"
+                                "Certificaciones Laborales", "Subdirección Financiera", "Spe-Sst"
                                 ) ~ "Vicerrectoría Administrativa Y Financiera",
     unidad_o_dependencia == "Vicerrectoría Administrativa Y Financiera" ~ "Vicerrectoría Administrativa y Financiera",
     unidad_o_dependencia %in% c("Departamento de Biología", "Departamento de Tecnología","Departamento de Matemáticas",
                                 "Departamento de Química", "Coordinación Maestría En Docencia de Las Matemáticas",
-                                "Departamento de Física") 
+                                "Departamento de Física", "Dte") 
     ~ "Facultad de Ciencia y Tecnología",
     unidad_o_dependencia == "Facultad de Ciencia Y Tecnología" ~ "Facultad de Ciencia y Tecnología",
     unidad_o_dependencia %in% c("Departamento de Posgrado - Facultad de Educación", "Departamento de Psicopedagogía"

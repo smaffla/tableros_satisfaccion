@@ -24,12 +24,6 @@ server <- function(input, output, session) {
       filter(anodili %in% anios_seleccionados)
   })
   
-  ### Texto introduccion ------------------------------------------------------
-  
-  output$texto_introduccion <- renderText({
-    paste("Este informe presenta el análisis descriptivo de datos de la encuesta de satisfacción, dirigida a los usuarios que realizaron solicitudes a la Vicerrectoría Académica, con el fin de conocer su percepción sobre la atención recibida.", sep = "")
-  })
-
   
     ### 🟩 🟨 Valuebox ----------------------------------------------------------------
   

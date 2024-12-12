@@ -435,21 +435,21 @@ tabla_prom <- function(x, col, rename, encabezado = NULL, title = NULL, wrap_wid
   return(formatted_table)
   
 }
-
-transformar_cali <- function(x, col) {
-  col <- enquo(col)
-  
-  x %>%
-    mutate(!!col := case_when(
-      !!col == "Excelente (5)" ~ "5",
-      !!col == "Bueno (4)" ~ "4",
-      !!col == "Aceptable (3)" ~ "3",
-      !!col == "Necesita mejorar (2)" ~ "2",
-      !!col == "Insatisfactorio (1)" ~ "1",
-      TRUE ~ !!col)) %>% 
-    mutate(!!col := as.numeric(!!col))
-  
-}
+# 
+# transformar_cali <- function(x, col) {
+#   col <- enquo(col)
+#   
+#   x %>%
+#     mutate(!!col := case_when(
+#       !!col == "Excelente (5)" ~ "5",
+#       !!col == "Bueno (4)" ~ "4",
+#       !!col == "Aceptable (3)" ~ "3",
+#       !!col == "Necesita mejorar (2)" ~ "2",
+#       !!col == "Insatisfactorio (1)" ~ "1",
+#       TRUE ~ !!col)) %>% 
+#     mutate(!!col := as.numeric(!!col))
+#   
+# }
 
 tabla_prom_1var <- function(x, col, col_promedio,rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
   
@@ -516,6 +516,40 @@ plot_barras_prom_1var <- function(x, col,col_promedio, xlab, ylab, titulo = "", 
   
 }
 
+excepciones <- c("de", "DE", "De")
+
+ajustar_mayusculas <- function(texto, excepciones) {
+  # Convierte todo el texto a "Title Case"
+  texto_titulo <- str_to_title(texto)
+  
+  # Divide el texto en palabras
+  palabras <- unlist(strsplit(texto_titulo, " "))
+  
+  # Reemplaza las palabras que están en excepciones con su versión en minúscula
+  palabras <- sapply(palabras, function(palabra) {
+    if (tolower(palabra) %in% excepciones) {
+      tolower(palabra)
+    } else {
+      palabra
+    }
+  })
+  
+  # Une las palabras de nuevo en una cadena de texto
+  texto_ajustado <- paste(palabras, collapse = " ")
+  
+  return(texto_ajustado)
+}
+
+transformar_cali <- function(x) {
+  case_when(
+    x == "Excelente" ~ 5,
+    x == "Bueno" ~ 4,
+    x == "Aceptable" ~ 3,
+    x == "Necesita mejorar" ~ 2,
+    x == "Insatisfactorio" ~ 1,
+    TRUE ~ NA_real_  # Valor predeterminado en caso de que no coincida con ninguna categoría
+  )
+}
 
 #percepci??n -------------------------------------
 
@@ -533,18 +567,55 @@ percepcion <- percepcion %>%
          mesdili = str_to_title(mesdili)) %>% 
   mutate(anodili = year(hora_de_finalizacion))
 
+percepcion <- percepcion %>% 
+  select(-contains("puntos"), -contains("comentarios"), -hora_de_la_ultima_modificacion)
+
+percepcion <- percepcion %>%
+  mutate(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece =
+           sapply(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece,
+                  ajustar_mayusculas, excepciones = excepciones))%>% 
+  mutate(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece = trimws(
+    a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece)) %>% 
+  mutate(a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece = case_when(
+    a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece == "Fct" ~ "Facultad de Ciencia y Tecnología",
+    a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece == "Facultad de Educacion Fisica" ~ 
+      "Facultad de Educación Física",
+    TRUE~a_que_unidad_o_dependencia_de_la_upn_universidad_pedagogica_nacional_pertenece))
+
+percepcion <- percepcion %>% 
+  mutate(cual_es_el_tipo_de_vinculacion_o_relacion_que_tiene_con_la_upn_universidad_pedagogica_nacional =
+           trimws(cual_es_el_tipo_de_vinculacion_o_relacion_que_tiene_con_la_upn_universidad_pedagogica_nacional))
+
+percepcion <- percepcion %>% 
+  mutate(en_que_instalaciones_de_la_upn_universidad_pedagogica_nacional_desarrolla_sus_actividades_y_o_labores =
+           str_replace_all(en_que_instalaciones_de_la_upn_universidad_pedagogica_nacional_desarrolla_sus_actividades_y_o_labores,
+                           ";", ""))
+
+percepcion <- percepcion %>% 
+  mutate(a_que_grupo_poblacional_o_sector_social_pertenece =
+           str_replace_all(a_que_grupo_poblacional_o_sector_social_pertenece, ";", ""))
+
+percepcion <- percepcion %>% 
+  mutate(across(c(los_medios_utilizados_para_atender_las_solicitudes_correo_electronico_llamadas_mesas_de_trabajo,
+                  la_oportunidad_en_la_respuesta_a_los_requerimientos_atendiendo_los_tiempos_establecidos,
+                  el_respeto_y_cordialidad_de_la_persona_que_atendio_su_solicitud,
+                  la_eficacia_de_la_respuesta_dada_por_la_vicerrectoria_academica_solucion_a_su_requerimiento,
+                  los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud), 
+                ~ str_replace_all(., "\\s*\\(\\d+\\)", "")))
 
 percepcion_num <- percepcion %>% 
+  mutate(across(c(los_medios_utilizados_para_atender_las_solicitudes_correo_electronico_llamadas_mesas_de_trabajo,
+                  la_oportunidad_en_la_respuesta_a_los_requerimientos_atendiendo_los_tiempos_establecidos,
+                  el_respeto_y_cordialidad_de_la_persona_que_atendio_su_solicitud,
+                  la_eficacia_de_la_respuesta_dada_por_la_vicerrectoria_academica_solucion_a_su_requerimiento,
+                  los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud), ~ transformar_cali(.))) %>% 
   rename(valor1 = los_medios_utilizados_para_atender_las_solicitudes_correo_electronico_llamadas_mesas_de_trabajo,
          valor2 = la_oportunidad_en_la_respuesta_a_los_requerimientos_atendiendo_los_tiempos_establecidos,
          valor3 = el_respeto_y_cordialidad_de_la_persona_que_atendio_su_solicitud,
          valor4 = la_eficacia_de_la_respuesta_dada_por_la_vicerrectoria_academica_solucion_a_su_requerimiento,
-         valor5 = los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud) %>% 
-  transformar_cali(valor1) %>% 
-  transformar_cali(valor2) %>% 
-  transformar_cali(valor3) %>% 
-  transformar_cali(valor4) %>% 
-  transformar_cali(valor5) 
+         valor5 = los_conocimientos_y_habilidades_de_la_persona_que_atendio_su_solicitud)
+
+
 
 
 #Gesti??n ---------------------------------------------

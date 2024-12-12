@@ -448,6 +448,9 @@ identi_problemas <- identi_problemas %>%
          mesdili = str_to_title(mesdili)) %>% 
   mutate(anodili = year(hora_de_finalizacion))
 
+identi_problemas <- identi_problemas %>% 
+  select(-contains("puntos"), -contains("comentarios"), -hora_de_la_ultima_modificacion)
+
 identi_problemas <- identi_problemas %>%
   mutate(
     sede = fct_collapse(
@@ -474,6 +477,8 @@ identi_problemas <- identi_problemas %>%
       TRUE ~ edificio
     )
   )
+
+
 
 
 ```

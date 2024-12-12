@@ -465,6 +465,9 @@ desempeno <- desempeno %>%
   mutate(anodili = year(hora_de_finalizacion))
 
 
+desempeno <- desempeno %>% 
+  select(-contains("puntos"), -contains("comentarios"), -hora_de_la_ultima_modificacion)
+
 desempeno[] <- lapply(desempeno, function(x) gsub("^[a-e]\\)\\s+", "", x))
 
 
@@ -489,6 +492,7 @@ desempeno_num <- desempeno %>%
   transformar_cali(valor8) %>% 
   transformar_cali(valor9) %>% 
   transformar_cali(valor10)
+
 
 
 ```
