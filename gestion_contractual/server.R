@@ -278,7 +278,7 @@ percepcion_num_filtred <- reactive({
         
         params <- list(anio = input$select_anio, rendered_by_shiny = TRUE)
         
-        rmarkdown::render("informe_percepcion_percepcion_html.Rmd", output_file = file,
+        rmarkdown::render("informe_percepcion_html.Rmd", output_file = file,
                           params = params,
                           envir = new.env(parent = globalenv())
         )
@@ -293,7 +293,7 @@ percepcion_num_filtred <- reactive({
         
         params <- list(anio = input$select_anio, rendered_by_shiny = TRUE)
         
-        rmarkdown::render("informe_percepcion_percepcion_word.Rmd", output_file = file,
+        rmarkdown::render("informe_percepcion_word.Rmd", output_file = file,
                           params = params,
                           envir = new.env(parent = globalenv())
         )
