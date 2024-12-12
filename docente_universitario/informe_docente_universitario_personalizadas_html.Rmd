@@ -498,7 +498,7 @@ p1 = mean(ciarp_p$considera_que_el_proceso_de_agendamiento_de_la_asesoria_fue_op
 promedio_pregunta1 = round(p1, 1)
 ```
 
-La pruntuación promedio para este aspecto fue de **`r promedio_pregunta1`** lo cuál indica que en promedio los docentes consideran que el proceso de agendamiento de las asesorías personalizadas es oportuno.
+La puntuación promedio para este aspecto fue de **`r promedio_pregunta1`** lo cuál indica que en promedio los docentes consideran que el proceso de agendamiento de las asesorías personalizadas es oportuno.
 
 ### Tabla
 ```{r}

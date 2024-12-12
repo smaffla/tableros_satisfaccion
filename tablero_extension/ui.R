@@ -496,6 +496,16 @@ dashboardPage(
         
         br(),
       
+        fluidRow(
+          column(
+            width = 10,
+            offset = 1,
+            align = "center",
+            HTML("<h5 style = 'color: #393939'><strong>⚠️ Algunas preguntas no fueron contestadas por todos los encuestados, por lo cual los análisis tendrán menos respuestas respecto al total de beneficiarios.</strong></h4>"),
+          )),
+        
+        br(),
+        
       fluidRow(
         align = "center",
         HTML("<h2 style = 'color: #00609d'><strong>Identidad de género</strong></h2>"),

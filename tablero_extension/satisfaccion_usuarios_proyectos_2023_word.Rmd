@@ -519,7 +519,7 @@ total <- beneficiarios %>% count() %>% pull()
 ```
 
 
-La encuesta de satisfacción dirigida a los beneficiarios de proectos 2023 fue respondida por **`r total`** personas, de las cuales **`r total_autoriza`** dieron su autorización para el uso de sus datos en este análisis estadístico.
+La encuesta de satisfacción dirigida a los beneficiarios de proyectos 2023 fue respondida por **`r total`** personas, de las cuales **`r total_autoriza`** dieron su autorización para el uso de sus datos en este análisis estadístico.
 
 # Identidad de género
 

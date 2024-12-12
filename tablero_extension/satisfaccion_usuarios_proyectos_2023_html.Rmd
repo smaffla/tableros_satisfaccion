@@ -465,8 +465,8 @@ beneficiarios <- beneficiarios %>%
 beneficiarios <- beneficiarios %>%
   mutate(percepcion_actividades_realizadas = if_else(percepcion_actividades_realizadas == "Buenas ", "Buenas", percepcion_actividades_realizadas))
 
-# beneficiarios <- beneficiarios %>%
-#   filter(mesdili %in% params$mes)
+ beneficiarios <- beneficiarios %>%
+   filter(anodili %in% params$anio)
 ```
 
 
@@ -525,7 +525,7 @@ total <- beneficiarios %>% count() %>% pull()
 ```
 
 
-La encuesta de satisfacción dirigida a los beneficiarios de proectos 2023 fue respondida por **`r total`** personas, de las cuales **`r total_autoriza`** dieron su autorización para el uso de sus datos en este análisis estadístico.
+La encuesta de satisfacción dirigida a los beneficiarios de proyectos 2023 fue respondida por **`r total`** personas, de las cuales **`r total_autoriza`** dieron su autorización para el uso de sus datos en este análisis estadístico.
 
 # Identidad de género
 
@@ -596,13 +596,6 @@ beneficiarios %>%
   plot_donas_as(x3_considera_que_se_pueden_mejorarlas_actividades_planteadas_en_el_proyecto)
 ```
 
-```{r}
-
-if (params$rendered_by_shiny)
-  shiny::setProgress(0.75)
-
-```
-
 ### Alternativas propuestas para mejorar las actividades planteadas
 
 ```{r}
@@ -611,6 +604,13 @@ beneficiarios %>%
   mutate(x4_si_la_respuesta_es_si_cuales_de_las_siguientes_alternativas_propondria = trimws(x4_si_la_respuesta_es_si_cuales_de_las_siguientes_alternativas_propondria)) %>%
   mutate(x4_si_la_respuesta_es_si_cuales_de_las_siguientes_alternativas_propondria = factor(x4_si_la_respuesta_es_si_cuales_de_las_siguientes_alternativas_propondria, levels = c("f.	Clases más extensas", "e.	Mayor divulgación de los espacios y de sus resultados", "d.	Comunicación de los contenidos del programa de formación no continuada",  "c.	Fortalecimiento de las herramientas evaluativas", "b. Diversificación del contenido o metodología utilizada", "a.	Mejoramiento de la infraestructura (física y tecnológica) o dotación de la UPN"), ordered = TRUE)) %>%
   plot_barras(x4_si_la_respuesta_es_si_cuales_de_las_siguientes_alternativas_propondria, "", "", "")
+
+```
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.75)
 
 ```
 
@@ -627,4 +627,3 @@ if (params$rendered_by_shiny)
   shiny::setProgress(1)
 
 ```
-

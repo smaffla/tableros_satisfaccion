@@ -121,6 +121,48 @@ beneficiarios <- beneficiarios %>%
 beneficiarios <- beneficiarios %>%
   mutate(percepcion_actividades_realizadas = if_else(percepcion_actividades_realizadas == "Buenas ", "Buenas", percepcion_actividades_realizadas))
 
+
+#________________________________
+categorias_a_unificar <- list(
+  "SAR 20224" = c("SAR 20224 Escuela de Natación UPN", "SAR20224", "SAR2024", "SAR 2024"),
+  "Escuela de Natación" = c("SAR 20224 Escuela de Natación UPN", "SAR20224", "SAR2024", "SAR 2024", "Escuela de Natación", "NATACION", "Natacion nivel 4", "Curso de natación", "Curso de natacion", "Curso de Natación.", "Curso natación", "Curso de natación "),
+  "Diplomado en Pedagogía para las Artes Escénicas" = c("Diplomado en pedagogía para las artes escenicas", "Diplomado en Pedagogía para las Artes Escénicas", "Diplomado en pedagogía para las artes escénicas 11723", "Diplomado en Pedagogía para las Artes Escénicas 11723", "Diplomado en pedagogía para las artes escénicas Código 11723"),
+  "Acompañamiento a la Educación Media del Siglo XXI" = c("Acompañamiento a la educación media del siglo XXI", "Acompañamiento a la educación media del siglo XXI - SAR 10621", "Acompañamiento a la educación media del siglo XXI  SAR10621", "Acompañamiento a la educación media para el sXXI SAR10621", "Código: SAR10621  Acompañamiento a la educación media del siglo XXI"),
+  "Cátedra de Estudios Afrocolombianos" = c("Catedra de Estudios Afrocolombianos", "CÁTEDRA DE ESTUDIOS AFROCOLOMBIANOS", "Cátedra de estudios afrocolombianos con énfasis en la comunidad palenquera"),
+  "Contrato Interadministrativo CD-CI-126-2023" = c("Contrato Inter administrativo para realizar el diplomado en artes en primera infancia denominado - Identidad, territorio y patrimonio. No CD-CI-126-2023", "Contrato interadministrativo  para realizar el diplomado en artes en primera infancia denominado -identidad, territorio y patrimonio .No CD-CI-126 -2023", "Contrato interadministrativo  para realizar el diplomado en artes en primera infancia denominado-identidad territorio y patrimonio No CD-CI-126-2023", "Contrato interadministrativo para realizar el diplomado en artes en primera infancia  denominado identidad territor CD CIio y p No.atrimonio 126 2023", "Contrato interadministrativo para realizar el diplomado en artes en primera infancia denominado - identidad, territorio y patrimonio -. No. CD - CI -126- 2023", "Contrato Interadministrativo para realizar el diplomado en artes en primera infancia denominado -identidad, territorio y patrimonio- No. CD-CI-126-2023", "Contrato Interadministrativo para realizar el diplomado en artes en primera infancia denominado -Identidad, Territorio y Patrimonio-. No. CD-CI-126-2023", "Contrato interadministrativo para realizar el diplomado en artes en primera infancia denominado-identidad territorio y patrimonio - No. CD-CI-126-2023"),
+  "Convenio 645 ART-UPN" = c("Convenio  645 ART  UPN", "Convenio 645 ART - UPN", "Convenio 645 ART- UPN", "Convenio 645 de la ART/ UPN"),
+  "Diplomado en Lengua de Señas Colombiana y Enseñanza de Personas Sordas" = c("Diplomado en lengua de señas colombiana y enseñanza de personas sordas", "Diplomado en Lengua de señas Colombiana y enseñanza de personas Sordas", 'Diplomado "Lengua de señas colombiana y enseñanza de personas sordas"', "Diplomado en Lengua de Señas Colombiana y enseñanza de personas sordas", "Diplomado de lengua de señas colombiana y enseñanza de personas Sordas", "Diplomado en lengua de señas", "Diplomado en Lengua de Señas Colombiana", "Diplomado en lengua de señas colombiana y enseñanza a personas sordas", "Diplomado en Lengua de Señas Colombiana y Enseñanza de Sordos", "Diplomado en lengua de señas y enseñanza para personas sordas.", "Diplomado en lengua dexseñas colombiana y enseñanza para personas sordas", "Diplomado lengua de señas y educación de personas sordas", "Diplomado lengua de señas y educación de personas Sordas - SED", "proyecto  SAR Diplomado de Lengua  de Señas  Colombiana y enseñanza de personas sordas."),
+  "Escuela de Deportes Acuáticos" = c("Escuela de deportes acuáticos", "Escuela de deportes acuaticos 20522", "Escuela de deportes acuaticós 20522", "Escuela de deportes acuáticos 20522", "Escuela de deportes acuáticos N° 20522", "Escuela Deportes Acuáticos", "Escuela Deportes Acuáticos 20522", "Escuela Deportes Acuáticos 20522"),
+  "Maestría en Investigación Social" = c("Maestría en Investigación Social", "Maestria en investigacion social", "Maestría Investigación Social", "Maestría en investigacion social"),
+  "Doctorado en Educación" = c("Doctorado en educación", "Doctorado en Educación", "Doctorado en Educación y Cultura"),
+  "Curso de Actualización en Estudios Afrocolombianos" = c("Curso de actualización en estudios afrocolombianos", "Curso actualización estudios afrocolombianos", "Curso de actualización en Estudios Afrocolombianos", "Curso de Actualización Estudios Afrocolombianos"),
+  "Licenciatura en Educación Especial" = c("Licenciatura en Educación Especial", "Licenciatura en educacion especial", "Licenciatura Educación Especial", "Licenciatura en educación especial"),
+  "Diplomado en Didáctica del Inglés" = c("Diplomado en Didáctica del Inglés", "Diplomado en didactica del ingles", "Diplomado en didáctica del inglés"),
+  "Investigación en Primera Infancia" = c("Investigación en primera infancia", "Investigación en Primera Infancia", "Investigación en la primera infancia"),
+  "Especialización en Educación Infantil" = c("Especialización en educación infantil", "Especialización en Educación Infantil", "Especialización en educacion infantil"),
+  "Escuela de Liderazgo para la Transformación" = c("Escuela de liderazgo para la transformación", "Escuela de Liderazgo para la Transformación", "Escuela Liderazgo Transformación"),
+  "Programa de Formación para la Convivencia" = c("Programa de formación para la convivencia", "Programa de Formación para la Convivencia", "Programa Formación Convivencia"),
+  "Semillero de Investigación en Educación Inclusiva" = c("Semillero de investigación en educación inclusiva", "Semillero de Investigación en Educación Inclusiva", "Semillero Investigación Inclusiva"),
+  "Curso de Formación Docente en TICs" = c("Curso de formación docente en TICs", "Curso de Formación Docente en TICs", "Curso TICs para docentes"),
+  "Diplomado en Gestión Educativa" = c("Diplomado en gestión educativa", "Diplomado en Gestión Educativa", "Diplomado Gestión Educativa"),
+  "Especialización en Tecnologías de la Información" = c("Especialización en tecnologías de la información", "Especialización en Tecnologías de la Información", "Especialización en tecnologías de información"),
+  "Maestría en Estudios de la Infancia" = c("Maestría en estudios de la infancia", "Maestría en Estudios de la Infancia", "Maestría Estudios Infancia"),
+  "Taller Literario: El Lenguaje Secreto" = c("Taller del lenguaje secreto", "", "Taller del lenguaje secreto", "Taller El Lenguaje Secreto", "Taller Literario: El Lenguaje Secreto", "El lenguaje secreto", "el lenguaje secreto", "Taller Literario: El Lenguaje Secreto.", "Taller Literario: ", "Taller Literario")
+)
+
+
+beneficiarios <- beneficiarios %>%
+  mutate(nombre_y_codigo_del_proyecto = trimws(nombre_y_codigo_del_proyecto)) %>% 
+  mutate(nombre_y_codigo_del_proyecto = fct_collapse(nombre_y_codigo_del_proyecto, !!!categorias_a_unificar))
+
+
+nombres_a_eliminar <- c("Edwin Rodríguez", "Eliana Paola Varela Barreto", "Liliana Barragan", "Luis Alejandro Moreno Ladino", "Marly Quintero López", "Angela Rocio Guayacundo Tibaquira", "Antonia Forero Pataquiva", "Claudia Milena Muñoz Herrán", "Claudia Patricia Rodríguez", "Constanza Pataquiva", "Derly Vanessa Acosta García", "Ingrid nataly hernandez yazo", "Isblenia Guarin Martinez", "Kely Johanna Hernández Sánchez", "Laura Lizeth Ramos Huertas", "Leidy Llined Triana Rivera", "Lorena Alexandra Carrillo Herrera", "Luisa Fernanda Sanchez Camargo", "Magda Lucero Hernández Villalba", "Maria Liliana Pinilla Avendaño", "María Marlen Rodríguez Rodriguez", "Nancy Lorena Castro González", "Nancy Paola Zapata Medina", "Sandra Milena Gómez Romero", "Sandra Yolanda Gómez Panqueva", "Soraida Castañeda Ortega")
+
+beneficiarios <- beneficiarios %>%
+  filter(!nombre_y_codigo_del_proyecto %in% nombres_a_eliminar)
+
+#_--------------------------------
+
 beneficiarios <- beneficiarios[!duplicated(beneficiarios[c("nombre_del_encuestado_a", "fecha_diligenciamiento", "nombre_y_codigo_del_proyecto")]), ]
 
 ## Funciones

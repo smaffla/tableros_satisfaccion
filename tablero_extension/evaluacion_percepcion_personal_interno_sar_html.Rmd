@@ -525,8 +525,8 @@ mutate(nombre_de_la_entidad_externa_con_quien_se_suscribio_la_alianza_si_aplica 
                "No aplica" = c("Ninguna", "No", "no aplica", "No aplica", "NO APLICA", "N/A", "NO", "Uiversidad Pedagogica", "Universidad pedagógica", "Universidad Pedagogica Nacional", "Universidad pedagógica", "Universidad Pedagogica Nacional", "Universidad pedagógica nacional", "Universidad Pedagógica Nacional", "Universidad Pedagógica Nacional de Colombia, Facultad de Bellas Artes, Lic. Artes Visuales", "Upn", "UPN")))
 
 # 
-# sar <- sar %>%
-#   filter(anodili %in% params$anio)
+sar <- sar %>%
+  filter(anodili %in% params$anio)
 ```
 
 
