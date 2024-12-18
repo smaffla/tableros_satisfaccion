@@ -64,6 +64,33 @@ desempeno_num_filtred <- reactive({
     
   })
   
+  salas_filtred <- reactive({
+    
+    anios_seleccionados <- if (input$select_anio_salas == "all") {
+      todos_los_anios
+    } else {
+      input$select_anio_salas
+    }
+    
+   salas %>%
+      filter(anodili %in% anios_seleccionados)
+    
+  })
+  
+  salas_num_filtred <- reactive({
+    
+    anios_seleccionados <- if (input$select_anio_salas == "all") {
+      todos_los_anios
+    } else {
+      input$select_anio_salas
+    }
+    
+    salas_num %>%
+      filter(anodili %in% anios_seleccionados)
+    
+  })
+  
+  
     ###Encuestas 2023
   
   ### Texto introduccion ------------------------------------------------------
@@ -635,7 +662,7 @@ desempeno_num_filtred <- reactive({
   )
   
   output$download_doc_identi_problemas <- downloadHandler(
-    filename = "Informe descriptivo sobre la evaluación de desempeño a administradores de salas de cómputo.docx",
+    filename = "Informe descriptivo de la encuesta sobre la identificación de problemas específicos en las salas de cómputo.docx",
     content = function(file) {
       withProgress(message = 'Descargando informe word', {
         
@@ -1252,6 +1279,459 @@ desempeno_num_filtred <- reactive({
     
   })
   
+  ## Evaluación de las Salas de Cómputo y Recursos Tecnológicos--------------------------
+  
+  ### 🟩 🟨 Valuebox ----------------------------------------------------------------
+  
+  output$value_box_salas <- renderUI({
+    fluidRow(
+      column(
+        width = 12,
+        splitLayout(
+          summaryBox2(
+            title = "Encuestados",
+            value = nrow(salas_filtred()%>% 
+                           distinct()),
+            style = "info",
+            width = 12
+          ),
+        )
+      )
+    )
+  })
+  
+  
+  output$value_box_promedio_general_salas <- renderUI({
+    
+    promedio <- salas_num_filtred() %>% 
+      summarise(
+        "Nivel de satisfacción con las salas de cómputo" = round(mean(valor1, na.rm = TRUE), 1),
+        "Calificación de la limpieza e higiene de las salas de cómputo" = round(mean(valor2, na.rm = TRUE), 1),
+        "Estado de los equipos de cómputo" = round(mean(valor3, na.rm = TRUE), 1),
+        "Adecuación de la ventilación e iluminación en las salas de cómputo" = round(mean(valor4, na.rm = TRUE), 1),
+        "Descripción de los recursos disponibles para clases virtuales" = round(mean(valor5, na.rm = TRUE), 1),
+        "Calificación de la atención al usuario por parte del personal" = round(mean(valor6, na.rm = TRUE), 1),
+        "Suficiencia de elementos básicos de salud en las salas de cómputo" = round(mean(valor7, na.rm = TRUE), 1),
+        "Estado de la infraestructura de las salas de cómputo" = round(mean(valor8, na.rm = TRUE), 1),
+        "Estado de las mesas y sillas para los estudiantes" = round(mean(valor9, na.rm = TRUE), 1)
+      ) %>%
+      pivot_longer(cols = everything(), names_to = "Categoría", values_to = "Promedio") %>% 
+      summarise(promedio = mean(Promedio, na.rm = TRUE)) %>% 
+      pull(promedio)
+    
+    fluidRow(
+      column(
+        width = 12,
+        summaryBox2(
+          title = "Promedio general",
+          value = round(promedio, 2),
+          style = "success",
+          width = 12
+        )
+      )
+    )
+  })
+  
+  ### Botones de descarga ⬇️
+  
+  output$download_html_salas <- downloadHandler(
+    filename = "Informe descriptivo de la encuesta sobre la evaluación de las salas de cómputo y recursos tecnológicos.html",
+    content = function(file) {
+      withProgress(message = 'Descargando informe html', {
+        
+        params <- list(anio = input$select_anio_salas, rendered_by_shiny = TRUE)
+        
+        
+        
+        rmarkdown::render("informe_evaluacion_salas_html.Rmd", output_file = file,
+                          params = params,
+                          envir = new.env(parent = globalenv())
+        )
+      })
+    }
+  )
+  
+  output$download_doc_salas <- downloadHandler(
+    filename = "Informe descriptivo de la encuesta sobre la evaluación de las salas de cómputo y recursos tecnológicos.docx",
+    content = function(file) {
+      withProgress(message = 'Descargando informe word', {
+        
+        params <- list(anio = input$select_anio_salas, rendered_by_shiny = TRUE)
+        
+        rmarkdown::render("informe_evaluacion_salas_word.Rmd", output_file = file,
+                          params = params,
+                          envir = new.env(parent = globalenv())
+        )
+      })
+    }
+  )
+  
+  
+  # Dependencia ---------------
+  
+  ## Tabla
+  
+  output$ft_dependencia_salas <- renderUI({
+  
+    table <- salas_filtred() %>% 
+    categorica_1var(dependencia, "Dependencia")
+  
+    flextable::htmltools_value(table)
+    
+  })
+  
+  ## Gráfico
+  
+  output$plot_dependencia_salas <- renderPlot({
+  
+  salas %>% 
+    plot_barras(dependencia, "", "", "")
+  
+})
+  
+  # Sede -------------------------
+  
+  ## Tabla
+  
+  output$ft_sede_salas <- renderUI({
+  
+    table <- salas_filtred() %>% 
+    categorica_1var(sede, "Sede")
+  
+    flextable::htmltools_value(table)
+    
+  })
+  
+  ## Gráfico
+  
+  output$plot_sede_salas <- renderPlot({
+  
+  salas %>% 
+    plot_barras(sede, "", "", "")
+  
+  })
+  
+  # Edificio ---------------------------------
+  
+  ## Tabla
+  
+  output$ft_edificio_salas <- renderUI({
+  
+    table <- salas_filtred() %>% 
+    categorica_1var(edificio, "Edificio")
+  
+    flextable::htmltools_value(table)
+    
+  })
+  
+  ## Gráfico
+  
+  output$plot_edificio_salas <- renderPlot({
+  
+  salas %>% 
+    plot_barras(edificio, "", "", "")
+  
+  })
+
+  # Calificación y/o aporte por criterio de evaluación
+  
+  #Este apartado presenta un análisis detallado de las calificaciones y percepciones obtenidas en la evaluación de las salas de cómputo y recursos tecnológicos. Su objetivo es proporcionar una visión estructurada que permita identificar fortalezas, debilidades y oportunidades de mejora en los servicios ofrecidos.
+  
+  ##### Calificación de salas -----------------------------
+  
+  categoria_salas <- reactive({
+    if (input$select_categoria_sa == "¿Cómo calificaría la limpieza e higiene de las salas de cómputo?") { 
+      "Limpieza e higiene de las salas de cómputo"
+    } else if (input$select_categoria_sa == "¿Cómo describiría el estado de los equipos de cómputo (computadores, teclados, ratones, etc.)?") {
+      "Estado de los equipos de cómputo"
+    } else if (input$select_categoria_sa == "¿La ventilación e iluminación de las salas de cómputo le parece adecuada?") {
+      "Ventilación e iluminación de las salas de cómputo"
+    } else if (input$select_categoria_sa == "Los recursos disponibles para clases virtuales (cámaras, micrófonos, acceso a internet), ¿cómo los describiría?") {
+      "Recursos para clases virtuales"
+    } else if (input$select_categoria_sa == "Con respecto a las clases virtuales, ¿qué elementos considera que se deben mejorar o adquirir en las salas de cómputo?") {
+      "Mejoras o adquisiciones para clases virtuales"
+    } else if (input$select_categoria_sa == "En general, ¿cómo calificaría la atención al usuario por parte del personal de las salas de cómputo?") {
+      "Atención al usuario por el personal"
+    } else if (input$select_categoria_sa == "¿Considera que hay suficientes elementos básicos de salud (botiquín, extintor, rutas de evacuación, etc.) en las salas de cómputo?") {
+      "Elementos básicos de salud en las salas de cómputo"
+    } else if (input$select_categoria_sa == "¿La infraestructura (paredes, techos, piso) de las salas de cómputo está en buen estado?") {
+      "Infraestructura de las salas de cómputo"
+    } else if (input$select_categoria_sa == "¿Las mesas y sillas para los estudiantes en las salas de cómputo son cómodas y funcionales?") {
+      "Mesas y sillas en las salas de cómputo"
+    } else if (input$select_categoria_sa == "En general, mi nivel de satisfacción con las salas de cómputo es") {
+      "Nivel de satisfacción con las salas de cómputo"
+    } else {
+      "Categoría desconocida"
+    }
+  })
+  
+  
+  output$html_texto_categoria_salas <- renderUI({
+    generate_html(categoria_salas)
+  })
+  
+
+  output$ft_califi_categoria_salas <-  renderUI({
+    
+    if (input$select_categoria_sa == "En general, mi nivel de satisfacción con las salas de cómputo es") {
+      
+      table <- salas_filtred() %>% 
+        mutate(en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es = factor(
+          en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es, levels = c("Totalmente satisfecho", "Satisfecho",
+                                                                                      "Poco satisfecho", "Insatisfecho")))%>%
+        categorica_1var(en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es, "Calificación")
+      flextable::htmltools_value(table)
+      
+    } else if (input$select_categoria_sa == "¿Cómo calificaría la limpieza e higiene de las salas de cómputo?") {
+      
+      table <- salas_filtred() %>% 
+        mutate(como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo =
+                 factor(como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo, levels = c("Excelente", "Buena",
+                                                                                                   "Regular", "Mala"))) %>% 
+        categorica_1var(como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo, "Calificación")
+      
+      flextable::htmltools_value(table)
+      
+    } else if (input$select_categoria_sa == "¿Cómo describiría el estado de los equipos de cómputo (computadores, teclados, ratones, etc.)?") {
+      
+      table <- salas_filtred() %>%  
+        mutate(como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc =
+                 factor(como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc, 
+                        levels = c("Nuevos", "Con un buen mantenimiento en general", "Algo antiguos, pero funcionan bien",
+                                   "Obsoletos y con fallas"))) %>% 
+        categorica_1var(como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc, "Estado")
+      
+      flextable::htmltools_value(table)
+      
+    } else if (input$select_categoria_sa == "¿La ventilación e iluminación de las salas de cómputo le parece adecuada?") {
+      
+      table <- salas_filtred() %>% 
+        mutate(la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada = factor(
+          la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada, levels = c("Totalmente adecuada",
+                                                                                              "Aceptable", "Inadecuada", "Muy deficiente"))) %>% 
+        categorica_1var(la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada, "Calificación")
+      
+      flextable::htmltools_value(table)
+      
+    } else if (input$select_categoria_sa == "Los recursos disponibles para clases virtuales (cámaras, micrófonos, acceso a internet), ¿cómo los describiría?") {
+      
+      table <- salas_filtred() %>% 
+        mutate(los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria =
+                 factor(los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria, 
+                        levels = c("Excelentes", "Buenos", "Insuficientes", "Inexistentes"))) %>% 
+        categorica_1var(los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria, "Calificación")
+      
+      flextable::htmltools_value(table)
+      
+    } else if (input$select_categoria_sa == "Con respecto a las clases virtuales, ¿qué elementos considera que se deben mejorar o adquirir en las salas de cómputo?") {
+      
+      table <- salas_filtred() %>% 
+        categorica_1var(con_respecto_a_las_clases_virtuales_que_elementos_considera_que_se_deben_mejorar_o_adquirir_en_las_salas_de_computo, "Elementos a mejorar")
+      
+      flextable::htmltools_value(table)
+      
+    } else if (input$select_categoria_sa == "En general, ¿cómo calificaría la atención al usuario por parte del personal de las salas de cómputo?") {
+      
+      table <- salas_filtred() %>% 
+        mutate(en_general_como_calificaria_la_atencion_al_usuario_por_parte_del_personal_de_las_salas_de_computo =
+                 factor(en_general_como_calificaria_la_atencion_al_usuario_por_parte_del_personal_de_las_salas_de_computo,
+                        levels = c("Excelente", "Buena", "Regular", "Mala"))) %>% 
+        categorica_1var(en_general_como_calificaria_la_atencion_al_usuario_por_parte_del_personal_de_las_salas_de_computo,
+                        "Calificación")
+      
+      flextable::htmltools_value(table)
+      
+    } else if (input$select_categoria_sa == "¿Considera que hay suficientes elementos básicos de salud (botiquín, extintor, rutas de evacuación, etc.) en las salas de cómputo?") {
+      
+      table <- salas_filtred() %>% 
+        mutate(considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo = factor(considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo, levels = c("Totalmente equipadas", "Algunos elementos, pero se requieren más", 
+                                                                                                                                                                                                                                                                                          "Totalmente insuficientes", "No existen"))) %>% 
+        categorica_1var(considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo, "Calificación")
+      
+      flextable::htmltools_value(table)
+      
+    } else if (input$select_categoria_sa == "¿La infraestructura (paredes, techos, piso) de las salas de cómputo está en buen estado?") {
+      
+      table <- salas_filtred() %>% 
+        mutate(la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado = factor(
+          la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado, levels = c("Sí, impecable",
+                                                                                                         "Aceptable, requiere algún mantenimiento", "Regular, se evidencian fallas", "Pésimo estado, muy deteriorada"))) %>%
+        categorica_1var(la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado, "Calificación")
+      
+      flextable::htmltools_value(table)
+      
+    } else if (input$select_categoria_sa == "¿Las mesas y sillas para los estudiantes en las salas de cómputo son cómodas y funcionales?") {
+      
+      table <- salas_filtred() %>% 
+        mutate(las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales =
+                 factor(las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales, 
+                        levels = c("En buen estado", "Medianamente cómodas y funcionales", 
+                                   "Incómodas y en regular estado", "En pésimo estado e incómodas"))) %>% 
+        categorica_1var(las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales, 
+                        "Calificación")
+      
+      flextable::htmltools_value(table)
+    }
+    
+    
+  })
+  
+  
+  output$plot_califi_categoria_salas <- renderPlot({
+    
+    
+    if (input$select_categoria_sa == "En general, mi nivel de satisfacción con las salas de cómputo es") {
+      
+      salas_filtred() %>% 
+        mutate(en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es = factor(
+          en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es, levels = c("Insatisfecho", "Poco satisfecho", "Satisfecho", "Totalmente satisfecho"))) %>% 
+        plot_barras(en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es, "", "", "")
+      
+    } else if (input$select_categoria_sa == "¿Cómo calificaría la limpieza e higiene de las salas de cómputo?") {
+      
+      salas_filtred() %>% 
+        mutate(como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo = factor(
+          como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo, levels = c("Mala", "Regular", "Buena", "Excelente"))) %>% 
+        plot_barras(como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo, "", "", "")
+      
+    } else if (input$select_categoria_sa == "¿Cómo describiría el estado de los equipos de cómputo (computadores, teclados, ratones, etc.)?") {
+      
+      salas_filtred() %>% 
+        mutate(como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc = factor(
+          como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc, 
+          levels = c("Obsoletos y con fallas", "Algo antiguos, pero funcionan bien", "Con un buen mantenimiento en general", "Nuevos"))) %>% 
+        plot_barras(como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc, "", "", "")
+      
+    } else if (input$select_categoria_sa == "¿La ventilación e iluminación de las salas de cómputo le parece adecuada?") {
+      
+      salas_filtred() %>% 
+        mutate(la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada = factor(
+          la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada, 
+          levels = c("Muy deficiente", "Inadecuada", "Aceptable", "Totalmente adecuada"))) %>% 
+        plot_barras(la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada, "", "", "")
+      
+    } else if (input$select_categoria_sa == "Los recursos disponibles para clases virtuales (cámaras, micrófonos, acceso a internet), ¿cómo los describiría?") {
+      
+      salas_filtred() %>% 
+        mutate(los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria = factor(
+          los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria, 
+          levels = c("Inexistentes", "Insuficientes", "Buenos", "Excelentes"))) %>% 
+        plot_barras(los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria, "", "", "")
+      
+    } else if (input$select_categoria_sa == "Con respecto a las clases virtuales, ¿qué elementos considera que se deben mejorar o adquirir en las salas de cómputo?") {
+      
+      salas_filtred() %>% 
+        plot_barras(con_respecto_a_las_clases_virtuales_que_elementos_considera_que_se_deben_mejorar_o_adquirir_en_las_salas_de_computo, "", "", "")
+      
+    } else if (input$select_categoria_sa == "En general, ¿cómo calificaría la atención al usuario por parte del personal de las salas de cómputo?") {
+      
+      salas_filtred() %>% 
+        mutate(en_general_como_calificaria_la_atencion_al_usuario_por_parte_del_personal_de_las_salas_de_computo = factor(
+          en_general_como_calificaria_la_atencion_al_usuario_por_parte_del_personal_de_las_salas_de_computo, 
+          levels = c("Mala", "Regular", "Buena", "Excelente"))) %>% 
+        plot_barras(en_general_como_calificaria_la_atencion_al_usuario_por_parte_del_personal_de_las_salas_de_computo, "", "", "")
+      
+    } else if (input$select_categoria_sa == "¿Considera que hay suficientes elementos básicos de salud (botiquín, extintor, rutas de evacuación, etc.) en las salas de cómputo?") {
+      
+      salas_filtred() %>% 
+        mutate(considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo = factor(
+          considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo, 
+          levels = c("No existen", "Totalmente insuficientes", "Algunos elementos, pero se requieren más", "Totalmente equipadas"))) %>% 
+        plot_barras(considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo, "", "", "")
+      
+    } else if (input$select_categoria_sa == "¿La infraestructura (paredes, techos, piso) de las salas de cómputo está en buen estado?") {
+      
+      salas_filtred() %>% 
+        mutate(la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado = factor(
+          la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado, 
+          levels = c("Pésimo estado, muy deteriorada", "Regular, se evidencian fallas", 
+                     "Aceptable, requiere algún mantenimiento", "Sí, impecable"))) %>% 
+        plot_barras(la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado, "", "", "")
+      
+    } else if (input$select_categoria_sa == "¿Las mesas y sillas para los estudiantes en las salas de cómputo son cómodas y funcionales?") {
+      
+      salas_filtred() %>% 
+        mutate(las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales =
+                 factor(las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales, 
+                        levels = c("En pésimo estado e incómodas", "Incómodas y en regular estado", 
+                                   "Medianamente cómodas y funcionales", "En buen estado"))) %>% 
+        plot_barras(las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales, "", "", "")
+    } 
+    
+    
+  })
+  
+  
+  # Calificación y/o aporte por categoría (del encuestado)
+  
+  #Este apartado analiza las calificaciones y aportes de los encuestados por categoría, destacando percepciones y oportunidades de mejora. Cabe aclarar que las calificaciones fueron realizadas en una escala de 1 a 4, siendo 4 la máxima calificación. Además, la pregunta sobre los elementos que se consideran que se deben mejorar no está incluida dentro de este promedio de calificación.
+  
+  ## Tabla general
+
+  output$ft_tabla_gene_salas <- renderUI({
+    
+  table <- salas_num_filtred() %>% 
+    summarise(
+      "Nivel de satisfacción con las salas de cómputo" = round(mean(valor1, na.rm = TRUE), 1),
+      "Calificación de la limpieza e higiene de las salas de cómputo" = round(mean(valor2, na.rm = TRUE), 1),
+      "Estado de los equipos de cómputo" = round(mean(valor3, na.rm = TRUE), 1),
+      "Adecuación de la ventilación e iluminación en las salas de cómputo" = round(mean(valor4, na.rm = TRUE), 1),
+      "Descripción de los recursos disponibles para clases virtuales" = round(mean(valor5, na.rm = TRUE), 1),
+      "Calificación de la atención al usuario por parte del personal" = round(mean(valor6, na.rm = TRUE), 1),
+      "Suficiencia de elementos básicos de salud en las salas de cómputo" = round(mean(valor7, na.rm = TRUE), 1),
+      "Estado de la infraestructura de las salas de cómputo" = round(mean(valor8, na.rm = TRUE), 1),
+      "Estado de las mesas y sillas para los estudiantes" = round(mean(valor9, na.rm = TRUE), 1)) %>% 
+    pivot_longer(cols = everything(), names_to = "Categoría", values_to = "Promedio") %>% 
+    ftable() %>%
+    bg(i = nrow_part(.), bg = NA) %>%
+    bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+    color(i = nrow_part(.), color = "black") %>%
+    bold(i = nrow_part(.), bold = FALSE)
+  
+  flextable::htmltools_value(table)
+  
+})
+  
+  ## Por dependencia ----------------
+  
+  ### Tabla
+  output$ft_dependencia_prom_salas <- renderUI({
+    
+    table <- salas_num_filtred() %>% 
+    tabla_prom(dependencia, "Dependencia")
+  
+  flextable::htmltools_value(table)
+  
+})
+
+  ### Gráfico
+  
+  output$plot_dependencia_prom_salas <- renderPlot({
+  
+    salas_num_filtred() %>% 
+    plot_barras_prom(dependencia, "", "", "")
+
+})
+  ## Por Sede -------------
+  
+  output$ft_sede_prom_salas <- renderUI({
+    
+    table <- salas_num_filtred() %>% 
+    tabla_prom(sede, "Sede")
+  
+  flextable::htmltools_value(table)
+  
+  })
+
+  
+  ### Gráfico
+  
+  output$plot_sede_prom_salas <- renderPlot({
+  
+    salas_num_filtred() %>% 
+    plot_barras_prom(sede, "", "", "")
+  
+  })
   
   }
     

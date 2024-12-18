@@ -32,7 +32,7 @@ colores_plot <- c(#"#2171b5",
 #Funciones -------------------------------------------------------
 
 generate_html <- function(variable) {
-  HTML(glue("<h2 style = 'color: #00609d'>{variable()}</h2>"))
+  HTML(glue("<h3 style = 'color: #00609d'>{variable()}</h3>"))
 }
 
 generate_html_text <- function(variable) {
@@ -692,6 +692,138 @@ satis_laboral <- satis_laboral %>%
       por_que_1 == "N.A" ~ "No responde",
       TRUE ~ por_que_1
     )
+  )
+
+# Informe de Evaluación de las Salas de Cómputo y Recursos Tecnológicos --------------------
+
+salas <- read.xlsx("Encuesta de Evaluación de las Salas de Cómputo y Recursos Tecnológicos(1-262).xlsx")
+
+salas <- salas %>% 
+  distinct()
+
+salas <- salas %>% 
+  clean_names()
+
+salas <- salas %>% 
+  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
+  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+         mesdili = str_to_title(mesdili)) %>% 
+  mutate(anodili = year(hora_de_finalizacion))
+
+
+salas <- salas %>%
+  mutate(como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo =
+           trimws(como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo)) 
+
+salas <- salas %>% 
+  mutate(dependencia = case_when(
+    dependencia %in% c("IPN", "INSTITUTO PEDAGÓGICO NACIONAL") ~ "Instituto Pedagógico Nacional",
+    dependencia == "CENTRO DE LENGUAS" ~ "Centro de lenguas",
+    TRUE ~ dependencia))
+
+salas <- salas %>% 
+  mutate(como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc = trimws(
+    como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc)) %>% 
+  mutate(la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada = trimws(
+    la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada)) %>% 
+  mutate(los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria =
+           trimws(los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria)) %>%
+  mutate(considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo = trimws(considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo)) %>% 
+  mutate(la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado = trimws(
+    la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado)) %>% 
+  mutate(las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales = trimws(
+    las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales)) %>% 
+  mutate(en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es = trimws(
+    en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es))
+
+salas_num <- salas %>%
+  mutate(
+    en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es = case_when(
+      en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es == "Totalmente satisfecho" ~ "4",
+      en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es == "Satisfecho" ~ "3",
+      en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es == "Poco satisfecho" ~ "2",
+      en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es == "Insatisfecho" ~ "1",
+      TRUE ~ en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es),
+    
+    como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo = case_when(
+      como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo == "Excelente" ~ "4",
+      como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo == "Buena" ~ "3",
+      como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo == "Regular" ~ "2",
+      como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo == "Mala" ~ "1",
+      TRUE ~ como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo),
+    
+    como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc = case_when(
+      como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc == "Nuevos" ~ "4",
+      como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc == "Con un buen mantenimiento en general" ~ "3",
+      como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc == "Algo antiguos, pero funcionan bien" ~ "2",
+      como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc == "Obsoletos y con fallas" ~ "1",
+      TRUE ~ como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc),
+    
+    la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada = case_when(
+      la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada == "Totalmente adecuada" ~ "4",
+      la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada == "Aceptable" ~ "3",
+      la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada == "Inadecuada" ~ "2",
+      la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada == "Muy deficiente" ~ "1",
+      TRUE ~ la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada),
+    
+    los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria = case_when(
+      los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria == "Excelentes" ~ "4",
+      los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria == "Buenos" ~ "3",
+      los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria == "Insuficientes" ~ "2",
+      los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria == "Inexistentes" ~ "1",
+      TRUE ~ los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria),
+    
+    en_general_como_calificaria_la_atencion_al_usuario_por_parte_del_personal_de_las_salas_de_computo = case_when(
+      en_general_como_calificaria_la_atencion_al_usuario_por_parte_del_personal_de_las_salas_de_computo == "Excelente" ~ "4",
+      en_general_como_calificaria_la_atencion_al_usuario_por_parte_del_personal_de_las_salas_de_computo == "Buena" ~ "3",
+      en_general_como_calificaria_la_atencion_al_usuario_por_parte_del_personal_de_las_salas_de_computo == "Regular" ~ "2",
+      en_general_como_calificaria_la_atencion_al_usuario_por_parte_del_personal_de_las_salas_de_computo == "Mala" ~ "1",
+      TRUE ~ en_general_como_calificaria_la_atencion_al_usuario_por_parte_del_personal_de_las_salas_de_computo),
+    
+    considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo = case_when(
+      considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo == "Totalmente equipadas" ~ "4",
+      considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo == "Algunos elementos, pero se requieren más" ~ "3",
+      considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo == "Totalmente insuficientes" ~ "2",
+      considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo == "No existen" ~ "1",
+      TRUE ~ considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo),
+    
+    la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado = case_when(
+      la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado == "Sí, impecable" ~ "4",
+      la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado == "Aceptable, requiere algún mantenimiento" ~ "3",
+      la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado == "Regular, se evidencian fallas" ~ "2",
+      la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado == "Pésimo estado, muy deteriorada" ~ "1",
+      TRUE ~ la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado),
+    
+    las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales = case_when(
+      las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales == "En buen estado" ~ "4",
+      las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales == "Medianamente cómodas y funcionales" ~ "3",
+      las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales == "Incómodas y en regular estado" ~ "2",
+      las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales == "En pésimo estado e incómodas" ~ "1",
+      TRUE ~ las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales))
+
+
+salas_num <- salas_num %>%
+  rename(
+    valor1 = en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es,
+    valor2 = como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo,
+    valor3 = como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc,
+    valor4 = la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada,
+    valor5 = los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria,
+    valor6 = en_general_como_calificaria_la_atencion_al_usuario_por_parte_del_personal_de_las_salas_de_computo,
+    valor7 = considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo,
+    valor8 = la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado,
+    valor9 = las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales
+  ) %>% 
+  mutate(
+    valor1 = as.numeric(valor1),
+    valor2 = as.numeric(valor2),
+    valor3 = as.numeric(valor3),
+    valor4 = as.numeric(valor4),
+    valor5 = as.numeric(valor5),
+    valor6 = as.numeric(valor6),
+    valor7 = as.numeric(valor7),
+    valor8 = as.numeric(valor8),
+    valor9 = as.numeric(valor9)
   )
 
 

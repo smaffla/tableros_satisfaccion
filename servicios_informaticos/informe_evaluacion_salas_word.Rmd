@@ -1,0 +1,990 @@
+---
+title: "ENCUESTA DE EVALUACIÓN DE LAS SALAS DE CÓMPUTO Y RECURSOS TECNOLÓGICOS"
+author: "Oficina de Desarrollo y Planeación"
+output:
+  word_document:
+    fig_height: 7
+    fig_width: 10
+    toc: yes
+    toc_depth: '4'
+  html_document:
+    toc: yes
+    toc_depth: '4'
+    df_print: paged
+params:
+  mes: NA
+  anio: NA
+  semestre: NA
+  rendered_by_shiny: no
+subtitle: Universidad Pedagógica Nacional
+editor_options:
+  chunk_output_type: inline
+toc-title: Tabla de contenido
+---
+
+<!-- <div> -->
+<!-- <img src="https://estilos.upn.edu.co/userfiles/footer/footer.svg" alt="UPN" class="watermark"> -->
+<!-- </div> -->
+
+\newpage
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = FALSE,
+	message = FALSE,
+	warning = FALSE,
+	dpi = 300	)
+
+library(openxlsx)
+library(tidyverse)
+library(janitor)
+library(flextable)
+library(scales)
+library(lubridate)
+library(forcats)
+
+colores_plot <- c(#"#2171b5",
+                                              "#4292c6","#74a9cf",
+                                              "#41b6c4","#7fcdbb",#"#238b45","#41ab5d",
+                                              "#78c679","#c7e9b4","#edf8b1","#fee391","#fec44f",
+                                              "#fe9929","#ec7014")
+
+
+salas <- read.xlsx("Encuesta de Evaluación de las Salas de Cómputo y Recursos Tecnológicos(1-262).xlsx")
+
+# ciarp_s <-  if(params$semestre == 1){
+#   ciarp_s20231
+# } else if (params$semestre == 2){
+#   ciarp_s20232
+# } else if (params$semestre == 3){
+#   ciarp_s
+#
+
+
+```
+
+```{r}
+
+ftable <- function(x, encabezado = NULL, title = NULL) {
+  
+  table <- x %>% 
+    flextable() %>% 
+    set_caption(caption = title) %>%
+    align(part = "header", align = "center") %>% 
+    align(j = 2:ncol_keys(.), align = "center") %>% 
+    bg(part = "header", bg = "#2c7fb8") %>% 
+    color(part = "header", color = "white") %>% 
+    bg(j = 1, bg = "#D9D9D9") %>% 
+    bg(i = nrow_part(.), bg = "#2c7fb8") %>%
+    bold(part = "header") %>% 
+    bold(i = nrow_part(.)) %>%
+    color(i = nrow_part(.), color = "white") %>%
+    border(part = "all", border = fp_border_default(color="black", width = 1)) %>% 
+    autofit() %>%
+    fit_to_width(max_width = 8.5)
+  
+  if (!is.null(encabezado)) {
+    table <- table %>% 
+      add_header_row(colwidths = ncol_keys(.), values = encabezado)
+  }
+  
+  return(table)
+    
+}
+
+
+plot_donas <- function(x, col, titulo = "") {
+  
+  col <- enquo(col)
+  
+  data <- x %>%
+    count(!!col) %>% 
+    mutate(porcentaje = n / sum(n),
+           ymax = cumsum(porcentaje),
+           ymin = c(0, head(ymax, n = -1)),
+           labelpos = (ymax + ymin) / 2,
+           labelname = paste(n,"\n",percent(porcentaje, 0.1)))
+  #filter(porcentaje >= 0.005)
+  
+  ggplot(data, aes(ymax = ymax, ymin = ymin, xmax = 10, xmin = 1, fill = !!col)) +
+    geom_rect() +
+    geom_text(aes(x = -1.5, y = labelpos, label = labelname), size = 5, color = "black", fontface = "bold") +
+    labs(title = str_wrap(titulo, width = 30)) +
+    scale_fill_manual(values = colores_plot) +
+    coord_polar(theta = "y") +
+    xlim(c(20, -10)) +
+    theme_void() +
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
+    guides(fill = guide_legend(title = "", label.position = "right",
+                               label.theme = element_text(size = 18)))
+}
+
+## Función gráfico de barras para df caracterizacion
+plot_barras <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
+  col <- enquo(col)
+  
+  data <- x %>%
+    count(!!col )%>% 
+    mutate(perc = percent(n/sum(n), 0.1))
+  
+  if (is.null(top)) {
+    top <- 11
+  }
+  
+  data %>% 
+    arrange(desc(n)) %>% 
+    slice(1:top) %>% 
+    ggplot(aes(x = !!col, 
+               y= n, 
+               fill = !!col, 
+               label = paste(perc,"\n",n," "))) + 
+    geom_col()+
+    geom_text(vjust = 0.5, hjust = -0.1, size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$n)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
+    theme(legend.position="none")+
+    theme(axis.text.y = element_text(size = 14))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 18, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 40))+
+    scale_fill_manual(values = colores_plot) +
+    coord_flip()
+  
+}
+
+## Función gráfico de barras AGRUPADO para df caracterizacion
+plot_barras_agrupado <- function(x, col, group, xlab, ylab, leyenda = "", titulo = "") {
+  col <- enquo(col)
+  group <- enquo(group)
+  
+  data <- x %>%
+    count(!!group, !!col) %>% 
+    mutate(perc = percent(n/sum(n), 0.1))
+  
+  data %>% 
+    ggplot(aes(x = !!col, 
+               y= n, 
+               fill = !!group, 
+               label = paste(perc,"\n",n," "))) + 
+    geom_col(position = "dodge")+
+    geom_text(vjust = 0.5, hjust = -0.2 ,size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$n)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30))+ 
+    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+    guides(fill = guide_legend(title = leyenda, label.position = "right"
+                               , nrow = 2, label.theme = element_text(size = 12)))+
+    theme(legend.position = "bottom",
+          axis.text.y = element_text(size = 13),
+          axis.text.x = element_text(size = 13)) +
+    theme(axis.text.y = element_text(size = 12))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
+    scale_fill_manual(values = colores_plot) +
+    coord_flip()
+  
+}
+
+
+categorica_1var <- function(x, cat1, rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
+  cat1 <- enquo(cat1)
+  
+    if (is.null(wrap_width)) {
+    wrap_width <- 100
+    }
+  
+  table <- x %>% 
+    count(!!cat1) %>% 
+    adorn_totals(where = "row", name = "Total General") %>%
+    rename('{rename}' := !!cat1, "Cantidad" = n) %>% 
+    mutate('{rename}' := str_wrap(!!sym(rename), width = wrap_width)) %>%
+    ftable(encabezado, title)
+  
+  return(table)
+    
+}
+
+categorica_2var <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
+  cat1 <- enquo(cat1)
+  cat2 <- enquo(cat2)
+  
+  table <- x %>% 
+    count(!!cat1, !!cat2) %>% 
+    rbind(
+      x %>% 
+        filter(!is.na(!!cat2)) %>% 
+        count(!!cat2) %>% 
+        mutate(!!cat1 := "Total General")
+    ) %>% 
+    group_by(!!cat1) %>% 
+    #mutate(p = n/sum(n)) %>% 
+    #filter (p >= 0.0005) %>% 
+    #select(-n) %>% 
+    pivot_wider(names_from = !!cat2, values_from = n, values_fill = 0) %>%
+    adorn_totals(where = "col", name = "Total General") %>%
+    #mutate(across(where(is.numeric), ~ percent(.x, 0.01, decimal.mark = ","))) %>% 
+    rename("{rename}" := !!cat1)
+  
+      if (is.null(label_width)) {
+    label_width <- 10
+      
+  }
+  
+  # Personalizar el tamaño de las etiquetas de columna
+  colnames(table) <- str_wrap(colnames(table), width = label_width)
+  
+  table <- table %>%  ftable(encabezado, title)
+  
+  return(table)
+}
+
+
+categorica_2varp <- function(x, cat1, cat2, rename, encabezado = NULL, title = NULL, label_width = NULL) {
+  cat1 <- enquo(cat1)
+  cat2 <- enquo(cat2)
+  
+  table <- x %>% 
+    count(!!cat1, !!cat2) %>% 
+    rbind(
+      x %>% 
+        filter(!is.na(!!cat2)) %>% 
+        count(!!cat2) %>% 
+        mutate(!!cat1 := "Total General")
+    ) %>% 
+    group_by(!!cat1) %>% 
+    mutate(p = n/sum(n)) %>% 
+    #filter (p >= 0.0005) %>% 
+    select(-n) %>% 
+    pivot_wider(names_from = !!cat2, values_from = p, values_fill = 0) %>% 
+    adorn_totals(where = "col", name = "Total General") %>%
+    mutate(across(where(is.numeric), ~ percent(.x, 0.1, decimal.mark = ","))) %>% 
+    rename("{rename}" := !!cat1)
+  
+      if (is.null(label_width)) {
+    label_width <- 10
+      
+  }
+  
+  # Personalizar el tamaño de las etiquetas de columna
+  colnames(table) <- str_wrap(colnames(table), width = label_width)
+  
+  table <- table %>%  ftable(encabezado, title)
+  
+  return(table)
+}
+
+wrap_text <- function(x, width) {
+  sapply(x, function(y) {
+    paste(strwrap(y, width = width), collapse = "\n")
+  })
+}
+
+
+tabla_prom_1var <- function(x, col, col_promedio,rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
+  
+  col <- enquo(col)
+  col_promedio <- enquo(col_promedio)
+  
+  if (is.null(wrap_width)) {
+    wrap_width <- 100
+  }
+  
+  table <- x %>% 
+  group_by(!!col) %>%
+  summarise(promedio_general = round(mean(!!col_promedio), 1)) %>%
+  ungroup() %>% 
+  #arrange(desc(promedio_general)) %>% 
+  rename("{rename}" := !!col,
+         "Promedio" = promedio_general) %>% 
+  as.data.frame()  
+  
+  formatted_table <- ftable(table, encabezado, title) %>% 
+  bg(i = nrow_part(.), bg = "white") %>%
+  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+  color(i = nrow_part(.), color = "black") %>%
+  bold(i = nrow_part(.), bold = FALSE)
+  
+  return(formatted_table)
+  
+}
+
+plot_barras_prom_1var <- function(x, col,col_promedio, xlab, ylab, titulo = "", top = NULL) {
+  
+  col <- enquo(col)
+  col_promedio <- enquo(col_promedio)
+  
+  if (is.null(top)) {
+    top <- 11
+  }
+  
+  data <- x %>%  
+    group_by(!!col) %>%
+    summarise(promedio_general = round(mean(!!col_promedio), 1)) %>%
+    ungroup()
+  
+  data %>% 
+    arrange(desc(promedio_general)) %>% 
+    slice(1:top) %>% 
+    ggplot(aes(x = !!col, 
+               y= promedio_general, 
+               fill = !!col, 
+               label = promedio_general)) + 
+    geom_col()+
+    geom_text(vjust = 0.5, hjust = -0.5, size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$promedio_general)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
+    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+    theme(legend.position="none")+
+    theme(axis.text.y = element_text(size = 14))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
+    scale_fill_manual(values = colores_plot)+
+    coord_flip()
+  
+}
+
+tabla_prom <- function(x, col, rename, encabezado = NULL, title = NULL, wrap_width = NULL) {
+  
+  col <- enquo(col)
+  
+  if (is.null(wrap_width)) {
+    wrap_width <- 100
+  }
+  
+  table <- x %>% 
+  group_by(!!col) %>%
+  summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
+  ungroup() %>% 
+  #arrange(desc(promedio_general)) %>% 
+  rename("{rename}" := !!col,
+         "Promedio" = promedio_general) %>% 
+  as.data.frame()  
+  
+  formatted_table <- ftable(table, encabezado, title) %>% 
+  bg(i = nrow_part(.), bg = "white") %>%
+  bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+  color(i = nrow_part(.), color = "black") %>%
+  bold(i = nrow_part(.), bold = FALSE)
+  
+  return(formatted_table)
+  
+}
+
+plot_barras_prom <- function(x, col, xlab, ylab, titulo = "", top = NULL) {
+  
+  col <- enquo(col)
+  
+  if (is.null(top)) {
+    top <- 11
+  }
+  
+  data <- x %>%  
+    group_by(!!col) %>%
+    summarise(promedio_general = round(mean(c_across(starts_with("valor")), na.rm = TRUE), 1)) %>%
+    ungroup()
+  
+  data %>% 
+    arrange(desc(promedio_general)) %>% 
+    slice(1:top) %>% 
+    ggplot(aes(x = !!col, 
+               y= promedio_general, 
+               fill = !!col, 
+               label = promedio_general)) + 
+    geom_col()+
+    geom_text(vjust = 0.5, hjust = -0.5, size = 4,position = position_dodge(width = 1))+
+    scale_y_continuous(limits = c(0, max(data$promedio_general)*1.1))+
+    labs(x = xlab, y = ylab, title = str_wrap(titulo, width = 30)) +
+    theme(plot.title = element_text(size=15, face='bold', color="#525252", hjust=0.5))+
+    theme(legend.position="none")+
+    theme(axis.text.y = element_text(size = 14))+
+    theme(axis.text.x = element_text(size = 8))+
+    theme(plot.title.position = "plot",
+          plot.title = element_text(hjust = 0.5, size = 14, face = 'bold', color = "#525252")) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 25))+
+    scale_fill_manual(values = colores_plot)+
+    coord_flip()
+  
+}
+
+```
+
+```{r}
+
+salas <- salas %>% 
+  distinct()
+
+salas <- salas %>% 
+  clean_names()
+
+salas <- salas %>% 
+  mutate(hora_de_finalizacion = as.Date(hora_de_finalizacion, origin = "1899-12-30")) %>% 
+  mutate(mesdili = month(hora_de_finalizacion, label = TRUE, abbr = FALSE),
+         mesdili = str_to_title(mesdili)) %>% 
+  mutate(anodili = year(hora_de_finalizacion))
+
+
+salas <- salas %>%
+    mutate(como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo =
+           trimws(como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo)) 
+
+salas <- salas %>% 
+  mutate(dependencia = case_when(
+    dependencia %in% c("IPN", "INSTITUTO PEDAGÓGICO NACIONAL") ~ "Instituto Pedagógico Nacional",
+    dependencia == "CENTRO DE LENGUAS" ~ "Centro de lenguas",
+    TRUE ~ dependencia))
+
+salas <- salas %>% 
+  mutate(como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc = trimws(
+    como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc)) %>% 
+  mutate(la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada = trimws(
+    la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada)) %>% 
+  mutate(los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria =
+  trimws(los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria)) %>%
+  mutate(considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo = trimws(considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo)) %>% 
+  mutate(la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado = trimws(
+    la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado)) %>% 
+  mutate(las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales = trimws(
+    las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales)) %>% 
+  mutate(en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es = trimws(
+    en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es))
+
+salas_num <- salas %>%
+  mutate(
+    en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es = case_when(
+      en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es == "Totalmente satisfecho" ~ "4",
+      en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es == "Satisfecho" ~ "3",
+      en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es == "Poco satisfecho" ~ "2",
+      en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es == "Insatisfecho" ~ "1",
+      TRUE ~ en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es),
+    
+    como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo = case_when(
+      como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo == "Excelente" ~ "4",
+      como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo == "Buena" ~ "3",
+      como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo == "Regular" ~ "2",
+      como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo == "Mala" ~ "1",
+      TRUE ~ como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo),
+    
+    como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc = case_when(
+      como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc == "Nuevos" ~ "4",
+      como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc == "Con un buen mantenimiento en general" ~ "3",
+      como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc == "Algo antiguos, pero funcionan bien" ~ "2",
+      como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc == "Obsoletos y con fallas" ~ "1",
+      TRUE ~ como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc),
+    
+    la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada = case_when(
+      la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada == "Totalmente adecuada" ~ "4",
+      la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada == "Aceptable" ~ "3",
+      la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada == "Inadecuada" ~ "2",
+      la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada == "Muy deficiente" ~ "1",
+      TRUE ~ la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada),
+    
+    los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria = case_when(
+      los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria == "Excelentes" ~ "4",
+      los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria == "Buenos" ~ "3",
+      los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria == "Insuficientes" ~ "2",
+      los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria == "Inexistentes" ~ "1",
+      TRUE ~ los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria),
+    
+    en_general_como_calificaria_la_atencion_al_usuario_por_parte_del_personal_de_las_salas_de_computo = case_when(
+en_general_como_calificaria_la_atencion_al_usuario_por_parte_del_personal_de_las_salas_de_computo == "Excelente" ~ "4",
+    en_general_como_calificaria_la_atencion_al_usuario_por_parte_del_personal_de_las_salas_de_computo == "Buena" ~ "3",
+  en_general_como_calificaria_la_atencion_al_usuario_por_parte_del_personal_de_las_salas_de_computo == "Regular" ~ "2",
+    en_general_como_calificaria_la_atencion_al_usuario_por_parte_del_personal_de_las_salas_de_computo == "Mala" ~ "1",
+      TRUE ~ en_general_como_calificaria_la_atencion_al_usuario_por_parte_del_personal_de_las_salas_de_computo),
+    
+    considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo = case_when(
+      considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo == "Totalmente equipadas" ~ "4",
+      considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo == "Algunos elementos, pero se requieren más" ~ "3",
+      considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo == "Totalmente insuficientes" ~ "2",
+      considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo == "No existen" ~ "1",
+      TRUE ~ considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo),
+    
+    la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado = case_when(
+      la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado == "Sí, impecable" ~ "4",
+      la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado == "Aceptable, requiere algún mantenimiento" ~ "3",
+      la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado == "Regular, se evidencian fallas" ~ "2",
+      la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado == "Pésimo estado, muy deteriorada" ~ "1",
+      TRUE ~ la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado),
+    
+    las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales = case_when(
+  las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales == "En buen estado" ~ "4",
+      las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales == "Medianamente cómodas y funcionales" ~ "3",
+      las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales == "Incómodas y en regular estado" ~ "2",
+      las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales == "En pésimo estado e incómodas" ~ "1",
+      TRUE ~ las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales))
+
+
+salas_num <- salas_num %>%
+  rename(
+    valor1 = en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es,
+    valor2 = como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo,
+    valor3 = como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc,
+    valor4 = la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada,
+    valor5 = los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria,
+    valor6 = en_general_como_calificaria_la_atencion_al_usuario_por_parte_del_personal_de_las_salas_de_computo,
+    valor7 = considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo,
+    valor8 = la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado,
+    valor9 = las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales
+  ) %>% 
+  mutate(
+    valor1 = as.numeric(valor1),
+    valor2 = as.numeric(valor2),
+    valor3 = as.numeric(valor3),
+    valor4 = as.numeric(valor4),
+    valor5 = as.numeric(valor5),
+    valor6 = as.numeric(valor6),
+    valor7 = as.numeric(valor7),
+    valor8 = as.numeric(valor8),
+    valor9 = as.numeric(valor9)
+  )
+
+
+
+```
+
+
+
+```{r}
+total <- salas %>% count() %>% pull()
+```
+
+
+La encuesta de evaluación de las salas de cómputo y recursos tecnológicos fue respondida por **`r total`** personas.
+
+# Dependencia 
+
+## Tabla
+
+```{r}
+
+salas %>% 
+  categorica_1var(dependencia, "Dependencia")
+
+```
+
+## Gráfico
+
+```{r}
+
+salas %>% 
+  plot_barras(dependencia, "", "", "")
+
+```
+
+# Sede
+
+## Tabla
+
+```{r}
+
+salas %>% 
+  categorica_1var(sede, "Sede")
+
+```
+
+## Gráfico
+
+```{r}
+
+salas %>% 
+  plot_barras(sede, "", "", "")
+
+```
+
+# Edificio
+
+## Tabla
+
+```{r}
+
+salas %>% 
+  categorica_1var(edificio, "Edificio")
+
+```
+
+## Gráfico
+
+```{r}
+
+salas %>% 
+  plot_barras(edificio, "", "", "")
+
+```
+
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.25)
+
+```
+
+
+# Calificación y/o aporte por criterio de evaluación
+
+Este apartado presenta un análisis detallado de las calificaciones y percepciones obtenidas en la evaluación de las salas de cómputo y recursos tecnológicos. Su objetivo es proporcionar una visión estructurada que permita identificar fortalezas, debilidades y oportunidades de mejora en los servicios ofrecidos.
+
+## Nivel general de satisfacción con las salas
+
+### Tabla
+
+```{r}
+
+salas %>% 
+  mutate(en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es = factor(
+  en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es, levels = c("Totalmente satisfecho", "Satisfecho",
+                                                                                "Poco satisfecho", "Insatisfecho")))%>%
+  categorica_1var(en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es, "Calificación")
+  
+
+```
+
+### Gráfico
+
+```{r}
+
+salas %>% 
+  mutate(en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es = factor(
+  en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es, levels = c("Insatisfecho", "Poco satisfecho",
+                                                                            "Satisfecho", "Totalmente satisfecho")))%>%
+  plot_barras(en_general_mi_nivel_de_satisfaccion_con_las_salas_de_computo_es, "", "", "")
+
+```
+
+## Calidad de limpieza e higiene de las salas de cómputo
+
+### Tabla
+
+```{r}
+
+salas %>% 
+  mutate(como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo =
+           factor(como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo, levels = c("Excelente", "Buena",
+                                                                                             "Regular", "Mala"))) %>% 
+  categorica_1var(como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo, "Calificación")
+
+```
+
+### Gráfico
+
+```{r}
+
+salas %>% 
+  mutate(como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo =
+           factor(como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo, levels = c("Mala", "Regular",
+                                                                                             "Buena", "Excelente")))%>%
+  plot_barras(como_calificaria_la_limpieza_e_higiene_de_las_salas_de_computo, "", "", "")
+
+```
+
+
+## Estado de los equipos de cómputo
+
+### Tabla
+
+```{r}
+
+salas %>%  
+  mutate(como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc =
+           factor(como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc, 
+                  levels = c("Nuevos", "Con un buen mantenimiento en general", "Algo antiguos, pero funcionan bien",
+                             "Obsoletos y con fallas"))) %>% 
+  categorica_1var(como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc, "Estado")
+
+```
+
+### Gráfico
+
+```{r}
+
+salas %>% 
+  mutate(como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc =
+           factor(como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc, 
+                  levels = c("Obsoletos y con fallas",  "Algo antiguos, pero funcionan bien",
+                             "Con un buen mantenimiento en general", "Nuevos"))) %>% 
+  plot_barras(como_describiria_el_estado_de_los_equipos_de_computo_computadores_teclados_ratones_etc, "", "", "")
+
+```
+
+## Adecuación de la ventilación e iluminación
+
+### Tabla
+
+```{r}
+
+salas %>% 
+  mutate(la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada = factor(
+    la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada, levels = c("Totalmente adecuada",
+      "Aceptable", "Inadecuada", "Muy deficiente"))) %>% 
+  categorica_1var(la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada, "Calificación")
+
+```
+
+### Gráfico
+
+```{r}
+
+salas %>% 
+  mutate(la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada = factor(
+    la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada, levels = c("Muy deficiente", "Inadecuada",
+      "Aceptable", "Totalmente adecuada"))) %>% 
+  plot_barras(la_ventilacion_e_iluminacion_de_las_salas_de_computo_le_parece_adecuada, "", "", "")
+
+```
+
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.50)
+
+```
+
+
+## Calidad de los recursos para clases virtuales
+
+### Tabla
+
+```{r}
+
+salas %>% 
+  mutate(los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria =
+  factor(los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria, 
+         levels = c("Excelentes", "Buenos", "Insuficientes", "Inexistentes"))) %>% 
+  categorica_1var(los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria, "Calificación")
+
+```
+
+### Gráfico
+
+```{r}
+
+salas %>% 
+  mutate(los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria = 
+  factor(los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria,
+         levels = c("Inexistentes", "Insuficientes", "Buenos", "Excelentes"))) %>% 
+  plot_barras(los_recursos_disponibles_para_clases_virtuales_camaras_microfonos_acceso_a_internet_como_los_describiria,
+              "", "", "")
+
+```
+
+## Elementos por mejorar o adquirir para clases virtuales
+
+### Tabla
+
+```{r}
+
+salas %>% 
+  categorica_1var(con_respecto_a_las_clases_virtuales_que_elementos_considera_que_se_deben_mejorar_o_adquirir_en_las_salas_de_computo, "Elementos a mejorar")
+
+```
+
+### Gráfico
+
+```{r}
+
+salas %>% 
+  plot_barras(con_respecto_a_las_clases_virtuales_que_elementos_considera_que_se_deben_mejorar_o_adquirir_en_las_salas_de_computo, "", "", "")
+
+```
+
+
+## Atención al usuario por parte del personal
+
+### Tabla
+
+```{r}
+
+salas %>% 
+  mutate(en_general_como_calificaria_la_atencion_al_usuario_por_parte_del_personal_de_las_salas_de_computo =
+           factor(en_general_como_calificaria_la_atencion_al_usuario_por_parte_del_personal_de_las_salas_de_computo,
+                  levels = c("Excelente", "Buena", "Regular", "Mala"))) %>% 
+  categorica_1var(en_general_como_calificaria_la_atencion_al_usuario_por_parte_del_personal_de_las_salas_de_computo,
+                  "Calificación")
+
+```
+
+### Gráfico
+
+```{r}
+
+salas %>% 
+  mutate(en_general_como_calificaria_la_atencion_al_usuario_por_parte_del_personal_de_las_salas_de_computo =
+           factor(en_general_como_calificaria_la_atencion_al_usuario_por_parte_del_personal_de_las_salas_de_computo,
+                  levels = c("Mala", "Regular", "Buena", "Excelente"))) %>% 
+  plot_barras(en_general_como_calificaria_la_atencion_al_usuario_por_parte_del_personal_de_las_salas_de_computo,
+              "", "", "")
+
+```
+
+## Disponibilidad de elementos básicos de salud
+
+### Tabla
+
+```{r}
+
+salas %>% 
+  mutate(considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo = factor(considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo, levels = c("Totalmente equipadas", "Algunos elementos, pero se requieren más", 
+                                     "Totalmente insuficientes", "No existen"))) %>% 
+  categorica_1var(considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo, "Calificación")
+
+```
+
+### Gráfico
+
+```{r}
+
+salas %>% 
+  mutate(considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo = factor(considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo, levels = c("No existen", "Totalmente insuficientes",                                                                               "Algunos elementos, pero se requieren más", "Totalmente equipadas"))) %>%
+  plot_barras(considera_que_hay_suficientes_elementos_basicos_de_salud_botiquin_extintor_rutas_de_evacuacion_etc_en_las_salas_de_computo, "", "", "")
+
+```
+
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(0.75)
+
+```
+
+
+## Estado de la infraestructura de las salas
+
+### Tabla
+
+```{r}
+
+salas %>% 
+  mutate(la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado = factor(
+    la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado, levels = c("Sí, impecable",
+    "Aceptable, requiere algún mantenimiento", "Regular, se evidencian fallas", "Pésimo estado, muy deteriorada"))) %>%
+  categorica_1var(la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado, "Calificación")
+
+```
+
+### Gráfico
+
+```{r}
+
+salas %>% 
+  mutate(la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado = factor(
+    la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado, levels = c(
+      "Pésimo estado, muy deteriorada", "Regular, se evidencian fallas", 
+    "Aceptable, requiere algún mantenimiento", "Sí, impecable"))) %>%
+  plot_barras(la_infraestructura_paredes_techos_piso_de_las_salas_de_computo_esta_en_buen_estado, "", "", "")
+
+```
+
+## Funcionalidad y comodidad de mesas y sillas
+
+### Tabla
+
+```{r}
+
+salas %>% 
+  mutate(las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales =
+           factor(las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales, 
+                  levels = c("En buen estado", "Medianamente cómodas y funcionales", 
+                             "Incómodas y en regular estado", "En pésimo estado e incómodas"))) %>% 
+  categorica_1var(las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales, 
+                  "Calificación")
+
+```
+
+### Gráfico
+
+```{r}
+
+salas %>% 
+  mutate(las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales =
+           factor(las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales, 
+                  levels = c("En pésimo estado e incómodas", "Incómodas y en regular estado", 
+                             "Medianamente cómodas y funcionales", "En buen estado"))) %>% 
+  plot_barras(las_mesas_y_sillas_para_los_estudiantes_en_las_salas_de_computo_son_comodas_y_funcionales, "", "", "")
+
+```
+
+
+# Calificación y/o aporte por categoría (del encuestado)
+
+Este apartado analiza las calificaciones y aportes de los encuestados por categoría, destacando percepciones y oportunidades de mejora. Cabe aclarar que las calificaciones fueron realizadas en una escala de 1 a 4, siendo 4 la máxima calificación. Además, la pregunta sobre los elementos que se consideran que se deben mejorar no está incluida dentro de este promedio de calificación.
+
+## Tabla general
+
+```{r}
+
+ salas_num %>% 
+        summarise(
+          "Nivel de satisfacción con las salas de cómputo" = round(mean(valor1, na.rm = TRUE), 1),
+        "Calificación de la limpieza e higiene de las salas de cómputo" = round(mean(valor2, na.rm = TRUE), 1),
+        "Estado de los equipos de cómputo" = round(mean(valor3, na.rm = TRUE), 1),
+        "Adecuación de la ventilación e iluminación en las salas de cómputo" = round(mean(valor4, na.rm = TRUE), 1),
+        "Descripción de los recursos disponibles para clases virtuales" = round(mean(valor5, na.rm = TRUE), 1),
+        "Calificación de la atención al usuario por parte del personal" = round(mean(valor6, na.rm = TRUE), 1),
+        "Suficiencia de elementos básicos de salud en las salas de cómputo" = round(mean(valor7, na.rm = TRUE), 1),
+        "Estado de la infraestructura de las salas de cómputo" = round(mean(valor8, na.rm = TRUE), 1),
+        "Estado de las mesas y sillas para los estudiantes" = round(mean(valor9, na.rm = TRUE), 1)) %>% 
+        pivot_longer(cols = everything(), names_to = "Categoría", values_to = "Promedio") %>% 
+      ftable() %>%
+      bg(i = nrow_part(.), bg = NA) %>%
+      bg(i = nrow_part(.), j = 1, bg = "#D9D9D9") %>%
+      color(i = nrow_part(.), color = "black") %>%
+      bold(i = nrow_part(.), bold = FALSE)
+
+
+```
+
+
+## Por dependencia
+
+### Tabla
+
+```{r}
+
+salas_num %>%
+  tabla_prom(dependencia, "Dependencia")
+
+```
+
+### Gráfico
+
+```{r}
+
+salas_num %>%
+  plot_barras_prom(dependencia, "", "", "")
+
+```
+
+## Por sede
+
+### Tabla
+
+```{r}
+
+salas_num %>%
+  tabla_prom(sede, "Sede")
+
+```
+
+### Gráfico
+
+```{r}
+
+salas_num %>%
+  plot_barras_prom(sede, "", "", "")
+
+```
+
+
+```{r}
+
+if (params$rendered_by_shiny)
+  shiny::setProgress(1)
+
+```
